@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/whiteColor"
+    android:orientation="horizontal"
+    android:weightSum="10">
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="140dp"
+        android:layout_weight="3.1"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/img_cart_product"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:padding="16dp"
+            android:src="@drawable/img_1603653_1" />
+        <LinearLayout
+            android:background="@drawable/triangle_custom"
+            android:gravity="start"
+            android:layout_width="36dp"
+            android:layout_height="36dp">
+            <ImageView
+                android:id="@+id/img_removeFromCart"
+                android:layout_gravity="start"
+                android:src="@drawable/ic_close_gray_24dp"
+                android:padding="4dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_weight="6.9"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/txt_cart_productName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingTop="4dp"
+            android:text="Bo mạch chính/ Mainboard Asrock H110M-DVS R2.0"
+            android:textColor="#333"
+            android:textSize="16sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp"
+                    android:paddingTop="10dp">
+
+                    <TextView
+                        android:id="@+id/txt_cart_productPrice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1.320"
+                        android:textColor="#d42333"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=".000 ₫"
+                        android:textColor="#d42333"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/layout_cart_discount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp">
+
+                    <TextView
+                        android:id="@+id/txt_cart_productBasicPrice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/horizontal_dashed_line"
+                        android:text="1.320"
+                        android:textColor="#9fa0a2"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/horizontal_dashed_line"
+                        android:text=".000 ₫"
+                        android:textColor="#9fa0a2"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="4dp"
+                        android:text="-"
+                        android:textColor="#d42333"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/txt_cart_discount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="5"
+                        android:textColor="#d42333"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="%"
+                        android:textColor="#d42333"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:paddingTop="10dp">
+                <com.michaelmuenzer.android.scrollablennumberpicker.ScrollableNumberPicker
+                    android:id="@+id/snp_product_quantity"
+                    app:snp_maxValue="50"
+                    app:snp_minValue="1"
+                    app:snp_stepSize="1"
+                    app:snp_value="1"
+                    android:focusable="true"
+                    app:snp_scrollEnabled="false"
+                    app:snp_updateInterval="100"
+                    app:snp_buttonIconLeft="@drawable/minus"
+                    app:snp_buttonIconRight="@drawable/plus"
+                    app:snp_buttonTouchScaleFactor="0.8"
+                    app:snp_buttonBackgroundTintSelector="@color/colorPrimary"
+                    app:snp_orientation="horizontal"
+                    app:snp_value_text_color="@color/colorPrimary"
+                    app:snp_value_text_size="16sp"
+                    app:snp_valueMarginStart="16dp"
+                    app:snp_valueMarginEnd="16dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+
+</LinearLayout>

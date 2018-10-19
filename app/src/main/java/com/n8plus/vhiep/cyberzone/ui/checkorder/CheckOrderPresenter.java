@@ -1,55 +1,102 @@
 package com.n8plus.vhiep.cyberzone.ui.checkorder;
 
+import android.app.Activity;
+import android.support.v4.app.Fragment;
+import android.util.Log;
+
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.n8plus.vhiep.cyberzone.R;
+import com.n8plus.vhiep.cyberzone.data.model.Address;
 import com.n8plus.vhiep.cyberzone.data.model.Overview;
 import com.n8plus.vhiep.cyberzone.data.model.Product;
+import com.n8plus.vhiep.cyberzone.data.model.ProductImage;
+import com.n8plus.vhiep.cyberzone.data.model.ProductType;
+import com.n8plus.vhiep.cyberzone.data.model.PurchaseItem;
+import com.n8plus.vhiep.cyberzone.data.model.SaleOff;
 import com.n8plus.vhiep.cyberzone.data.model.Specification;
+import com.n8plus.vhiep.cyberzone.data.model.Store;
+import com.n8plus.vhiep.cyberzone.util.Constant;
+import com.n8plus.vhiep.cyberzone.util.MySingleton;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CheckOrderPresenter implements CheckOrderContract.Presenter {
     private CheckOrderContract.View mCheckOrderView;
-    private List<Product> mListProductInCart;
+    private List<PurchaseItem> mPurchaseItemList;
+    private List<Address> addressList;
+    private String URL_ADDRESS = Constant.URL_HOST + "deliveryAddresses";
+    private Gson gson;
+    private int mTempPrice = 0, mDeliveryPrice = 0;
 
     public CheckOrderPresenter(CheckOrderContract.View mCheckOrderView) {
         this.mCheckOrderView = mCheckOrderView;
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.setDateFormat("M/d/yy hh:mm a");
+        gson = gsonBuilder.create();
     }
 
     @Override
-    public void loadData() {
-        prepareProductData();
-        mCheckOrderView.setAdapterOrder(mListProductInCart);
+    public void loadPurchaseList(List<PurchaseItem> purchaseItems) {
+        mCheckOrderView.setAdapterOrder(purchaseItems);
+        mCheckOrderView.setCountProduct(String.valueOf(Constant.countProductInCart()));
     }
 
-    private void prepareProductData() {
-        List<Specification> specifications = new ArrayList<>();
-        specifications.add(new Specification("Bảo hành", "36"));
-        specifications.add(new Specification("Thương hiệu", "Asrock"));
-        specifications.add(new Specification("Model", "H110M-DVS R2.0"));
-        specifications.add(new Specification("Loại", "Micro-ATX"));
-        specifications.add(new Specification("Loại Socket", "LGA 1151"));
-        specifications.add(new Specification("Chipset", "Intel H110"));
-        specifications.add(new Specification("Số khe Ram", "2"));
-        specifications.add(new Specification("Dung lượng Ram tối đa", "32GB"));
-        specifications.add(new Specification("Loại Ram", "DDR4 2133"));
-        specifications.add(new Specification("VGA Onboard", "Intel HD Graphics"));
+    @Override
+    public void loadPrice(int tempPrice, int deliveryPrice) {
+        mTempPrice = tempPrice;
+        mDeliveryPrice = deliveryPrice;
+        DecimalFormat df = new DecimalFormat("#.000");
+        mCheckOrderView.setTempPrice(tempPrice >= 1000 ? df.format(Product.convertToPrice(String.valueOf(tempPrice))) : String.valueOf(Math.round(tempPrice)));
+        mCheckOrderView.setDeliveryPrice(deliveryPrice >= 1000 ? df.format(Product.convertToPrice(String.valueOf(deliveryPrice))) : String.valueOf(Math.round(deliveryPrice)));
+        mCheckOrderView.setTotalPrice((tempPrice + deliveryPrice) >= 1000 ? df.format(Product.convertToPrice(String.valueOf(tempPrice + deliveryPrice))) : String.valueOf(Math.round(tempPrice + deliveryPrice)));
+    }
 
-        List<Overview> overviews = new ArrayList<>();
-        overviews.add(new Overview("", "ASRock trang bị cho H110M-DVS R2.0 chuẩn linh kiện Super Alloy bền bỉ - trước đây vốn chỉ xuất hiện trên các bo mạch chủ trung cấp và cao cấp thể hiện trong thông điệp Stable and Reliable - Ổn định và tin cậy."));
+    @Override
+    public void loadDeliveryAddress(Address address) {
+        mCheckOrderView.setNameCustomer(address.getPresentation());
+        mCheckOrderView.setPhoneCustomer(address.getPhone());
+        mCheckOrderView.setAddressCustomer(address.getAddress());
+    }
 
-        Product product_1603653 = new Product("1603653", "Bo mạch chính/ Mainboard Asrock H110M-DVS R2.0", R.drawable.img_1603653_1, specifications, "1.320", overviews, "New", 5);
-        Product product_1600666 = new Product("1600666", "Bo mạch chính/ Mainboard Gigabyte H110M-DS2 DDR4", R.drawable.img_1600666, specifications, "1.465", overviews, "New", 6);
-        Product product_1701299 = new Product("1701299", "Bo mạch chính/ Mainboard Gigabyte B250M-Gaming 3", R.drawable.img_1701299, specifications, "1.899", overviews, "New", 0);
-        Product product_1704264 = new Product("1704264", "Bo mạch chính/ Mainboard Msi A320M Bazooka", R.drawable.img_1704264, specifications, "2.180", overviews, "New", 0);
-        Product product_1501266 = new Product("1501266", "Bo mạch chính/ Mainboard Asus H81M-K", R.drawable.img_1501266, specifications, "1.280", overviews, "New", 0);
+    @Override
+    public void loadDeliveryAddressDefault(String customerId) {
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, URL_ADDRESS + "/customer/" + customerId, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    addressList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("deliveryAddresses")), Address[].class));
+                    Log.i("CheckOrderPresenter", "GET: " + addressList.size() + " address");
+                    if (addressList.size() > 0) {
+                        mCheckOrderView.setNameCustomer(addressList.get(0).getPresentation());
+                        mCheckOrderView.setPhoneCustomer(addressList.get(0).getPhone());
+                        mCheckOrderView.setAddressCustomer(addressList.get(0).getAddress());
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("CheckOrderPresenter", error.toString());
+            }
+        });
+        MySingleton.getInstance(((Activity) mCheckOrderView).getApplicationContext()).addToRequestQueue(request);
+    }
 
-        mListProductInCart = new ArrayList<>();
-        mListProductInCart.add(product_1603653);
-        mListProductInCart.add(product_1600666);
-        mListProductInCart.add(product_1701299);
-        mListProductInCart.add(product_1704264);
-        mListProductInCart.add(product_1501266);
-
+    @Override
+    public void prepareDataPayment() {
+        mCheckOrderView.moveToPayment(String.valueOf(Constant.countProductInCart()), mTempPrice, mDeliveryPrice);
     }
 }

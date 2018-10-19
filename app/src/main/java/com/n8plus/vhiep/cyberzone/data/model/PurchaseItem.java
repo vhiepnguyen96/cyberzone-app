@@ -1,20 +1,22 @@
 package com.n8plus.vhiep.cyberzone.data.model;
 
-public class PurchaseItem {
-    private String productId;
+import java.io.Serializable;
+
+public class PurchaseItem implements Serializable {
+    private Product product;
     private Integer quantity;
 
-    public PurchaseItem(String productId, Integer quantity) {
-        this.productId = productId;
+    public PurchaseItem(Product product, Integer quantity) {
+        this.product = product;
         this.quantity = quantity;
     }
 
-    public String getProductId() {
-        return productId;
+    public Product getProduct() {
+        return product;
     }
 
-    public void setProductId(String productId) {
-        this.productId = productId;
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public Integer getQuantity() {

@@ -13,8 +13,10 @@ import java.util.List;
 public interface ProductTypeContract {
     interface View {
         void setAdapterProductType(List<ProductType> productTypes);
+        void moveToProductActivity(String productTypeId);
     }
     interface Presenter extends BasePresenter<View> {
-        void loadData();
+        void loadData(String categoryId);
+        void prepareDataProductType(int position);
     }
 }

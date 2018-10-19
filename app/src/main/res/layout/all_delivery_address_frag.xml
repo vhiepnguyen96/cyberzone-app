@@ -10,36 +10,9 @@
         android:layout_height="match_parent">
 
         <LinearLayout
-            android:id="@+id/all_delivery_address"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp"
-            android:layout_width="match_parent"
-            android:layout_height="?android:attr/actionBarSize"
-            android:background="@color/colorPrimary"
-            android:orientation="horizontal">
-            <ImageButton
-                android:id="@+id/ibn_backCheckOrder"
-                android:background="@null"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_arrow_back_black_24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-            <TextView
-                android:text="Chọn địa chỉ giao hàng"
-                android:textColor="@color/whiteColor"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                android:layout_gravity="center"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@+id/btn_add_address"
-            android:layout_below="@+id/all_delivery_address"
             android:background="@color/whiteColor"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
 

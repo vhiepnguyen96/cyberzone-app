@@ -16,7 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.n8plus.vhiep.cyberzone.R;
-import com.n8plus.vhiep.cyberzone.data.model.Review;
+import com.n8plus.vhiep.cyberzone.data.model.ReviewStore;
 import com.n8plus.vhiep.cyberzone.ui.store.adapter.CustomerReviewAdapter;
 import com.n8plus.vhiep.cyberzone.ui.store.information.reviews.listreview.ListReviewFragment;
 import com.n8plus.vhiep.cyberzone.ui.store.information.reviews.statistics.StatisticsFragment;
@@ -67,24 +67,24 @@ public class InformationFragment extends Fragment implements InformationContract
         fragmentTransaction.commit();
     }
 
-    private List<Review> getRandomReview(List<Review> reviewList) {
-        List<Review> arrayList = new ArrayList<>();
-        if (reviewList.size() > 5) {
+    private List<ReviewStore> getRandomReview(List<ReviewStore> reviewStoreList) {
+        List<ReviewStore> arrayList = new ArrayList<>();
+        if (reviewStoreList.size() > 5) {
             for (int i = 0; i < 5; i++) {
-                arrayList.add(reviewList.get(i));
+                arrayList.add(reviewStoreList.get(i));
             }
         } else {
-            arrayList.addAll(reviewList);
+            arrayList.addAll(reviewStoreList);
         }
         return arrayList;
     }
 
     @Override
-    public void setAdapterCustomerReview(List<Review> reviewList) {
+    public void setAdapterCustomerReview(List<ReviewStore> reviewStoreList) {
         mLayoutCustomerReview =  new LinearLayoutManager(mRecyclerCustomerReview.getContext(), LinearLayoutManager.VERTICAL, false);
-        mCustomerReviewAdapter = new CustomerReviewAdapter(getRandomReview(reviewList));
-        DividerItemDecoration itemDecorator = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
-        mRecyclerCustomerReview.addItemDecoration(itemDecorator);
+        mCustomerReviewAdapter = new CustomerReviewAdapter(getRandomReview(reviewStoreList));
+//        DividerItemDecoration itemDecorator = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
+//        mRecyclerCustomerReview.addItemDecoration(itemDecorator);
         mRecyclerCustomerReview.setLayoutManager(mLayoutCustomerReview);
         mRecyclerCustomerReview.setAdapter(mCustomerReviewAdapter);
     }

@@ -1,12 +1,34 @@
 package com.n8plus.vhiep.cyberzone.data.model;
 
-public class Overview {
-    private String title;
-    private String description;
+import com.google.gson.annotations.SerializedName;
 
-    public Overview(String title, String description) {
+import java.io.Serializable;
+
+public class Overview implements Serializable{
+    @SerializedName("_id")
+    private String id;
+    @SerializedName("title")
+    private String title;
+    @SerializedName("value")
+    private String value;
+
+    public Overview(String title, String value) {
         this.title = title;
-        this.description = description;
+        this.value = value;
+    }
+
+    public Overview(String id, String title, String value) {
+        this.id = id;
+        this.title = title;
+        this.value = value;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getTitle() {
@@ -17,11 +39,11 @@ public class Overview {
         this.title = title;
     }
 
-    public String getDescription() {
-        return description;
+    public String getValue() {
+        return value;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setValue(String value) {
+        this.value = value;
     }
 }

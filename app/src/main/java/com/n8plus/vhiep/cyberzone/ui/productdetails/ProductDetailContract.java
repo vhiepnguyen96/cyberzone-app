@@ -4,15 +4,15 @@ import com.n8plus.vhiep.cyberzone.base.BasePresenter;
 import com.n8plus.vhiep.cyberzone.data.model.Overview;
 import com.n8plus.vhiep.cyberzone.data.model.Policy;
 import com.n8plus.vhiep.cyberzone.data.model.Product;
+import com.n8plus.vhiep.cyberzone.data.model.ProductImage;
+import com.n8plus.vhiep.cyberzone.data.model.ReviewProduct;
 import com.n8plus.vhiep.cyberzone.data.model.Specification;
-import com.n8plus.vhiep.cyberzone.data.model.Store;
 
-import java.net.Socket;
 import java.util.List;
 
 public interface ProductDetailContract {
     interface View {
-        void initSlideImage(Integer[] productImages);
+        void setImageList(List<ProductImage> imageList);
         void setProductName(String name);
         void setProductPrice(String price, int discount);
         void setProductDiscount(int discount);
@@ -21,8 +21,22 @@ public interface ProductDetailContract {
         void setProductPolicies(List<Policy> policies);
         void setStoreName(String storeName);
         void setStoreLocation(String location);
+        void setAdapterRatingProduct(List<ReviewProduct> ratingProductList);
+        void setRatingBar(int total, float rating);
+        void setRating5star(int max, int count);
+        void setRating4star(int max, int count);
+        void setRating3star(int max, int count);
+        void setRating2star(int max, int count);
+        void setRating1star(int max, int count);
+        void setReviewNone(boolean b);
+        void setLayoutRatingProduct(boolean b);
+        void moveToCart();
+        void addToCartAlert(boolean b);
+        void setCartMenuItem();
     }
     interface Presenter extends BasePresenter<View> {
-        void loadData();
+        void loadProductDetail(Product product);
+        void buyNow();
+        void addToCart();
     }
 }

@@ -54,21 +54,133 @@
 
             </android.support.design.widget.AppBarLayout>
 
-            <android.support.v4.widget.NestedScrollView android:id="@+id/scroll_view_main"
+            <android.support.v4.widget.SwipeRefreshLayout
+                android:id="@+id/swipe_container"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-                <LinearLayout
+                <android.support.v4.widget.NestedScrollView
+                    android:id="@+id/scroll_view_main"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@color/backgroundColor"
-                    android:onClick="hideKeyboard"
-                    android:orientation="vertical">
+                    android:layout_height="match_parent">
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                        android:layout_height="match_parent"
+                        android:background="@color/backgroundColor"
+                        android:onClick="hideKeyboard"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:padding="4dp">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:paddingBottom="4dp"
+                                    android:paddingLeft="4dp"
+                                    android:paddingRight="4dp"
+                                    android:weightSum="10">
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="5"
+                                        android:text="Bán chạy nhất"
+                                        android:textSize="20sp" />
+
+                                    <TextView
+                                        android:id="@+id/txt_moreBestSeller"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_gravity="center"
+                                        android:layout_weight="5"
+                                        android:gravity="right"
+                                        android:text="Xem thêm"
+                                        android:textColor="@color/colorPrimary"
+                                        android:textSize="18sp" />
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:padding="4dp">
+
+                                    <android.support.v7.widget.RecyclerView
+                                        android:id="@+id/recycler_best_seller"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:background="@color/whiteColor"
+                                        android:orientation="horizontal">
+
+                                    </android.support.v7.widget.RecyclerView>
+                                </LinearLayout>
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:padding="4dp">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:paddingBottom="4dp"
+                                    android:paddingLeft="4dp"
+                                    android:paddingRight="4dp"
+                                    android:weightSum="10">
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="5"
+                                        android:text="Đang giảm giá"
+                                        android:textSize="20sp" />
+
+                                    <TextView
+                                        android:id="@+id/txt_moreOnSale"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_gravity="center"
+                                        android:layout_weight="5"
+                                        android:gravity="right"
+                                        android:text="Xem thêm"
+                                        android:textColor="@color/colorPrimary"
+                                        android:textSize="18sp" />
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:padding="4dp">
+
+                                    <android.support.v7.widget.RecyclerView
+                                        android:id="@+id/recycler_on_sales"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:background="@color/whiteColor"
+                                        android:orientation="horizontal">
+
+                                    </android.support.v7.widget.RecyclerView>
+                                </LinearLayout>
+                            </LinearLayout>
+                        </LinearLayout>
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -80,20 +192,20 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:orientation="horizontal"
-                                android:paddingLeft="8dp"
-                                android:paddingRight="8dp"
+                                android:paddingBottom="4dp"
+                                android:paddingLeft="4dp"
+                                android:paddingRight="4dp"
                                 android:weightSum="10">
 
                                 <TextView
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="5"
-                                    android:text="Mới về"
-                                    android:textColor="#7F7F81"
+                                    android:text="Danh mục phổ biến"
                                     android:textSize="20sp" />
 
                                 <TextView
-                                    android:id="@+id/txt_moreNewArrival"
+                                    android:id="@+id/txt_morePopularCategory"
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
@@ -103,150 +215,78 @@
                                     android:textColor="@color/colorPrimary"
                                     android:textSize="18sp" />
                             </LinearLayout>
-
-                            <android.support.v7.widget.RecyclerView
-                                android:id="@+id/recycler_new_arrivals"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal">
-
-                            </android.support.v7.widget.RecyclerView>
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="4dp">
 
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:paddingLeft="8dp"
-                                android:paddingRight="8dp"
-                                android:weightSum="10">
+                                android:padding="4dp">
 
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="5"
-                                    android:text="Đang giảm giá"
-                                    android:textColor="#7F7F81"
-                                    android:textSize="20sp" />
+                                <android.support.v7.widget.RecyclerView
+                                    android:id="@+id/recycler_popular_category"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content">
 
-                                <TextView
-                                    android:id="@+id/txt_moreOnSale"
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_gravity="center"
-                                    android:layout_weight="5"
-                                    android:gravity="right"
-                                    android:text="Xem thêm"
-                                    android:textColor="@color/colorPrimary"
-                                    android:textSize="18sp" />
+                                </android.support.v7.widget.RecyclerView>
                             </LinearLayout>
-
-                            <android.support.v7.widget.RecyclerView
-                                android:id="@+id/recycler_on_sales"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal">
-
-                            </android.support.v7.widget.RecyclerView>
                         </LinearLayout>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
 
                         <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="4dp">
+                            android:layout_height="wrap_content">
 
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:paddingLeft="8dp"
-                                android:paddingRight="8dp"
-                                android:weightSum="10">
+                                android:orientation="vertical"
+                                android:padding="4dp">
 
-                                <TextView
-                                    android:layout_width="0dp"
+                                <LinearLayout
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="5"
-                                    android:text="Bán chạy nhất"
-                                    android:textColor="#7F7F81"
-                                    android:textSize="22sp" />
+                                    android:orientation="horizontal"
+                                    android:paddingBottom="4dp"
+                                    android:paddingLeft="4dp"
+                                    android:paddingRight="4dp"
+                                    android:weightSum="10">
 
-                                <TextView
-                                    android:id="@+id/txt_moreBestSeller"
-                                    android:layout_width="0dp"
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="5"
+                                        android:text="Đề xuất cho bạn"
+                                        android:textSize="20sp" />
+
+                                    <TextView
+                                        android:id="@+id/txt_moreSuggestion"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_gravity="center"
+                                        android:layout_weight="5"
+                                        android:gravity="right"
+                                        android:text="Xem thêm"
+                                        android:textColor="@color/colorPrimary"
+                                        android:textSize="18sp" />
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_gravity="center"
-                                    android:layout_weight="5"
-                                    android:gravity="right"
-                                    android:text="Xem thêm"
-                                    android:textColor="@color/colorPrimary"
-                                    android:textSize="18sp" />
+                                    android:paddingBottom="4dp"
+                                    android:paddingTop="4dp">
+
+                                    <android.support.v7.widget.RecyclerView
+                                        android:id="@+id/recycler_suggestions"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal">
+
+                                    </android.support.v7.widget.RecyclerView>
+                                </LinearLayout>
                             </LinearLayout>
-
-                            <android.support.v7.widget.RecyclerView
-                                android:id="@+id/recycler_best_seller"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal">
-
-                            </android.support.v7.widget.RecyclerView>
                         </LinearLayout>
                     </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="4dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:paddingLeft="8dp"
-                            android:paddingRight="8dp">
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="5"
-                                android:text="Danh mục phổ biến"
-                                android:textColor="#7F7F81"
-                                android:textSize="20sp" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="8dp">
-
-                            <android.support.v7.widget.RecyclerView
-                                android:id="@+id/recycler_popular_category"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content">
-
-                            </android.support.v7.widget.RecyclerView>
-                        </LinearLayout>
-                    </LinearLayout>
-                </LinearLayout>
-            </android.support.v4.widget.NestedScrollView>
+                </android.support.v4.widget.NestedScrollView>
+            </android.support.v4.widget.SwipeRefreshLayout>
         </android.support.design.widget.CoordinatorLayout>
 
     </FrameLayout>

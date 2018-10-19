@@ -33,15 +33,12 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_product_details"
             android:theme="@style/FullscreenTheme" />
+        <activity android:name=".ui.manage.ManageActivity" />
         <activity android:name=".ui.cart.CartActivity" />
         <activity android:name=".ui.payment.PaymentActivity" />
         <activity android:name=".ui.checkorder.CheckOrderActivity" />
-        <activity android:name=".ui.deliveryaddress.DeliveryAddressActivity" />
+        <activity android:name=".ui.choosedeliveryaddress.ChooseDeliveryAddressActivity" />
         <activity android:name=".ui.store.StoreActivity" />
-        <activity
-            android:name=".ui.store.information.reviews.writereview.WriteReviewActivity"
-            android:parentActivityName=".ui.store.StoreActivity"></activity>
-        <activity android:name=".ui.manage.ManageActivity"></activity>
     </application>
 
 </manifest>

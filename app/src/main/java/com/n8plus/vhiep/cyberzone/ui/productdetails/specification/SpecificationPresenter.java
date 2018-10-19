@@ -15,8 +15,12 @@ public class SpecificationPresenter implements SpecificationContract.Presenter {
 
     @Override
     public void loadData() {
-        fakeDataSpecification();
-        mSpecificationView.setAdapterSpecification(mSpecifications);
+
+    }
+
+    @Override
+    public void loadSpecification(List<Specification> specifications) {
+        mSpecificationView.setAdapterSpecification(specifications);
     }
 
     private void fakeDataSpecification() {

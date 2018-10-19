@@ -1,12 +1,25 @@
 package com.n8plus.vhiep.cyberzone.data.model;
+import com.google.gson.annotations.SerializedName;
 
-public class Category {
+import java.io.Serializable;
+
+public class Category implements Serializable {
+    @SerializedName("_id")
+    private String id;
+    @SerializedName("categoryName")
     private String name;
-    private int icon;
 
-    public Category(String name, int icon) {
+    public Category(String id, String name) {
+        this.id = id;
         this.name = name;
-        this.icon = icon;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -15,13 +28,5 @@ public class Category {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public int getIcon() {
-        return icon;
-    }
-
-    public void setIcon(int icon) {
-        this.icon = icon;
     }
 }

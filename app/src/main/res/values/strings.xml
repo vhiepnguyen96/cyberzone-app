@@ -14,56 +14,13 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="validationErrors">Validation Errors</string>
     <string-array name="sort_array">
-        <item>Sắp xếp theo mức độ nổi tiếng</item>
+        <item>Sắp xếp theo mức độ phổ biến</item>
         <item>Giá từ thấp tới cao</item>
         <item>Giá từ cao xuống thấp</item>
     </string-array>
 
-    <string-array name="province_data">
-        <item>TP Hồ Chí Minh</item>
-        <item>Hà Nội</item>
-        <item>Cần Thơ</item>
-        <item>Hưng Yên</item>
-        <item>TP Hồ Chí Minh</item>
-        <item>Hà Nội</item>
-        <item>Cần Thơ</item>
-        <item>Hưng Yên</item>
-        <item>TP Hồ Chí Minh</item>
-        <item>Hà Nội</item>
-        <item>Cần Thơ</item>
-        <item>Hưng Yên</item>
-        <item>TP Hồ Chí Minh</item>
-        <item>Hà Nội</item>
-        <item>Cần Thơ</item>
-        <item>Hưng Yên</item>
-        <item>TP Hồ Chí Minh</item>
-        <item>Hà Nội</item>
-        <item>Cần Thơ</item>
-        <item>Hưng Yên</item>
-        <item>TP Hồ Chí Minh</item>
-        <item>Hà Nội</item>
-        <item>Cần Thơ</item>
-        <item>Hưng Yên</item>
-        <item>TP Hồ Chí Minh</item>
-        <item>Hà Nội</item>
-        <item>Cần Thơ</item>
-        <item>Hưng Yên</item>
-    </string-array>
-
-    <string-array name="district_data">
-        <item>Quận 1</item>
-        <item>Quận 2</item>
-        <item>Quận 3</item>
-        <item>Quận 4</item>
-    </string-array>
-
-    <string-array name="ward_data">
-        <item>TP Hồ Chí Minh</item>
-        <item>Hà Nội</item>
-        <item>Cần Thơ</item>
-        <item>Hưng Yên</item>
-    </string-array>
 
     <string name="title_activity_product_details">ProductDetails</string>
     <string name="dummy_button">Dummy Button</string>

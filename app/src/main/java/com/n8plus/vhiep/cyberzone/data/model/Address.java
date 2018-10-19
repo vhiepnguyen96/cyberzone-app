@@ -1,18 +1,30 @@
 package com.n8plus.vhiep.cyberzone.data.model;
 
-public class Address {
-    private String id;
-    private String nameCustomer;
-    private String phone;
-    private String address;
-    private boolean isDefault;
+import com.google.gson.annotations.SerializedName;
 
-    public Address(String id, String nameCustomer, String phone, String address, boolean isDefault) {
+import java.io.Serializable;
+
+public class Address implements Serializable{
+    @SerializedName("_id")
+    private String id;
+    @SerializedName("presentation")
+    private String presentation;
+    @SerializedName("phoneNumber")
+    private String phone;
+    @SerializedName("address")
+    private String address;
+
+    public Address(String id, String presentation, String phone, String address) {
         this.id = id;
-        this.nameCustomer = nameCustomer;
+        this.presentation = presentation;
         this.phone = phone;
         this.address = address;
-        this.isDefault = isDefault;
+    }
+
+    public Address(String presentation, String phone, String address) {
+        this.presentation = presentation;
+        this.phone = phone;
+        this.address = address;
     }
 
     public String getId() {
@@ -23,12 +35,12 @@ public class Address {
         this.id = id;
     }
 
-    public String getNameCustomer() {
-        return nameCustomer;
+    public String getPresentation() {
+        return presentation;
     }
 
-    public void setNameCustomer(String nameCustomer) {
-        this.nameCustomer = nameCustomer;
+    public void setPresentation(String presentation) {
+        this.presentation = presentation;
     }
 
     public String getPhone() {
@@ -45,13 +57,5 @@ public class Address {
 
     public void setAddress(String address) {
         this.address = address;
-    }
-
-    public boolean isDefault() {
-        return isDefault;
-    }
-
-    public void setDefault(boolean aDefault) {
-        isDefault = aDefault;
     }
 }

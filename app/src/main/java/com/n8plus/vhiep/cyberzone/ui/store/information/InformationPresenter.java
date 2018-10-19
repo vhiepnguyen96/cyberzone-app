@@ -1,16 +1,19 @@
 package com.n8plus.vhiep.cyberzone.ui.store.information;
 
 import com.n8plus.vhiep.cyberzone.R;
-import com.n8plus.vhiep.cyberzone.data.model.Review;
+import com.n8plus.vhiep.cyberzone.data.model.Product;
+import com.n8plus.vhiep.cyberzone.data.model.ProductImage;
+import com.n8plus.vhiep.cyberzone.data.model.ReviewStore;
+import com.n8plus.vhiep.cyberzone.data.model.Store;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class InformationPresenter implements InformationContract.Presenter{
+public class InformationPresenter implements InformationContract.Presenter {
 
     private InformationContract.View mInformationStoreView;
-    private List<Review> reviewList;
+    private List<ReviewStore> reviewStoreList;
 
     public InformationPresenter(InformationContract.View mInformationStoreView) {
         this.mInformationStoreView = mInformationStoreView;
@@ -19,22 +22,24 @@ public class InformationPresenter implements InformationContract.Presenter{
     @Override
     public void loadData() {
         prepareData();
-        mInformationStoreView.setAdapterCustomerReview(reviewList);
+        mInformationStoreView.setAdapterCustomerReview(reviewStoreList);
     }
 
-    private void prepareData(){
-        reviewList = new ArrayList<>();
-        reviewList.add(new Review("rv1", "Huỳnh Khắc Duy", "Hàng dở quá anh êi!", R.drawable.emoji_notgood, Calendar.getInstance().getTime()));
-        reviewList.add(new Review("rv2", "Võ Hoài Phong", "Hàng tốt, đóng gói cẩn thận!", R.drawable.emoji_good, Calendar.getInstance().getTime()));
-        reviewList.add(new Review("rv5", "Đặng Minh Nhựt", "Hàng kém chất lượng, đóng gói ẩu, giao hàng lâu, đừng mua shop này nhé, qua shop mình mua nè! Ahihi", R.drawable.emoji_notgood, Calendar.getInstance().getTime()));
-        reviewList.add(new Review("rv3", "Nguyễn Văn Hiệp", "Hàng chất lượng, vận chuyển hơi lâu!", R.drawable.emoji_normal, Calendar.getInstance().getTime()));
-        reviewList.add(new Review("rv4", "Võ Nguyễn Đại Phúc", "Hàng dở quá anh êi!", R.drawable.emoji_notgood, Calendar.getInstance().getTime()));
-        reviewList.add(new Review("rv6", "Nguyễn Văn Tài", "Hàng chất lượng, vận chuyển hơi lâu!", R.drawable.emoji_normal, Calendar.getInstance().getTime()));
-        reviewList.add(new Review("rv3", "Nguyễn Văn Hiệp", "Hàng chất lượng, vận chuyển hơi lâu!", R.drawable.emoji_normal, Calendar.getInstance().getTime()));
-        reviewList.add(new Review("rv4", "Võ Nguyễn Đại Phúc", "Hàng dở quá anh êi!", R.drawable.emoji_notgood, Calendar.getInstance().getTime()));
-        reviewList.add(new Review("rv6", "Nguyễn Văn Tài", "Hàng chất lượng, vận chuyển hơi lâu!", R.drawable.emoji_normal, Calendar.getInstance().getTime()));
-        reviewList.add(new Review("rv3", "Nguyễn Văn Hiệp", "Hàng chất lượng, vận chuyển hơi lâu!", R.drawable.emoji_normal, Calendar.getInstance().getTime()));
-        reviewList.add(new Review("rv4", "Võ Nguyễn Đại Phúc", "Hàng dở quá anh êi!", R.drawable.emoji_notgood, Calendar.getInstance().getTime()));
-        reviewList.add(new Review("rv6", "Nguyễn Văn Tài", "Hàng chất lượng, vận chuyển hơi lâu!", R.drawable.emoji_normal, Calendar.getInstance().getTime()));
+    private void prepareData() {
+        Store store = new Store("5b989eb9a6bce5234c9522ea", "Máy tính Phong Vũ");
+
+        reviewStoreList = new ArrayList<>();
+        reviewStoreList.add(new ReviewStore("rv1", "Huỳnh Khắc Duy", store, R.drawable.emoji_notgood, "Hàng dở quá anh êi!", Calendar.getInstance().getTime()));
+        reviewStoreList.add(new ReviewStore("rv2", "Võ Hoài Phong", store, R.drawable.emoji_good, "Hàng tốt, đóng gói cẩn thận!", Calendar.getInstance().getTime()));
+        reviewStoreList.add(new ReviewStore("rv5", "Đặng Minh Nhựt", store, R.drawable.emoji_notgood, "Hàng kém chất lượng, đóng gói ẩu, giao hàng lâu, đừng mua shop này nhé, qua shop mình mua nè! Ahihi", Calendar.getInstance().getTime()));
+        reviewStoreList.add(new ReviewStore("rv3", "Nguyễn Văn Hiệp", store, R.drawable.emoji_normal, "Hàng chất lượng, vận chuyển hơi lâu!", Calendar.getInstance().getTime()));
+        reviewStoreList.add(new ReviewStore("rv4", "Võ Nguyễn Đại Phúc", store, R.drawable.emoji_notgood, "Hàng dở quá anh êi!", Calendar.getInstance().getTime()));
+        reviewStoreList.add(new ReviewStore("rv6", "Nguyễn Văn Tài", store, R.drawable.emoji_normal, "Hàng chất lượng, vận chuyển hơi lâu!", Calendar.getInstance().getTime()));
+        reviewStoreList.add(new ReviewStore("rv3", "Nguyễn Văn Hiệp", store, R.drawable.emoji_normal, "Hàng chất lượng, vận chuyển hơi lâu!", Calendar.getInstance().getTime()));
+        reviewStoreList.add(new ReviewStore("rv4", "Võ Nguyễn Đại Phúc", store, R.drawable.emoji_notgood, "Hàng dở quá anh êi!", Calendar.getInstance().getTime()));
+        reviewStoreList.add(new ReviewStore("rv6", "Nguyễn Văn Tài", store, R.drawable.emoji_normal, "Hàng chất lượng, vận chuyển hơi lâu!", Calendar.getInstance().getTime()));
+        reviewStoreList.add(new ReviewStore("rv3", "Nguyễn Văn Hiệp", store, R.drawable.emoji_normal, "Hàng chất lượng, vận chuyển hơi lâu!", Calendar.getInstance().getTime()));
+        reviewStoreList.add(new ReviewStore("rv4", "Võ Nguyễn Đại Phúc", store, R.drawable.emoji_notgood, "Hàng dở quá anh êi!", Calendar.getInstance().getTime()));
+        reviewStoreList.add(new ReviewStore("rv6", "Nguyễn Văn Tài", store, R.drawable.emoji_normal, "Hàng chất lượng, vận chuyển hơi lâu!", Calendar.getInstance().getTime()));
     }
 }

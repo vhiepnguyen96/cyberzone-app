@@ -9,17 +9,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.n8plus.vhiep.cyberzone.R;
-import com.n8plus.vhiep.cyberzone.data.model.Review;
+import com.n8plus.vhiep.cyberzone.data.model.ReviewStore;
 
 import java.text.DateFormat;
 import java.util.List;
 
 public class CustomerReviewAdapter extends RecyclerView.Adapter<CustomerReviewAdapter.ViewHolder> {
 
-    private List<Review> reviewList;
+    private List<ReviewStore> reviewStoreList;
 
-    public CustomerReviewAdapter(List<Review> reviewList) {
-        this.reviewList = reviewList;
+    public CustomerReviewAdapter(List<ReviewStore> reviewStoreList) {
+        this.reviewStoreList = reviewStoreList;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -44,16 +44,16 @@ public class CustomerReviewAdapter extends RecyclerView.Adapter<CustomerReviewAd
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Review review = reviewList.get(position);
-        holder.nameCustomer.setText(review.getNameCustomer());
-        holder.dateReview.setText(DateFormat.getDateInstance(DateFormat.SHORT).format(review.getDateReview()));
-        holder.review.setImageResource(review.getReview());
-        holder.contentReview.setText(review.getContentReview());
+        ReviewStore reviewStore = reviewStoreList.get(position);
+        holder.nameCustomer.setText(reviewStore.getNameCustomer());
+        holder.dateReview.setText(DateFormat.getDateInstance(DateFormat.SHORT).format(reviewStore.getDateReview()));
+        holder.review.setImageResource(reviewStore.getRatingLevel());
+        holder.contentReview.setText(reviewStore.getReview());
     }
 
     @Override
     public int getItemCount() {
-        return reviewList.size();
+        return reviewStoreList.size();
     }
 
 }

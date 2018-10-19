@@ -12,7 +12,11 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.n8plus.vhiep.cyberzone.data.model.PurchaseItem;
+import com.n8plus.vhiep.cyberzone.ui.manage.myorders.adapter.ProductOrderAdapter;
 import com.n8plus.vhiep.cyberzone.util.UIUtils;
 import com.n8plus.vhiep.cyberzone.ui.checkorder.CheckOrderActivity;
 import com.n8plus.vhiep.cyberzone.ui.product.adapter.ProductVerticalAdapter;
@@ -22,14 +26,16 @@ import com.n8plus.vhiep.cyberzone.data.model.Specification;
 import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.ui.home.HomeActivity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CartActivity extends AppCompatActivity implements CartContract.View {
     private ListView mListViewCart;
     private LinearLayout mLinearCheckOrder;
-    private ProductVerticalAdapter mProductInCart;
+    private ProductOrderAdapter mProductInCart;
     private CartPresenter mCartPresenter;
+    private TextView mTotalPrice, mDeliveryPrice, mTempPrice, mProductCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +55,7 @@ public class CartActivity extends AppCompatActivity implements CartContract.View
         mLinearCheckOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(CartActivity.this, CheckOrderActivity.class));
+                mCartPresenter.orderNow();
             }
         });
     }
@@ -57,6 +63,10 @@ public class CartActivity extends AppCompatActivity implements CartContract.View
     public void initView(){
         mListViewCart = (ListView) findViewById(R.id.lsv_cart);
         mLinearCheckOrder = (LinearLayout) findViewById(R.id.lnrCkeckOrder);
+        mProductCount = (TextView) findViewById(R.id.txt_productCount);
+        mTempPrice = (TextView) findViewById(R.id.txt_tempPrice);
+        mDeliveryPrice = (TextView) findViewById(R.id.txt_deliveryPrice);
+        mTotalPrice = (TextView) findViewById(R.id.txt_totalPrice);
     }
 
     public void setBackgroundStatusBar() {
@@ -90,9 +100,51 @@ public class CartActivity extends AppCompatActivity implements CartContract.View
     }
 
     @Override
-    public void setAdapterCart(List<Product> products) {
-        mProductInCart = new ProductVerticalAdapter(mListViewCart.getContext(), R.layout.row_product_in_cart, products);
+    public void setAdapterCart(List<PurchaseItem> purchaseItemList) {
+        mProductInCart = new ProductOrderAdapter(mListViewCart.getContext(), R.layout.row_product_in_cart, purchaseItemList);
         mListViewCart.setAdapter(mProductInCart);
         UIUtils.setListViewHeightBasedOnItems(mListViewCart);
+    }
+
+    @Override
+    public void setProductCount(String productCount) {
+        mProductCount.setText(productCount);
+    }
+
+    @Override
+    public void setTempPrice(String tempPrice) {
+        mTempPrice.setText(tempPrice);
+    }
+
+    @Override
+    public void setDeliveryPrice(String deliveryPrice) {
+        mDeliveryPrice.setText(deliveryPrice);
+    }
+
+    @Override
+    public void setTotalPrice(String totalPrice) {
+        mTotalPrice.setText(totalPrice);
+    }
+
+    @Override
+    public void setCartNone(boolean b) {
+        findViewById(R.id.lnr_cart_none).setVisibility(b ? View.VISIBLE : View.INVISIBLE);
+    }
+
+    @Override
+    public void moveToCheckOrder(List<PurchaseItem> purchaseItems,  int tempPrice, int deliveryPrice) {
+        if (purchaseItems.size() > 0){
+            Intent intent = new Intent(CartActivity.this, CheckOrderActivity.class);
+            intent.putExtra("purchaseItems", (Serializable) purchaseItems);
+            intent.putExtra("tempPrice", tempPrice);
+            intent.putExtra("deliveryPrice", deliveryPrice);
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, "Vui lòng kiểm tra lại giỏ hàng!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void updateCart(){
+        mCartPresenter.loadData();
     }
 }

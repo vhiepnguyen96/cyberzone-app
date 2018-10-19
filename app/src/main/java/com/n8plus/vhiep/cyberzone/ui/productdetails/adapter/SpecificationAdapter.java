@@ -41,7 +41,7 @@ public class SpecificationAdapter extends RecyclerView.Adapter<SpecificationAdap
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         Specification specification = specifications.get(position);
-        holder.txt_titleSpecification.setText(specification.getName());
+        holder.txt_titleSpecification.setText(specification.getTitle());
         holder.txt_valueSpecification.setText(specification.getValue());
     }
 

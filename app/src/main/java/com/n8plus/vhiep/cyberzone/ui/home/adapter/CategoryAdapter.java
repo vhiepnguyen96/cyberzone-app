@@ -26,7 +26,6 @@ public class CategoryAdapter extends BaseAdapter {
 
     public class ViewHolder {
         TextView txt_category;
-        ImageButton ibn_more;
     }
 
     @Override
@@ -52,7 +51,6 @@ public class CategoryAdapter extends BaseAdapter {
             convertView = layoutInflater.inflate(resource, null);
             viewHolder = new ViewHolder();
             viewHolder.txt_category = (TextView) convertView.findViewById(R.id.txt_category);
-            viewHolder.ibn_more = (ImageButton) convertView.findViewById(R.id.ibn_more);
 
             convertView.setTag(viewHolder);
         } else {
@@ -61,7 +59,6 @@ public class CategoryAdapter extends BaseAdapter {
 
         Category category = arrCategory.get(position);
         viewHolder.txt_category.setText(category.getName());
-        viewHolder.ibn_more.setImageResource(category.getIcon());
 
         return convertView;
     }

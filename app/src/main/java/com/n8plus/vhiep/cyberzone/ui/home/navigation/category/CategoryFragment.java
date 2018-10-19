@@ -1,11 +1,11 @@
 package com.n8plus.vhiep.cyberzone.ui.home.navigation.category;
 
 import android.annotation.SuppressLint;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +17,7 @@ import com.n8plus.vhiep.cyberzone.ui.home.navigation.producttype.ProductTypeFrag
 import com.n8plus.vhiep.cyberzone.data.model.Category;
 import com.n8plus.vhiep.cyberzone.R;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,7 @@ public class CategoryFragment extends Fragment implements CategoryContract.View 
     FragmentManager fragmentManager;
     FragmentTransaction fragmentTransaction;
     private CategoryContract.Presenter mCategoryPresenter;
+    List<Category> categories;
 
     @Nullable
     @Override
@@ -48,7 +50,11 @@ public class CategoryFragment extends Fragment implements CategoryContract.View 
                 fragmentManager = getFragmentManager();
                 fragmentTransaction = fragmentManager.beginTransaction();
                 fragmentTransaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left );
-                fragmentTransaction.replace(R.id.frameLayout, new ProductTypeFragment());
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("category", categories.get(position));
+                ProductTypeFragment fragment = new ProductTypeFragment();
+                fragment.setArguments(bundle);
+                fragmentTransaction.replace(R.id.frameLayout, fragment);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
             }
@@ -59,6 +65,7 @@ public class CategoryFragment extends Fragment implements CategoryContract.View 
 
     @Override
     public void setAdapterCategory(List<Category> categoryList) {
+        categories = categoryList;
         mCategoryAdapter = new CategoryAdapter(mListViewCategory.getContext(), R.layout.row_menu_category, categoryList);
         mListViewCategory.setAdapter(mCategoryAdapter);
     }

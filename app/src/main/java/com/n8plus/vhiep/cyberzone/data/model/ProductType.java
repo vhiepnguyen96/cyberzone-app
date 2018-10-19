@@ -1,12 +1,34 @@
 package com.n8plus.vhiep.cyberzone.data.model;
 
-public class ProductType {
-    private String name;
-    private int icon;
+import com.google.gson.annotations.SerializedName;
 
-    public ProductType(String name, int icon) {
+import java.io.Serializable;
+
+public class ProductType implements Serializable{
+    @SerializedName("_id")
+    private String id;
+    @SerializedName("productTypeName")
+    private String name;
+    @SerializedName("imageURL")
+    private String imageURL;
+
+    public ProductType(String id, String name) {
+        this.id = id;
         this.name = name;
-        this.icon = icon;
+    }
+
+    public ProductType(String id, String name, String imageURL) {
+        this.id = id;
+        this.name = name;
+        this.imageURL = imageURL;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -17,11 +39,11 @@ public class ProductType {
         this.name = name;
     }
 
-    public int getIcon() {
-        return icon;
+    public String getImageURL() {
+        return imageURL;
     }
 
-    public void setIcon(int icon) {
-        this.icon = icon;
+    public void setImageURL(String imageURL) {
+        this.imageURL = imageURL;
     }
 }

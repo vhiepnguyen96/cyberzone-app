@@ -10,6 +10,6 @@ public interface HomePageContract {
         void setAdapterProduct(List<Product> products);
     }
     interface Presenter extends BasePresenter<View>{
-
+        void loadData();
     }
 }

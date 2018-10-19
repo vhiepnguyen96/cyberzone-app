@@ -1,20 +1,37 @@
 package com.n8plus.vhiep.cyberzone.ui.manage.myorders;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.ui.manage.mainmanage.MainManageFragment;
+import com.n8plus.vhiep.cyberzone.ui.manage.myorders.allorder.AllOrderFragment;
+import com.n8plus.vhiep.cyberzone.ui.manage.myorders.waitforpayment.WaitForPaymentFragment;
 import com.n8plus.vhiep.cyberzone.ui.manage.myprofile.MyProfileContract;
+import com.n8plus.vhiep.cyberzone.ui.store.adapter.SectionsPageAdapter;
+import com.n8plus.vhiep.cyberzone.ui.store.homepage.HomePageFragment;
+import com.n8plus.vhiep.cyberzone.ui.store.information.InformationFragment;
 
-public class MyOrderFragment extends Fragment implements MyOrderContract.View{
+public class MyOrderFragment extends Fragment implements MyOrderContract.View {
+    private Toolbar mToolbar;
+    private TabLayout mTabOrder;
+    private ViewPager mViewPager;
+    private SectionsPageAdapter mSectionsPageAdapter;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
@@ -24,17 +41,42 @@ public class MyOrderFragment extends Fragment implements MyOrderContract.View{
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        TextView mTextView = (TextView) view.findViewById(R.id.tv_order_back);
+        mToolbar = (Toolbar) view.findViewById(R.id.toolbar_my_order);
+        mViewPager = (ViewPager) view.findViewById(R.id.pager_order);
+        mTabOrder = (TabLayout) view.findViewById(R.id.tabs_order);
+        setHasOptionsMenu(true);
 
-        mTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        // Custom tab
+        mSectionsPageAdapter = new SectionsPageAdapter(getActivity().getSupportFragmentManager());
+        setupViewPager(mViewPager);
+        mTabOrder.setupWithViewPager(mViewPager);
+
+        ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
+        ActionBar actionbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        actionbar.setDisplayHomeAsUpEnabled(true);
+        actionbar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_black_24dp);
+        actionbar.setTitle("Quản lý đơn hàng");
+
+        super.onViewCreated(view, savedInstanceState);
+    }
+
+    private void setupViewPager(ViewPager viewPager){
+        SectionsPageAdapter adapter = new SectionsPageAdapter(getActivity().getSupportFragmentManager());
+        adapter.adđFragment(new AllOrderFragment(), "Tất cả");
+        adapter.adđFragment(new WaitForPaymentFragment(), "Chờ thanh toán");
+        viewPager.setAdapter(adapter);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
                 FragmentManager fragmentManager = getFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                 fragmentTransaction.replace(R.id.frm_manage, new MainManageFragment());
                 fragmentTransaction.commit();
-            }
-        });
-        super.onViewCreated(view, savedInstanceState);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

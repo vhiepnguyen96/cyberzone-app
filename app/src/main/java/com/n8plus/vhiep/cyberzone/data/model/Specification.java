@@ -1,20 +1,42 @@
 package com.n8plus.vhiep.cyberzone.data.model;
 
-public class Specification {
-    private String name;
+import com.google.gson.annotations.SerializedName;
+
+import java.io.Serializable;
+
+public class Specification implements Serializable {
+    @SerializedName("_id")
+    private String id;
+    @SerializedName("title")
+    private String title;
+    @SerializedName("value")
     private String value;
 
-    public Specification(String name, String value) {
-        this.name = name;
+    public Specification(String title, String value) {
+        this.title = title;
         this.value = value;
     }
 
-    public String getName() {
-        return name;
+    public Specification(String id, String title, String value) {
+        this.id = id;
+        this.title = title;
+        this.value = value;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getValue() {

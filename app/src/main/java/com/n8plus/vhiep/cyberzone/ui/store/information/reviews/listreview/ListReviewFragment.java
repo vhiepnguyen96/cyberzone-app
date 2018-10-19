@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetDialogFragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,7 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.n8plus.vhiep.cyberzone.R;
-import com.n8plus.vhiep.cyberzone.data.model.Review;
+import com.n8plus.vhiep.cyberzone.data.model.ReviewStore;
 import com.n8plus.vhiep.cyberzone.ui.store.adapter.CustomerReviewAdapter;
 
 import java.util.List;
@@ -51,9 +50,9 @@ public class ListReviewFragment extends BottomSheetDialogFragment implements Lis
     }
 
     @Override
-    public void setAdapterCustomerReview(List<Review> reviewList) {
+    public void setAdapterCustomerReview(List<ReviewStore> reviewStoreList) {
         mLayoutCustomerReview = new LinearLayoutManager(mRecyclerCustomerReview.getContext(), LinearLayoutManager.VERTICAL, false);
-        mCustomerReviewAdapter = new CustomerReviewAdapter(reviewList);
+        mCustomerReviewAdapter = new CustomerReviewAdapter(reviewStoreList);
         mRecyclerCustomerReview.setLayoutManager(mLayoutCustomerReview);
         DividerItemDecoration itemDecorator = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
         mRecyclerCustomerReview.addItemDecoration(itemDecorator);

@@ -11,12 +11,23 @@ import java.util.List;
 
 public interface HomeContract {
     interface View {
-        void setAdapterNewArrival(List<Product> productList);
+        void setAdapterSuggestion(List<Product> productList);
         void setAdapterOnSale(List<Product> productList);
         void setAdapterBestSeller(List<Product> productList);
         void setAdapterPopularCategory(List<ProductType> productTypeList);
+        void setCartMenuItem();
+        void setNotifyDataSetChanged(String adapter);
+        void popularCategoryItemSelected(String productTypeId);
+        void moveToProductActivity(List<Product> products);
+        void moveToProductActivity(String productTypeId);
     }
     interface Presenter extends BasePresenter<View> {
         void loadData();
+        void loadAllProductType();
+        void refreshPopularCategory();
+        void prepareDataSuggestion();
+        void prepareDataBestSeller();
+        void prepareDataOnSale();
+        void prepareDataProductType(String productTypeId);
     }
 }

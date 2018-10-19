@@ -7,6 +7,6 @@ public interface StatisticsContract {
 
     }
     interface Presenter extends BasePresenter<View>{
-
+        void loadData();
     }
 }

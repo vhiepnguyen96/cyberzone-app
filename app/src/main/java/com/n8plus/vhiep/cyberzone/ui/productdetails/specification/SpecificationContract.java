@@ -10,7 +10,7 @@ public interface SpecificationContract {
         void setAdapterSpecification(List<Specification> specifications);
     }
     interface Presenter extends BasePresenter<View>{
-        @Override
         void loadData();
+        void loadSpecification(List<Specification> specifications);
     }
 }

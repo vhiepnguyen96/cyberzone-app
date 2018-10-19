@@ -1,24 +1,45 @@
 package com.n8plus.vhiep.cyberzone.data.model;
 
+import com.google.gson.annotations.SerializedName;
+
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-public class Customer {
+public class Customer implements Serializable {
+    @SerializedName("_id")
     private String id;
+    @SerializedName("account")
+    private Account account;
+    @SerializedName("name")
     private String name;
+    @SerializedName("gender")
     private String gender;
-    private Date birthdate;
+    @SerializedName("birthday")
+    private Date birthday;
+    @SerializedName("email")
     private String email;
-    private String phone;
+    @SerializedName("phoneNumber")
+    private String phoneNumber;
+    @SerializedName("address")
     private List<Address> addresses;
 
-    public Customer(String id, String name, String gender, Date birthdate, String email, String phone, List<Address> addresses) {
+    public Customer() {
+    }
+
+    public Customer(String id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public Customer(String id, Account account, String name, String gender, Date birthday, String email, String phoneNumber, List<Address> addresses) {
+        this.id = id;
+        this.account = account;
+        this.name = name;
         this.gender = gender;
-        this.birthdate = birthdate;
+        this.birthday = birthday;
         this.email = email;
-        this.phone = phone;
+        this.phoneNumber = phoneNumber;
         this.addresses = addresses;
     }
 
@@ -28,6 +49,22 @@ public class Customer {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public String getName() {
@@ -46,12 +83,12 @@ public class Customer {
         this.gender = gender;
     }
 
-    public Date getBirthdate() {
-        return birthdate;
+    public Date getBirthday() {
+        return birthday;
     }
 
-    public void setBirthdate(Date birthdate) {
-        this.birthdate = birthdate;
+    public void setBirthday(Date birthday) {
+        this.birthday = birthday;
     }
 
     public String getEmail() {
@@ -60,14 +97,6 @@ public class Customer {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
     }
 
     public List<Address> getAddresses() {

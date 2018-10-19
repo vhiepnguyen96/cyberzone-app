@@ -180,6 +180,43 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/lnr_my_review"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:background="@color/whiteColor"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:weightSum="10">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center"
+                    android:layout_margin="8dp"
+                    android:src="@drawable/my_review" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="8dp"
+                android:layout_weight="9"
+                android:paddingBottom="8dp"
+                android:paddingTop="8dp"
+                android:text="Đánh giá của tôi"
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/lnr_my_wishlist_followedstore"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -200,7 +237,7 @@
                     android:layout_height="32dp"
                     android:layout_gravity="center"
                     android:layout_margin="8dp"
-                    android:src="@drawable/wishlist_followedstore" />
+                    android:src="@drawable/wish_list_followstore" />
             </LinearLayout>
 
             <TextView
@@ -212,6 +249,43 @@
                 android:paddingBottom="8dp"
                 android:paddingTop="8dp"
                 android:text="Sản phẩm yêu thích, gian hàng đang theo dõi"
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/lnr_register_sale"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:background="@color/whiteColor"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:weightSum="10">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center"
+                    android:layout_margin="8dp"
+                    android:src="@drawable/register_sale" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="8dp"
+                android:layout_weight="9"
+                android:paddingBottom="8dp"
+                android:paddingTop="8dp"
+                android:text="Đăng ký bán hàng trên hệ thống"
                 android:textColor="@android:color/black"
                 android:textSize="16sp" />
         </LinearLayout>

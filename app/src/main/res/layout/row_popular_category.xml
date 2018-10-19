@@ -1,27 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/layout_popular_category"
     android:orientation="vertical"
-    android:padding="16dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp"
     android:gravity="center"
-    android:background="@drawable/rounded_border"
-    android:layout_width="150dp"
-    android:layout_height="180dp">
+    android:background="@color/whiteColor"
+    android:layout_width="wrap_content"
+    android:layout_height="140dp">
     <ImageView
         android:id="@+id/img_popularCategory"
         android:src="@drawable/processor"
         android:layout_gravity="center"
-        android:layout_width="68dp"
-        android:layout_height="68dp" />
+        android:layout_width="48dp"
+        android:layout_height="48dp" />
     <TextView
         android:id="@+id/txt_popularCategory"
         android:text="CPU - Bộ xử lý Bộ xử lý"
-        android:textSize="16sp"
+        android:textSize="14sp"
         android:textColor="@color/colorText"
         android:layout_marginTop="16dp"
         android:textAlignment="center"
         android:layout_gravity="center"
-        android:layout_width="wrap_content"
+        android:layout_width="100dp"
         android:layout_height="wrap_content" />
 </LinearLayout>

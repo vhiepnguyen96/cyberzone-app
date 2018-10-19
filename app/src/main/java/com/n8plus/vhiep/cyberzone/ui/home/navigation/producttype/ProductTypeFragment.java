@@ -1,31 +1,37 @@
 package com.n8plus.vhiep.cyberzone.ui.home.navigation.producttype;
 
 import android.annotation.SuppressLint;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
+import android.content.Intent;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.n8plus.vhiep.cyberzone.data.model.Category;
 import com.n8plus.vhiep.cyberzone.ui.home.adapter.ProductTypeAdapter;
 import com.n8plus.vhiep.cyberzone.ui.home.navigation.category.CategoryFragment;
 import com.n8plus.vhiep.cyberzone.data.model.ProductType;
 import com.n8plus.vhiep.cyberzone.R;
+import com.n8plus.vhiep.cyberzone.ui.product.ProductActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProductTypeFragment extends Fragment implements ProductTypeContract.View {
     private ListView mListViewCategoryItem;
-    private TextView mBackCategory, mTypeName;
+    private TextView mBackCategory, mCategoryName;
     private ProductTypeAdapter mProductTypeAdapter;
-    FragmentManager fragmentManager;
-    FragmentTransaction fragmentTransaction;
+    private Category mCategory;
+    private FragmentManager fragmentManager;
+    private FragmentTransaction fragmentTransaction;
     private ProductTypeContract.Presenter mProductTypePreseter;
 
     @Nullable
@@ -40,9 +46,14 @@ public class ProductTypeFragment extends Fragment implements ProductTypeContract
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         mListViewCategoryItem = (ListView) view.findViewById(R.id.lv_categoryItem);
         mBackCategory = (TextView) view.findViewById(R.id.txt_backCategory);
-        mTypeName = (TextView) view.findViewById(R.id.txt_typeName);
+        mCategoryName = (TextView) view.findViewById(R.id.txt_categoryName);
 
-        mProductTypePreseter.loadData();
+        Bundle bundle = getArguments();
+        if (!bundle.isEmpty()){
+            mCategory = (Category) bundle.getSerializable("category");
+            mProductTypePreseter.loadData(mCategory.getId());
+            mCategoryName.setText(mCategory.getName());
+        }
 
         mBackCategory.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("ResourceType")
@@ -56,6 +67,13 @@ public class ProductTypeFragment extends Fragment implements ProductTypeContract
             }
         });
 
+        mListViewCategoryItem.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                mProductTypePreseter.prepareDataProductType(position);
+            }
+        });
+
         super.onViewCreated(view, savedInstanceState);
     }
 
@@ -63,5 +81,12 @@ public class ProductTypeFragment extends Fragment implements ProductTypeContract
     public void setAdapterProductType(List<ProductType> productTypes) {
         mProductTypeAdapter = new ProductTypeAdapter(mListViewCategoryItem.getContext(), R.layout.row_menu_product_type, productTypes);
         mListViewCategoryItem.setAdapter(mProductTypeAdapter);
+    }
+
+    @Override
+    public void moveToProductActivity(String productTypeId) {
+        Intent intent = new Intent(this.getContext(), ProductActivity.class);
+        intent.putExtra("productTypeId", productTypeId);
+        startActivity(intent);
     }
 }

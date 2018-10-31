@@ -12,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -20,11 +21,14 @@ import android.widget.Spinner;
 
 import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.data.model.Product;
+import com.n8plus.vhiep.cyberzone.data.model.Store;
 import com.n8plus.vhiep.cyberzone.ui.home.HomeContract;
 import com.n8plus.vhiep.cyberzone.ui.product.adapter.ProductVerticalAdapter;
 import com.n8plus.vhiep.cyberzone.ui.product.adapter.RecyclerProductAdapter;
 import com.n8plus.vhiep.cyberzone.util.ItemDecorationColumns;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class HomePageFragment extends Fragment implements HomePageContract.View {
@@ -37,7 +41,6 @@ public class HomePageFragment extends Fragment implements HomePageContract.View 
     private ItemDecorationColumns mItemDecorationColumns;
     private DividerItemDecoration mDividerItemDecoration;
     private LinearLayout mLayoutRecycler;
-    private List<Product> mProductList;
     private static int layout = 0;
 
     @Nullable
@@ -63,7 +66,10 @@ public class HomePageFragment extends Fragment implements HomePageContract.View 
         mLinearSort.setElevation(10.f);
 
         //Presenter
-        mHomePagePresenter.loadData();
+        Bundle bundle = getArguments();
+        if (bundle != null && bundle.getSerializable("store") != null){
+            mHomePagePresenter.loadData((Store) bundle.getSerializable("store"));
+        }
 
         // Listener
         mLayoutRecycler.setOnClickListener(new View.OnClickListener() {
@@ -72,20 +78,50 @@ public class HomePageFragment extends Fragment implements HomePageContract.View 
                 layout++;
                 if (layout % 2 == 1) {
                     mImageLayout.setImageResource(R.drawable.grid);
-                    mRecyclerProductAdapter = new RecyclerProductAdapter(R.layout.row_product_item_vertical, mProductList);
-                    mRecyclerAllProduct.setLayoutManager(new LinearLayoutManager(mRecyclerAllProduct.getContext(), LinearLayoutManager.VERTICAL, false));
-                    mRecyclerAllProduct.removeItemDecoration(mItemDecorationColumns);
-                    mRecyclerAllProduct.addItemDecoration(mDividerItemDecoration);
-                    mRecyclerAllProduct.setAdapter(mRecyclerProductAdapter);
+                    mHomePagePresenter.changeProductLinearLayout();
 
                 } else {
                     mImageLayout.setImageResource(R.drawable.linear);
-                    mRecyclerProductAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, mProductList);
-                    mRecyclerAllProduct.setLayoutManager(new GridLayoutManager(mRecyclerAllProduct.getContext(), 2));
-                    mRecyclerAllProduct.removeItemDecoration(mDividerItemDecoration);
-                    mRecyclerAllProduct.addItemDecoration(mItemDecorationColumns);
-                    mRecyclerAllProduct.setAdapter(mRecyclerProductAdapter);
+                    mHomePagePresenter.changeProductGridLayout();
                 }
+            }
+        });
+
+        mSpinnerSort.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (position == 0) {
+                    if (mRecyclerProductAdapter != null) {
+                        Collections.sort(mRecyclerProductAdapter.getProductList(), new Comparator<Product>() {
+                            @Override
+                            public int compare(Product o1, Product o2) {
+                                return Float.valueOf(o2.getAverageReview()).compareTo(Float.valueOf(o1.getAverageReview()));
+                            }
+                        });
+                        mRecyclerProductAdapter.notifyDataSetChanged();
+                    }
+                } else if (position == 1) {
+                    Collections.sort(mRecyclerProductAdapter.getProductList(), new Comparator<Product>() {
+                        @Override
+                        public int compare(Product o1, Product o2) {
+                            return Float.valueOf(o1.getPrice()).compareTo(Float.valueOf(o2.getPrice()));
+                        }
+                    });
+                    mRecyclerProductAdapter.notifyDataSetChanged();
+                } else if (position == 2) {
+                    Collections.sort(mRecyclerProductAdapter.getProductList(), new Comparator<Product>() {
+                        @Override
+                        public int compare(Product o1, Product o2) {
+                            return Float.valueOf(o2.getPrice()).compareTo(Float.valueOf(o1.getPrice()));
+                        }
+                    });
+                    mRecyclerProductAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
             }
         });
 
@@ -93,12 +129,25 @@ public class HomePageFragment extends Fragment implements HomePageContract.View 
     }
 
     @Override
-    public void setAdapterProduct(List<Product> products) {
-        mProductList = products;
-        mRecyclerProductAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, mProductList);
-        mRecyclerAllProduct.setLayoutManager(new GridLayoutManager(mRecyclerAllProduct.getContext(), 2));
-        mRecyclerAllProduct.addItemDecoration(mItemDecorationColumns);
-        mRecyclerAllProduct.setAdapter(mRecyclerProductAdapter);
+    public void setAdapterProduct(List<Product> products, String layout) {
+        if (layout.equals("GridLayout")){
+            mRecyclerProductAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, products);
+            mRecyclerAllProduct.setLayoutManager(new GridLayoutManager(mRecyclerAllProduct.getContext(), 2));
+            mRecyclerAllProduct.removeItemDecoration(mDividerItemDecoration);
+            mRecyclerAllProduct.addItemDecoration(mItemDecorationColumns);
+            mRecyclerAllProduct.setAdapter(mRecyclerProductAdapter);
+        } else {
+            mRecyclerProductAdapter = new RecyclerProductAdapter(R.layout.row_product_item_vertical, products);
+            mRecyclerAllProduct.setLayoutManager(new LinearLayoutManager(mRecyclerAllProduct.getContext(), LinearLayoutManager.VERTICAL, false));
+            mRecyclerAllProduct.removeItemDecoration(mItemDecorationColumns);
+            mRecyclerAllProduct.addItemDecoration(mDividerItemDecoration);
+            mRecyclerAllProduct.setAdapter(mRecyclerProductAdapter);
+        }
+    }
+
+    @Override
+    public void setNotifyDataSetChanged() {
+        mRecyclerProductAdapter.notifyDataSetChanged();
     }
 
     private void customSpinnerFilter(){

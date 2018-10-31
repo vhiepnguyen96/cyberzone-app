@@ -18,6 +18,7 @@ import com.n8plus.vhiep.cyberzone.ui.manage.myprofile.MyProfileFragment;
 import com.n8plus.vhiep.cyberzone.ui.manage.myreview.MyReviewFragment;
 import com.n8plus.vhiep.cyberzone.ui.manage.registersale.RegisterSaleFragment;
 import com.n8plus.vhiep.cyberzone.ui.manage.wishlistfollowedstore.WishlistFollowedstoreFragment;
+import com.n8plus.vhiep.cyberzone.util.Constant;
 
 public class MainManageFragment extends Fragment implements MainManageContract.View {
     private TextView mHelloCustomer;
@@ -41,6 +42,8 @@ public class MainManageFragment extends Fragment implements MainManageContract.V
         mMyReview = (LinearLayout) view.findViewById(R.id.lnr_my_review);
         mWishListFollowedStore = (LinearLayout) view.findViewById(R.id.lnr_my_wishlist_followedstore);
         mRegisterSale = (LinearLayout) view.findViewById(R.id.lnr_register_sale);
+
+        mHelloCustomer.setText(Constant.customer.getName());
 
         mMyProfile.setOnClickListener(new View.OnClickListener() {
             @Override

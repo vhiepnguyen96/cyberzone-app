@@ -11,19 +11,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.n8plus.vhiep.cyberzone.R;
+import com.n8plus.vhiep.cyberzone.data.model.Category;
+import com.n8plus.vhiep.cyberzone.data.model.FollowStore;
 import com.n8plus.vhiep.cyberzone.data.model.Store;
+import com.n8plus.vhiep.cyberzone.ui.manage.wishlistfollowedstore.followedstore.FollowedStoreFragment;
 
 import java.util.List;
 
-public class FollowStoreAdapter extends BaseAdapter{
-    private Context context;
+public class FollowStoreAdapter extends BaseAdapter {
+    private FollowedStoreFragment context;
     private int resource;
-    private List<Store> storeList;
+    private List<FollowStore> followStores;
 
-    public FollowStoreAdapter(Context context, int resource, List<Store> storeList) {
+    public FollowStoreAdapter(FollowedStoreFragment context, int resource, List<FollowStore> followStores) {
         this.context = context;
         this.resource = resource;
-        this.storeList = storeList;
+        this.followStores = followStores;
     }
 
     public class ViewHolder {
@@ -33,12 +36,12 @@ public class FollowStoreAdapter extends BaseAdapter{
 
     @Override
     public int getCount() {
-        return storeList.size();
+        return followStores.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return storeList.get(position);
+        return followStores.get(position);
     }
 
     @Override
@@ -47,10 +50,10 @@ public class FollowStoreAdapter extends BaseAdapter{
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
         if (convertView == null) {
-            LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater layoutInflater = (LayoutInflater) context.getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = layoutInflater.inflate(resource, null);
             holder = new ViewHolder();
             holder.img_follow_store_logo = (ImageView) convertView.findViewById(R.id.img_follow_store_logo);
@@ -64,35 +67,44 @@ public class FollowStoreAdapter extends BaseAdapter{
             holder = (ViewHolder) convertView.getTag();
         }
 
-        Store store = storeList.get(position);
+        Store store = followStores.get(position).getStore();
         holder.tv_follow_store_name.setText(store.getStoreName());
         holder.tv_follow_store_location.setText(store.getLocation());
-        holder.tv_follow_store_createdate.setText("9");
-
-        // Get category
-        StringBuilder builder = new StringBuilder();
-        for (int i=0; i<store.getCategories().size(); i++){
-            builder.append(store.getCategories().get(i).getName());
-            if (i != store.getCategories().size()){
-                builder.append(", ");
-            }
+        holder.tv_follow_store_createdate.setText(store.getTimeInSystem());
+        if (store.getCategories() != null && store.getCategories().size() > 0) {
+            holder.tv_follow_store_categories.setText(getPopularCategory(store.getCategories()));
         }
-        holder.tv_follow_store_categories.setText(builder.toString());
 
         convertView.findViewById(R.id.lnr_un_follow_store).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(v.getContext(), "Un follow", Toast.LENGTH_SHORT).show();
+                if (context instanceof FollowedStoreFragment) {
+                    context.actionUnfollowStore(position);
+                }
             }
         });
 
         convertView.findViewById(R.id.lnr_go_to_store).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(v.getContext(), "Go to store", Toast.LENGTH_SHORT).show();
+                if (context instanceof FollowedStoreFragment) {
+                    context.actionGoToStore(position);
+                }
             }
         });
 
         return convertView;
+    }
+
+    public String getPopularCategory(List<Category> categories) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < categories.size(); i++) {
+            if (i < categories.size() - 1) {
+                builder.append(categories.get(i).getName() + ", ");
+            } else {
+                builder.append(categories.get(i).getName());
+            }
+        }
+        return builder.toString();
     }
 }

@@ -1,5 +1,6 @@
 package com.n8plus.vhiep.cyberzone.ui.manage.wishlistfollowedstore.wishlist;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -8,15 +9,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.n8plus.vhiep.cyberzone.R;
+import com.n8plus.vhiep.cyberzone.data.model.Product;
 import com.n8plus.vhiep.cyberzone.data.model.WishList;
 import com.n8plus.vhiep.cyberzone.ui.manage.wishlistfollowedstore.adapter.WishListAdapter;
+import com.n8plus.vhiep.cyberzone.ui.productdetails.ProductDetailActivity;
+
+import java.util.List;
 
 public class WishListFragment extends Fragment implements WishListContract.View {
     private ListView mWishlist;
     private WishListAdapter mWishListAdapter;
     private WishListPresenter mWishListPresenter;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -36,8 +43,45 @@ public class WishListFragment extends Fragment implements WishListContract.View 
     }
 
     @Override
-    public void setAdapterWishList(WishList wishList) {
-        mWishListAdapter = new WishListAdapter(mWishlist.getContext(), R.layout.row_wishlist, wishList);
+    public void setAdapterWishList(List<WishList> wishList) {
+        mWishListAdapter = new WishListAdapter(this, R.layout.row_wishlist, wishList);
         mWishlist.setAdapter(mWishListAdapter);
+    }
+
+    @Override
+    public void setNotifyDataSetChanged() {
+        mWishListAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void actionMoveToProductDetail(int position) {
+        mWishListPresenter.prepareDataProductDetail(position);
+    }
+
+    @Override
+    public void addToCartAlert(boolean b) {
+        Toast.makeText(this.getContext(), b ? "Thêm vào giỏ hàng thành công!" : "Vui lòng kiểm tra lại giỏ hàng!", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void removeFromWishListAlert(boolean b) {
+        Toast.makeText(this.getContext(), b ? "Đã xóa khỏi sách yêu thích!" : "Vui lòng thử lại!", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void moveToProductDetail(Product product) {
+        Intent productDetailIntent = new Intent(this.getActivity(), ProductDetailActivity.class);
+        productDetailIntent.putExtra("product", product);
+        startActivity(productDetailIntent);
+    }
+
+    @Override
+    public void actionRemoveFromWishList(int position) {
+        mWishListPresenter.removeFromWishList(position);
+    }
+
+    @Override
+    public void actionAddToCart(int position) {
+        mWishListPresenter.addToCart(position);
     }
 }

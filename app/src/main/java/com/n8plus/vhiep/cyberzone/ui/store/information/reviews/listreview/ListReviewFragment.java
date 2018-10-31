@@ -38,7 +38,10 @@ public class ListReviewFragment extends BottomSheetDialogFragment implements Lis
         mRecyclerCustomerReview = (RecyclerView) view.findViewById(R.id.rcv_all_customer_reviews);
         mCloseListReview = (ImageView) view.findViewById(R.id.img_close_list_review);
 
-        mListReviewPresenter.loadData();
+        Bundle bundle = getArguments();
+        if (bundle != null && bundle.getSerializable("reviewStores") != null) {
+            mListReviewPresenter.loadStoreReviews((List<ReviewStore>) bundle.getSerializable("reviewStores"));
+        }
 
         mCloseListReview.setOnClickListener(new View.OnClickListener() {
             @Override

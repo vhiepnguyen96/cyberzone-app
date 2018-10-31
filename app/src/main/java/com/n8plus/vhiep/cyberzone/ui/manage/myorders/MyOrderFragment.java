@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.n8plus.vhiep.cyberzone.R;
+import com.n8plus.vhiep.cyberzone.data.model.Order;
 import com.n8plus.vhiep.cyberzone.ui.manage.mainmanage.MainManageFragment;
 import com.n8plus.vhiep.cyberzone.ui.manage.myorders.allorder.AllOrderFragment;
 import com.n8plus.vhiep.cyberzone.ui.manage.myorders.waitforpayment.WaitForPaymentFragment;
@@ -25,17 +26,22 @@ import com.n8plus.vhiep.cyberzone.ui.manage.myprofile.MyProfileContract;
 import com.n8plus.vhiep.cyberzone.ui.store.adapter.SectionsPageAdapter;
 import com.n8plus.vhiep.cyberzone.ui.store.homepage.HomePageFragment;
 import com.n8plus.vhiep.cyberzone.ui.store.information.InformationFragment;
+import com.n8plus.vhiep.cyberzone.util.Constant;
+
+import java.util.List;
 
 public class MyOrderFragment extends Fragment implements MyOrderContract.View {
     private Toolbar mToolbar;
     private TabLayout mTabOrder;
     private ViewPager mViewPager;
     private SectionsPageAdapter mSectionsPageAdapter;
+    private MyOrderPresenter mMyOrderPresenter;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.my_order_frag, container, false);
+        mMyOrderPresenter = new MyOrderPresenter(this);
         return view;
     }
 

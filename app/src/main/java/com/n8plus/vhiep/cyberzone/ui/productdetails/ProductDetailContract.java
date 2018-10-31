@@ -7,6 +7,7 @@ import com.n8plus.vhiep.cyberzone.data.model.Product;
 import com.n8plus.vhiep.cyberzone.data.model.ProductImage;
 import com.n8plus.vhiep.cyberzone.data.model.ReviewProduct;
 import com.n8plus.vhiep.cyberzone.data.model.Specification;
+import com.n8plus.vhiep.cyberzone.data.model.Store;
 
 import java.util.List;
 
@@ -14,7 +15,9 @@ public interface ProductDetailContract {
     interface View {
         void setImageList(List<ProductImage> imageList);
         void setProductName(String name);
-        void setProductPrice(String price, int discount);
+        void setProductPrice(String price);
+        void setProductPriceSale(String priceSale);
+        void setLayoutPriceSale(boolean b);
         void setProductDiscount(int discount);
         void setProductSpecification(List<Specification> specifications);
         void setProductOverviews(List<Overview> overviews);
@@ -30,13 +33,21 @@ public interface ProductDetailContract {
         void setRating1star(int max, int count);
         void setReviewNone(boolean b);
         void setLayoutRatingProduct(boolean b);
+        void moveToStore(Store store);
         void moveToCart();
         void addToCartAlert(boolean b);
         void setCartMenuItem();
+        void setWishListResult(boolean b);
+        void addToWishListResult(boolean b);
+        void removeFromWishListResult(boolean b);
     }
     interface Presenter extends BasePresenter<View> {
         void loadProductDetail(Product product);
+        void loadWishList();
+        void addToWishList();
+        void removeFromWishList();
         void buyNow();
         void addToCart();
+        void prepareDataStore();
     }
 }

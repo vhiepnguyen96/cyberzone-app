@@ -1,5 +1,14 @@
 package com.n8plus.vhiep.cyberzone.ui.manage.myorders.waitforpayment;
 
+import android.support.v4.app.Fragment;
+import android.util.Log;
+
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.data.model.Address;
 import com.n8plus.vhiep.cyberzone.data.model.Order;
@@ -12,60 +21,88 @@ import com.n8plus.vhiep.cyberzone.data.model.SaleOff;
 import com.n8plus.vhiep.cyberzone.data.model.Specification;
 import com.n8plus.vhiep.cyberzone.data.model.Store;
 import com.n8plus.vhiep.cyberzone.ui.manage.myorders.MyOrderContract;
+import com.n8plus.vhiep.cyberzone.util.Constant;
+import com.n8plus.vhiep.cyberzone.util.MySingleton;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 public class WaitForPaymentPresenter implements WaitForPaymentContract.Presenter {
     private List<Order> waitForPaymentList;
     private WaitForPaymentContract.View mWaitForPaymentView;
+    private final String URL_ORDER = Constant.URL_HOST + "orders";
+    private final String URL_ORDER_ITEM = Constant.URL_HOST + "orderItems";
+    private Gson gson;
 
     public WaitForPaymentPresenter(WaitForPaymentContract.View mWaitForPaymentView) {
         this.mWaitForPaymentView = mWaitForPaymentView;
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.setDateFormat("M/d/yy hh:mm a");
+        gson = gsonBuilder.create();
     }
 
     @Override
-    public void loadData() {
-        prepareData();
-        mWaitForPaymentView.setAdapterWaitForPayment(waitForPaymentList);
+    public void loadOrderWaitToPayment(String customerId) {
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, URL_ORDER + "/customer/" + customerId, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            List<Order> orderList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("orders")), Order[].class));
+                            Log.i("AllOrderPresenter", "GET: " + orderList.size() + " order");
+                            if (orderList.size() > 0) {
+                                waitForPaymentList = getWaitForPaymentList(orderList);
+                                mWaitForPaymentView.setAdapterWaitForPayment(waitForPaymentList);
+                                for (int i = 0; i < waitForPaymentList.size(); i++) {
+                                    final int position = i;
+                                    JsonObjectRequest orderItemRequest = new JsonObjectRequest(Request.Method.GET, URL_ORDER_ITEM + "/order/" + waitForPaymentList.get(i).getOrderId(), null,
+                                            new Response.Listener<JSONObject>() {
+                                                @Override
+                                                public void onResponse(JSONObject response) {
+                                                    try {
+                                                        waitForPaymentList.get(position).setPurchaseList(Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("orderItems")), PurchaseItem[].class)));
+                                                        Log.i("AllOrderPresenter", "GET: " + waitForPaymentList.get(position).getPurchaseList().size() + " orderItems");
+                                                        mWaitForPaymentView.setNotifyDataSetChanged();
+                                                    } catch (JSONException e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                }
+                                            },
+                                            new Response.ErrorListener() {
+                                                @Override
+                                                public void onErrorResponse(VolleyError error) {
+                                                    Log.e("AllOrderPresenter", error.toString());
+                                                }
+                                            });
+                                    MySingleton.getInstance(((Fragment) mWaitForPaymentView).getContext().getApplicationContext()).addToRequestQueue(orderItemRequest);
+                                }
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("AllOrderPresenter", error.toString());
+                    }
+                });
+        MySingleton.getInstance(((Fragment) mWaitForPaymentView).getContext().getApplicationContext()).addToRequestQueue(request);
     }
 
-    private void prepareData() {
-        List<Specification> specifications = new ArrayList<>();
-        specifications.add(new Specification("Bảo hành", "36"));
-        specifications.add(new Specification("Thương hiệu", "Asrock"));
-        specifications.add(new Specification("Model", "H110M-DVS R2.0"));
-        specifications.add(new Specification("Loại", "Micro-ATX"));
-        specifications.add(new Specification("Loại Socket", "LGA 1151"));
-        specifications.add(new Specification("Chipset", "Intel H110"));
-        specifications.add(new Specification("Số khe Ram", "2"));
-        specifications.add(new Specification("Dung lượng Ram tối đa", "32GB"));
-        specifications.add(new Specification("Loại Ram", "DDR4 2133"));
-        specifications.add(new Specification("VGA Onboard", "Intel HD Graphics"));
-
-        List<Overview> overviews = new ArrayList<>();
-        overviews.add(new Overview("", "ASRock trang bị cho H110M-DVS R2.0 chuẩn linh kiện Super Alloy bền bỉ - trước đây vốn chỉ xuất hiện trên các bo mạch chủ trung cấp và cao cấp thể hiện trong thông điệp Stable and Reliable - Ổn định và tin cậy."));
-
-        ProductType productType = new ProductType("5b98a6a6fe67871b2068add0", "Bo mạch chủ");
-        Store store = new Store("5b989eb9a6bce5234c9522ea", "Máy tính Phong Vũ");
-
-//        List<ProductImage> imageList_1603653 = new ArrayList<>();
-//        imageList_1603653.add(new ProductImage("5b98a6a6fe67871b2068add0", R.drawable.img_1603653_1));
-//
-//        List<ProductImage> imageList_1600666 = new ArrayList<>();
-//        imageList_1600666.add(new ProductImage("5b98a6a6fe67871b2068add0", R.drawable.img_1600666));
-
-        Product product_1603653 = new Product("1603653", productType, store, "Bo mạch chính/ Mainboard Asrock H110M-DVS R2.0", "1.320", specifications, overviews, "New", new SaleOff("1", 5));
-        Product product_1600666 = new Product("1600666", productType, store, "Bo mạch chính/ Mainboard Gigabyte H110M-DS2 DDR4", "1.465", specifications, overviews, "New", new SaleOff("1", 6));
-
-        List<PurchaseItem> purchaseItems = new ArrayList<>();
-        purchaseItems.add(new PurchaseItem(product_1603653, 1));
-        purchaseItems.add(new PurchaseItem(product_1600666, 2));
-
-        Address address = new Address("a1", "Nguyễn Văn Hiệp", "01646158456", "Số nhà 100, Hẻm 138, Đường Trần Hưng Đạo, Phường An Nghiệp, Quận Ninh Kiều, TP Cần Thơ");
-
-        waitForPaymentList = new ArrayList<>();
-        waitForPaymentList.add(new Order("5b9b7430b18f6d1178239040", "5b962cd9738558095492b986", purchaseItems, 3, address, "0.020", "5.550", new Date(), "Đang chờ thanh toán"));
+    public List<Order> getWaitForPaymentList(List<Order> orderList){
+        List<Order> waitForPayments = new ArrayList<>();
+        for (Order order : orderList){
+            if (order.getOrderState().getStateName().equals("Đang chờ thanh toán")){
+                waitForPayments.add(order);
+            }
+        }
+        return waitForPayments;
     }
 }

@@ -1,6 +1,8 @@
 package com.n8plus.vhiep.cyberzone.ui.manage.myorders.adapter;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,9 +14,14 @@ import android.widget.Toast;
 
 import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.data.model.Order;
+import com.n8plus.vhiep.cyberzone.data.model.Product;
+import com.n8plus.vhiep.cyberzone.ui.payment.PaymentActivity;
 import com.n8plus.vhiep.cyberzone.ui.product.adapter.ProductVerticalAdapter;
 import com.n8plus.vhiep.cyberzone.util.UIUtils;
 
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 
 public class MyOrderAdapter extends BaseAdapter {
@@ -31,9 +38,8 @@ public class MyOrderAdapter extends BaseAdapter {
     }
 
     public class ViewHolder {
-        public TextView id, purchase_date, total_quantity, total_price, state;
+        public TextView id, purchase_date, total_quantity, total_price, state, tv_payment_order;
         public ListView purchaseList;
-        public Button btn_payment_order;
     }
 
     @Override
@@ -64,35 +70,43 @@ public class MyOrderAdapter extends BaseAdapter {
             holder.total_price = (TextView) convertView.findViewById(R.id.tv_order_total_price);
             holder.state = (TextView) convertView.findViewById(R.id.tv_order_state);
             holder.purchaseList = (ListView) convertView.findViewById(R.id.lv_purchaseProduct);
-            holder.btn_payment_order = (Button) convertView.findViewById(R.id.btn_payment_order);
+            holder.tv_payment_order = (TextView) convertView.findViewById(R.id.tv_payment_order);
 
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        Order order = orderList.get(position);
+        final Order order = orderList.get(position);
         holder.id.setText(order.getOrderId());
-        holder.purchase_date.setText(order.getPurchaseDate().toString());
+
+        holder.purchase_date.setText(order.getPurchaseDateCustom());
         holder.total_quantity.setText(String.valueOf(order.getTotalQuantity()));
-        holder.total_price.setText(String.valueOf(order.getTotalPrice()));
-        holder.state.setText(order.getOrderState());
+
+        DecimalFormat df = new DecimalFormat("#.000");
+        holder.total_price.setText(Integer.valueOf(order.getTotalPrice()) > 1000 ? df.format(Product.convertToPrice(order.getTotalPrice())) : order.getTotalPrice());
+
+        holder.state.setText(order.getOrderState().getStateName());
 
         // List product
-        mProductOrderAdapter = new ProductOrderAdapter(holder.purchaseList.getContext(), R.layout.row_product_order, order.getPurchaseList());
-        holder.purchaseList.setAdapter(mProductOrderAdapter);
-        UIUtils.setListViewHeightBasedOnItems(holder.purchaseList);
-
-        if (order.getOrderState().equals("Đang chờ thanh toán")){
-            holder.btn_payment_order.setVisibility(View.VISIBLE);
-        } else {
-            holder.btn_payment_order.setVisibility(View.INVISIBLE);
+        if (order.getPurchaseList() != null && order.getPurchaseList().size() > 0) {
+            mProductOrderAdapter = new ProductOrderAdapter(holder.purchaseList.getContext(), R.layout.row_product_order, order.getPurchaseList());
+            holder.purchaseList.setAdapter(mProductOrderAdapter);
+            UIUtils.setListViewHeightBasedOnItems(holder.purchaseList);
         }
 
-        holder.btn_payment_order.setOnClickListener(new View.OnClickListener() {
+        if (order.getOrderState().getStateName().equals("Đang chờ thanh toán")) {
+            holder.tv_payment_order.setVisibility(View.VISIBLE);
+        } else {
+            holder.tv_payment_order.setVisibility(View.INVISIBLE);
+        }
+
+        holder.tv_payment_order.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(v.getContext(), "Thanh toán", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(context, PaymentActivity.class);
+                intent.putExtra("order", order);
+                ((Activity) context).startActivity(intent);
             }
         });
 

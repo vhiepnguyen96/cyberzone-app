@@ -85,27 +85,11 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="Khoảng"
-                    android:textColor="@android:color/black" />
-
-                <TextView
                     android:id="@+id/tv_follow_store_createdate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_marginLeft="4dp"
-                    android:layout_marginRight="4dp"
-                    android:text="4"
-                    android:textColor="@android:color/black" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="tháng"
+                    android:text="Khoảng 4 tháng"
                     android:textColor="@android:color/black" />
             </LinearLayout>
         </LinearLayout>
@@ -128,6 +112,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:lineSpacingExtra="4dp"
+                android:maxLines="3"
                 android:text="Linh kiện máy tính, Màn hình, Case, Tản nhiệt"
                 android:textColor="@android:color/black" />
         </LinearLayout>

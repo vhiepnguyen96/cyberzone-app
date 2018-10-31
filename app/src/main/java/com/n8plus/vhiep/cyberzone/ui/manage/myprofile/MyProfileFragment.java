@@ -64,7 +64,7 @@ public class MyProfileFragment extends Fragment implements MyProfileContract.Vie
         actionbar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_black_24dp);
         actionbar.setTitle("Quản lý tài khoản");
 
-        myProfilePresenter.loadProfile(Constant.customerId);
+        myProfilePresenter.loadProfile(Constant.customer.getId());
 
         mUpdateProfile.setOnClickListener(new View.OnClickListener() {
             @Override

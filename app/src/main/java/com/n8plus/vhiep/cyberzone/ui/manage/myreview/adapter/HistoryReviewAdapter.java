@@ -13,6 +13,7 @@ import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.data.model.HistoryReview;
 import com.squareup.picasso.Picasso;
 
+import java.util.Calendar;
 import java.util.List;
 
 public class HistoryReviewAdapter extends BaseAdapter {
@@ -67,17 +68,41 @@ public class HistoryReviewAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
         HistoryReview historyReview = historyReviewList.get(position);
-//        holder.dateReview.setText(historyReview.getReviewStore().getDateReview());
-        holder.storeName.setText(historyReview.getReviewStore().getStore().getStoreName());
-        holder.productName.setText(historyReview.getReviewProduct().getProduct().getProductName());
-        holder.reviewStore.setText(historyReview.getReviewStore().getReview());
-        holder.reviewProduct.setText(historyReview.getReviewProduct().getReview());
-        holder.ratingStore.setImageResource(historyReview.getReviewStore().getRatingLevel());
-        if (historyReview.getReviewProduct().getProduct().getImageList() != null && historyReview.getReviewProduct().getProduct().getImageList().size() > 0){
-            Picasso.get().load(historyReview.getReviewProduct().getProduct().getImageList().get(0).getImageURL()).into(holder.imageProduct);
+
+        if (historyReview.getDateReview() != null) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(historyReview.getDateReview());
+            String date = "Ngày " + calendar.get(Calendar.DATE) + " Thg " + (calendar.get(Calendar.MONTH) + 1) + " " + calendar.get(Calendar.YEAR);
+            holder.dateReview.setText(date);
         }
-//        holder.imageProduct.setImageResource(historyReview.getReviewProduct().getProduct().getImageList().get(0).getImageId());
-        holder.ratingProduct.setRating(historyReview.getReviewProduct().getRatingStar().getRatingStar());
+
+        if (historyReview.getReviewStore() != null) {
+            holder.storeName.setText(historyReview.getReviewStore().getStore().getStoreName());
+            holder.reviewStore.setText(historyReview.getReviewStore().getReview());
+            switch (historyReview.getReviewStore().getRatingLevel().getLevel()) {
+                case 1:
+                    holder.ratingStore.setImageResource(R.drawable.emoji_good);
+                    break;
+                case 2:
+                    holder.ratingStore.setImageResource(R.drawable.emoji_normal);
+                    break;
+                case 3:
+                    holder.ratingStore.setImageResource(R.drawable.emoji_notgood);
+                    break;
+            }
+        }
+
+        if (historyReview.getReviewProduct() != null) {
+            if (historyReview.getReviewProduct().getProduct() != null) {
+                holder.productName.setText(historyReview.getReviewProduct().getProduct().getProductName());
+                if (historyReview.getReviewProduct().getProduct().getImageDefault() != null) {
+                    Picasso.get().load(historyReview.getReviewProduct().getProduct().getImageDefault()).into(holder.imageProduct);
+                }
+            }
+            holder.reviewProduct.setText(historyReview.getReviewProduct().getReview());
+            holder.ratingProduct.setRating(historyReview.getReviewProduct().getRatingStar().getRatingStar());
+        }
+
         return convertView;
     }
 }

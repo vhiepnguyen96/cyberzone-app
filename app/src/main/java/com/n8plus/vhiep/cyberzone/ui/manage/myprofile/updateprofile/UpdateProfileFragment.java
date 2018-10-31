@@ -148,10 +148,8 @@ public class UpdateProfileFragment extends Fragment implements UpdateProfileCont
 
     @Override
     public void setGenderCustomer(String genderCustomer) {
-        if (genderCustomer.contains("Nam")) {
-            mRadioButtonBoy.setChecked(true);
-        } else {
-            mRadioButtonGirl.setChecked(true);
+        if (genderCustomer != null) {
+            mRadioButtonBoy.setChecked(genderCustomer.contains("Nam") ? true : false);
         }
     }
 

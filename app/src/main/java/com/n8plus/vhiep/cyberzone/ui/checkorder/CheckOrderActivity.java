@@ -1,11 +1,13 @@
 package com.n8plus.vhiep.cyberzone.ui.checkorder;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -19,8 +21,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.n8plus.vhiep.cyberzone.data.model.Address;
+import com.n8plus.vhiep.cyberzone.data.model.DeliveryPrice;
+import com.n8plus.vhiep.cyberzone.data.model.Order;
 import com.n8plus.vhiep.cyberzone.data.model.PurchaseItem;
 import com.n8plus.vhiep.cyberzone.ui.choosedeliveryaddress.ChooseDeliveryAddressActivity;
+import com.n8plus.vhiep.cyberzone.ui.choosepaymentmethod.ChoosePaymentMethodActivity;
+import com.n8plus.vhiep.cyberzone.ui.choosepaymentmethod.ChoosePaymentMethodPresenter;
+import com.n8plus.vhiep.cyberzone.ui.login.LoginActivity;
 import com.n8plus.vhiep.cyberzone.ui.manage.myorders.adapter.ProductOrderAdapter;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.UIUtils;
@@ -33,8 +40,8 @@ import java.util.List;
 public class CheckOrderActivity extends AppCompatActivity implements CheckOrderContract.View {
 
     private ListView mListProductPayment;
-    private TextView mEditAddress, mNameCustomer, mPhoneCustomer, mAddressCustomer;
-    private LinearLayout mLinearPayment;
+    private TextView mEditAddress, mAddAddress, mNameCustomer, mPhoneCustomer, mAddressCustomer;
+    private LinearLayout mLinearPayment, mLinearAddress;
     private ProductOrderAdapter mProductOrderAdapter;
     private CheckOrderPresenter mCheckOrderPresenter;
     private TextView mCountProduct, mTempPrice, mDeliveryPrice, mTotalPrice;
@@ -54,10 +61,10 @@ public class CheckOrderActivity extends AppCompatActivity implements CheckOrderC
         mCheckOrderPresenter = new CheckOrderPresenter(this);
 
         Intent intent = getIntent();
-        if (intent != null && intent.getSerializableExtra("purchaseItems") != null) {
+        if (intent != null && intent.getSerializableExtra("purchaseItems") != null && intent.getSerializableExtra("deliveryPrice") != null) {
             mCheckOrderPresenter.loadPurchaseList((List<PurchaseItem>) intent.getSerializableExtra("purchaseItems"));
-            mCheckOrderPresenter.loadPrice(intent.getIntExtra("tempPrice", 0), intent.getIntExtra("deliveryPrice", 0));
-            mCheckOrderPresenter.loadDeliveryAddressDefault(Constant.customerId);
+            mCheckOrderPresenter.loadPrice(intent.getIntExtra("tempPrice", 0), (DeliveryPrice) intent.getSerializableExtra("deliveryPrice"));
+            mCheckOrderPresenter.loadDeliveryAddressDefault(Constant.customer.getId());
         }
 
         // Listenner
@@ -75,6 +82,12 @@ public class CheckOrderActivity extends AppCompatActivity implements CheckOrderC
             }
         });
 
+        mAddAddress.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivityForResult(new Intent(CheckOrderActivity.this, ChooseDeliveryAddressActivity.class), REQUEST_CODE);
+            }
+        });
     }
 
     @Override
@@ -84,7 +97,7 @@ public class CheckOrderActivity extends AppCompatActivity implements CheckOrderC
                 if (data != null && data.getSerializableExtra("address") != null){
                     mCheckOrderPresenter.loadDeliveryAddress((Address) data.getSerializableExtra("address"));
                 } else {
-                    mCheckOrderPresenter.loadDeliveryAddressDefault(Constant.customerId);
+                    mCheckOrderPresenter.loadDeliveryAddressDefault(Constant.customer.getId());
                 }
             } else if (resultCode == Activity.RESULT_CANCELED) {
 
@@ -112,11 +125,13 @@ public class CheckOrderActivity extends AppCompatActivity implements CheckOrderC
     public void initView() {
         mListProductPayment = (ListView) findViewById(R.id.lsv_productPayment);
         mLinearPayment = (LinearLayout) findViewById(R.id.lnr_payment);
+        mLinearAddress = (LinearLayout) findViewById(R.id.lnr_address);
         mCountProduct = (TextView) findViewById(R.id.txt_productCount);
         mTempPrice = (TextView) findViewById(R.id.txt_tempPrice);
         mDeliveryPrice = (TextView) findViewById(R.id.txt_deliveryPrice);
         mTotalPrice = (TextView) findViewById(R.id.txt_totalPrice);
         mEditAddress = (TextView) findViewById(R.id.tv_edit_address);
+        mAddAddress = (TextView) findViewById(R.id.tv_add_address);
         mNameCustomer = (TextView) findViewById(R.id.tv_name_customer_default);
         mPhoneCustomer = (TextView) findViewById(R.id.tv_phone_customer_default);
         mAddressCustomer = (TextView) findViewById(R.id.tv_address_customer_default);
@@ -141,6 +156,11 @@ public class CheckOrderActivity extends AppCompatActivity implements CheckOrderC
         mProductOrderAdapter = new ProductOrderAdapter(mListProductPayment.getContext(), R.layout.row_product_order, purchaseItemList);
         mListProductPayment.setAdapter(mProductOrderAdapter);
         UIUtils.setListViewHeightBasedOnItems(mListProductPayment);
+    }
+
+    @Override
+    public void showLayoutAddress(boolean b) {
+        mLinearAddress.setVisibility(b ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -179,11 +199,25 @@ public class CheckOrderActivity extends AppCompatActivity implements CheckOrderC
     }
 
     @Override
-    public void moveToPayment(String countProduct, int tempPrice, int deliveryPrice) {
-        Intent intent = new Intent(CheckOrderActivity.this, PaymentActivity.class);
-        intent.putExtra("countProduct", countProduct);
-        intent.putExtra("tempPrice", tempPrice);
-        intent.putExtra("deliveryPrice", deliveryPrice);
+    public void moveToChoosePaymentMethod(Order order) {
+        Intent intent = new Intent(CheckOrderActivity.this, ChoosePaymentMethodActivity.class);
+        intent.putExtra("order", order);
         startActivity(intent);
+    }
+
+    @Override
+    public void showAlert(String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Thông báo");
+        builder.setMessage(message);
+        builder.setCancelable(false);
+        builder.setPositiveButton("Chấp nhận", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 }

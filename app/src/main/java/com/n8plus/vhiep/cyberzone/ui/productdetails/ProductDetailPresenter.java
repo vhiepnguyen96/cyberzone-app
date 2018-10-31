@@ -3,6 +3,7 @@ package com.n8plus.vhiep.cyberzone.ui.productdetails;
 import android.app.Activity;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -29,6 +30,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -41,6 +43,7 @@ public class ProductDetailPresenter implements ProductDetailContract.Presenter {
     private final String URL_PRODUCT = Constant.URL_HOST + "products";
     private final String URL_IMAGE = Constant.URL_HOST + "productImages";
     private final String URL_REVIEW = Constant.URL_HOST + "reviewProducts";
+    private final String URL_WISHLIST = Constant.URL_HOST + "wishList";
     private Gson gson;
 
     public ProductDetailPresenter(ProductDetailContract.View mProductDetailView) {
@@ -53,20 +56,108 @@ public class ProductDetailPresenter implements ProductDetailContract.Presenter {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setDateFormat("M/d/yy hh:mm a");
         gson = gsonBuilder.create();
+        DecimalFormat df = new DecimalFormat("#.000");
 
         fakeDataPolicies();
+        if (Constant.customer != null) {
+            loadWishList();
+        }
+
         setReviewProduct(product.getReviewProducts());
 
         mProductDetailView.setImageList(product.getImageList() != null ? product.getImageList() : new ArrayList<ProductImage>());
         mProductDetailView.setProductName(product.getProductName());
-        mProductDetailView.setProductPrice(product.getPrice(), product.getSaleOff() != null ? product.getSaleOff().getDiscount() : 0);
-        mProductDetailView.setProductDiscount(product.getSaleOff() != null ? product.getSaleOff().getDiscount() : 0);
+        if (product.getSaleOff() != null) {
+            if (product.getSaleOff().getDiscount() > 0) {
+                int basicPrice = Integer.valueOf(product.getPrice());
+                int discount = product.getSaleOff().getDiscount();
+                int salePrice = basicPrice - (basicPrice * discount / 100);
+
+                mProductDetailView.setProductPrice(basicPrice > 1000 ? df.format(Product.convertToPrice(String.valueOf(basicPrice))).replace(",", ".") : String.valueOf(basicPrice));
+                mProductDetailView.setLayoutPriceSale(true);
+                mProductDetailView.setProductPriceSale(salePrice > 1000 ? df.format(Product.convertToPrice(String.valueOf(salePrice))).replace(",", ".") : String.valueOf(salePrice));
+                mProductDetailView.setProductDiscount(product.getSaleOff().getDiscount());
+            } else {
+                mProductDetailView.setProductPriceSale(Integer.valueOf(product.getPrice()) > 1000 ? df.format(Product.convertToPrice(product.getPrice())).replace(",", ".") : product.getPrice());
+                mProductDetailView.setLayoutPriceSale(false);
+            }
+        } else {
+            mProductDetailView.setProductPriceSale(Integer.valueOf(product.getPrice()) > 1000 ? df.format(Product.convertToPrice(product.getPrice())).replace(",", ".") : product.getPrice());
+            mProductDetailView.setLayoutPriceSale(false);
+        }
         mProductDetailView.setProductSpecification(product.getSpecifications() != null ? product.getSpecifications() : new ArrayList<Specification>());
         mProductDetailView.setProductOverviews(product.getOverviews() != null ? product.getOverviews() : new ArrayList<Overview>());
         mProductDetailView.setProductPolicies(mPolicyList);
         mProductDetailView.setStoreName(product.getStore().getStoreName());
         mProductDetailView.setStoreLocation(product.getStore().getLocation());
 
+    }
+
+    @Override
+    public void loadWishList() {
+        JsonObjectRequest wishListRequest = new JsonObjectRequest(Request.Method.GET, URL_WISHLIST + "/check/" + Constant.customer.getId() + "/" + mProduct.getProductId(), null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.i("ProductDetailPresenter", response.toString());
+                        mProductDetailView.setWishListResult(true);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("ProductDetailPresenter", error.toString());
+                        mProductDetailView.setWishListResult(false);
+                    }
+                });
+        MySingleton.getInstance(((Activity) mProductDetailView).getApplicationContext()).addToRequestQueue(wishListRequest);
+    }
+
+    @Override
+    public void addToWishList() {
+        JSONObject wishList = new JSONObject();
+        try {
+            wishList.put("customerId", Constant.customer.getId());
+            wishList.put("productId", mProduct.getProductId());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JsonObjectRequest wishListRequest = new JsonObjectRequest(Request.Method.POST, URL_WISHLIST, wishList,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.i("ProductDetailPresenter", response.toString());
+                        mProductDetailView.addToWishListResult(true);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("ProductDetailPresenter", error.toString());
+                        mProductDetailView.addToWishListResult(false);
+                    }
+                });
+        MySingleton.getInstance(((Activity) mProductDetailView).getApplicationContext()).addToRequestQueue(wishListRequest);
+    }
+
+    @Override
+    public void removeFromWishList() {
+        JsonObjectRequest wishListRequest = new JsonObjectRequest(Request.Method.DELETE, URL_WISHLIST + "/" + Constant.customer.getId() + "/" + mProduct.getProductId(), null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.i("ProductDetailPresenter", response.toString());
+                        mProductDetailView.removeFromWishListResult(true);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("ProductDetailPresenter", error.toString());
+                        mProductDetailView.removeFromWishListResult(false);
+                    }
+                });
+        MySingleton.getInstance(((Activity) mProductDetailView).getApplicationContext()).addToRequestQueue(wishListRequest);
     }
 
     @Override
@@ -100,6 +191,11 @@ public class ProductDetailPresenter implements ProductDetailContract.Presenter {
         mProductDetailView.setCartMenuItem();
     }
 
+    @Override
+    public void prepareDataStore() {
+        mProductDetailView.moveToStore(mProduct.getStore());
+    }
+
     private void fakeDataPolicies() {
         mPolicyList = new ArrayList<>();
         mPolicyList.add(new Policy(R.drawable.delivery, "Miễn phí vận chuyển với đơn hàng từ 3 sản phẩm trở lên"));
@@ -113,37 +209,40 @@ public class ProductDetailPresenter implements ProductDetailContract.Presenter {
             mProductDetailView.setReviewNone(false);
             mProductDetailView.setLayoutRatingProduct(true);
             mProductDetailView.setAdapterRatingProduct(reviewProducts);
-            int count5 = 0, count4 = 0, count3 = 0, count2 = 0, count1 = 0;
-            for (int i = 0; i < reviewProducts.size(); i++) {
-                switch ((int) reviewProducts.get(i).getRatingStar().getRatingStar()) {
-                    case 5:
-                        count5++;
-                        break;
-                    case 4:
-                        count4++;
-                        break;
-                    case 3:
-                        count3++;
-                        break;
-                    case 2:
-                        count2++;
-                        break;
-                    case 1:
-                        count1++;
-                        break;
-                }
-            }
-            float rating = (5 * count5 + 4 * count4 + 3 * count3 + 2 * count2 + 1 * count1) / (count5 + count4 + count3 + count2 + count1);
-            Log.i("RATING", count5 + " | " + count4 + " | " + count3 + " | " + count2 + " | " + count1 + " | " + String.valueOf(rating));
-            mProductDetailView.setRatingBar(reviewProducts.size(), rating);
-            mProductDetailView.setRating5star(reviewProducts.size(), count5);
-            mProductDetailView.setRating4star(reviewProducts.size(), count4);
-            mProductDetailView.setRating3star(reviewProducts.size(), count3);
-            mProductDetailView.setRating2star(reviewProducts.size(), count2);
-            mProductDetailView.setRating1star(reviewProducts.size(), count1);
+
+            mProductDetailView.setRatingBar(reviewProducts.size(), mProduct.getAverageReview());
+            Log.i("ProductDetailPresenter", "AverageReview: " + mProduct.getAverageReview());
+            mProductDetailView.setRating5star(reviewProducts.size(), mProduct.getCountStar(5));
+            mProductDetailView.setRating4star(reviewProducts.size(), mProduct.getCountStar(4));
+            mProductDetailView.setRating3star(reviewProducts.size(), mProduct.getCountStar(3));
+            mProductDetailView.setRating2star(reviewProducts.size(), mProduct.getCountStar(2));
+            mProductDetailView.setRating1star(reviewProducts.size(), mProduct.getCountStar(1));
         } else {
             mProductDetailView.setReviewNone(true);
             mProductDetailView.setLayoutRatingProduct(false);
         }
     }
 }
+
+//    int count5 = 0, count4 = 0, count3 = 0, count2 = 0, count1 = 0;
+//            for (int i = 0; i < reviewProducts.size(); i++) {
+//        switch ((int) reviewProducts.get(i).getRatingStar().getRatingStar()) {
+//        case 5:
+//        count5++;
+//        break;
+//        case 4:
+//        count4++;
+//        break;
+//        case 3:
+//        count3++;
+//        break;
+//        case 2:
+//        count2++;
+//        break;
+//        case 1:
+//        count1++;
+//        break;
+//        }
+//        }
+//        float rating = (5 * count5 + 4 * count4 + 3 * count3 + 2 * count2 + 1 * count1) / (count5 + count4 + count3 + count2 + count1);
+//        Log.i("RATING", count5 + " | " + count4 + " | " + count3 + " | " + count2 + " | " + count1 + " | " + String.valueOf(rating));

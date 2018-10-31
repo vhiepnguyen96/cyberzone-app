@@ -8,9 +8,22 @@ import java.util.List;
 
 public interface WishListContract {
     interface View {
-        void setAdapterWishList(WishList wishList);
+        void setAdapterWishList(List<WishList> wishList);
+        void setNotifyDataSetChanged();
+        void actionMoveToProductDetail(int position);
+        void actionRemoveFromWishList(int position);
+        void actionAddToCart(int position);
+        void addToCartAlert(boolean b);
+        void removeFromWishListAlert(boolean b);
+        void moveToProductDetail(Product product);
     }
     interface Presenter extends BasePresenter<View> {
         void loadData();
+        void loadWishList(String customerId);
+        void loadProduct(int position);
+        void loadImageProduct(int position);
+        void prepareDataProductDetail(int position);
+        void addToCart(int position);
+        void removeFromWishList(int position);
     }
 }

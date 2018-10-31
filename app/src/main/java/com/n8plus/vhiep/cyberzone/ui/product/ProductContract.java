@@ -11,15 +11,19 @@ import java.util.List;
 
 public interface ProductContract {
     interface View {
-        void setAdapterProduct(List<Product> products);
+        void setAdapterProduct(List<Product> products, String layout);
         void setNotifyDataSetChanged();
         void generateFilters(ArrayList<ParentObject> parentObjects);
         void setCartMenuItem();
+        void setKeyword(String keyword);
     }
     interface Presenter extends BasePresenter<View> {
         void loadProductDefault();
         void loadProductByList(List<Product> productList);
         void loadProductByProductType(String productTypeId);
         void loadProductByKeyWord(String keyword);
+        void changeProductGridLayout();
+        void changeProductLinearLayout();
+        void resetFilter();
     }
 }

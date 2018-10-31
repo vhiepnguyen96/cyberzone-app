@@ -1,6 +1,7 @@
 package com.n8plus.vhiep.cyberzone.ui.cart;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.util.Log;
 
 import com.android.volley.Request;
@@ -33,7 +34,7 @@ import java.util.List;
 public class CartPresenter implements CartContract.Presenter {
     private CartContract.View mCartView;
     private List<DeliveryPrice> deliveryPrices;
-    private int deliveryPrice = 0;
+    private DeliveryPrice mDeliveryPrice;
     private final String URL_DELIVERY_PRICE = Constant.URL_HOST + "deliveryPrices";
     private Gson gson;
     DecimalFormat df;
@@ -58,7 +59,7 @@ public class CartPresenter implements CartContract.Presenter {
 
     @Override
     public void orderNow() {
-        mCartView.moveToCheckOrder(Constant.purchaseList, Math.round(getTempPrice()), deliveryPrice);
+        mCartView.moveToCheckOrder(Constant.purchaseList, Math.round(getTempPrice()), mDeliveryPrice);
     }
 
     private float getTempPrice() {
@@ -86,27 +87,30 @@ public class CartPresenter implements CartContract.Presenter {
                     deliveryPrices = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("deliveryPrices")), DeliveryPrice[].class));
                     Log.i("CartPresenter", "Delivery price: " + deliveryPrices.size());
                     for (int i = 0; i < deliveryPrices.size(); i++) {
-                        if (Constant.countProductInCart() == 0) {
+                        Log.i("CartPresenter", "Delivery price " + i + ":" + deliveryPrices.get(i).getTotalPriceMin() + " | " + deliveryPrices.get(i).getTotalPriceMax() + " | " + deliveryPrices.get(i).getTransportFee());
+                        if (getTempPrice() == 0) {
                             mCartView.setDeliveryPrice("0");
-                            deliveryPrice = 0;
-                        } else if (Constant.countProductInCart() == deliveryPrices.get(i).getProductQuantity()) {
+                        } else if (getTempPrice() > deliveryPrices.get(i).getTotalPriceMin() && deliveryPrices.get(i).getTotalPriceMax() == 0) {
                             if (Integer.valueOf(deliveryPrices.get(i).getTransportFee()) >= 1000) {
                                 mCartView.setDeliveryPrice(df.format(Product.convertToPrice(deliveryPrices.get(i).getTransportFee())));
                             } else {
                                 mCartView.setDeliveryPrice(deliveryPrices.get(i).getTransportFee());
                             }
-                            deliveryPrice = Integer.valueOf(deliveryPrices.get(i).getTransportFee());
-                        } else if (Constant.countProductInCart() >= deliveryPrices.size()) {
+                            mDeliveryPrice = deliveryPrices.get(i);
+
+                        } else if (getTempPrice() > deliveryPrices.get(i).getTotalPriceMin() && getTempPrice() < deliveryPrices.get(i).getTotalPriceMax()) {
                             if (Integer.valueOf(deliveryPrices.get(i).getTransportFee()) >= 1000) {
-                                mCartView.setDeliveryPrice(df.format(Product.convertToPrice(deliveryPrices.get(deliveryPrices.size() - 1).getTransportFee())));
+                                mCartView.setDeliveryPrice(df.format(Product.convertToPrice(deliveryPrices.get(i).getTransportFee())));
                             } else {
-                                mCartView.setDeliveryPrice(deliveryPrices.get(deliveryPrices.size() - 1).getTransportFee());
+                                mCartView.setDeliveryPrice(deliveryPrices.get(i).getTransportFee());
                             }
-                            deliveryPrice = Integer.valueOf(deliveryPrices.get(deliveryPrices.size() - 1).getTransportFee());
+                            mDeliveryPrice = deliveryPrices.get(i);
                         }
                     }
-                    float totalPrice = getTempPrice() + deliveryPrice;
-                    mCartView.setTotalPrice(totalPrice >= 1000 ? df.format(Product.convertToPrice(String.valueOf(totalPrice))) : String.valueOf(Math.round(totalPrice)));
+                    if (mDeliveryPrice != null){
+                        float totalPrice = getTempPrice() + Integer.valueOf(mDeliveryPrice.getTransportFee());
+                        mCartView.setTotalPrice(totalPrice >= 1000 ? df.format(Product.convertToPrice(String.valueOf(totalPrice))).replace(",", ".") : String.valueOf(Math.round(totalPrice)));
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -119,56 +123,4 @@ public class CartPresenter implements CartContract.Presenter {
         });
         MySingleton.getInstance(((Activity) mCartView).getApplicationContext()).addToRequestQueue(deliveryPriceRequest);
     }
-
-
-//    private void prepareProductData() {
-//        List<Specification> specifications = new ArrayList<>();
-//        specifications.add(new Specification("5b989eb9a6bce5234c9522ea", "Bảo hành", "36"));
-//        specifications.add(new Specification("5b989eb9a6bce5234c9522ea", "Thương hiệu", "Asrock"));
-//        specifications.add(new Specification("5b989eb9a6bce5234c9522ea", "Model", "H110M-DVS R2.0"));
-//        specifications.add(new Specification("5b989eb9a6bce5234c9522ea", "Loại", "Micro-ATX"));
-//        specifications.add(new Specification("5b989eb9a6bce5234c9522ea", "Loại Socket", "LGA 1151"));
-//        specifications.add(new Specification("5b989eb9a6bce5234c9522ea", "Chipset", "Intel H110"));
-//        specifications.add(new Specification("5b989eb9a6bce5234c9522ea", "Số khe Ram", "2"));
-//        specifications.add(new Specification("5b989eb9a6bce5234c9522ea", "Dung lượng Ram tối đa", "32GB"));
-//        specifications.add(new Specification("5b989eb9a6bce5234c9522ea", "Loại Ram", "DDR4 2133"));
-//        specifications.add(new Specification("5b989eb9a6bce5234c9522ea", "VGA Onboard", "Intel HD Graphics"));
-//
-//        ProductType productType = new ProductType("5b98a6a6fe67871b2068add0", "Bo mạch chủ");
-//        Store store = new Store("5b989eb9a6bce5234c9522ea", "Máy tính Phong Vũ");
-//
-////        List<ProductImage> imageList_1603653 = new ArrayList<>();
-////        imageList_1603653.add(new ProductImage("5b98a6a6fe67871b2068add0", R.drawable.img_1603653_1));
-////
-////        List<ProductImage> imageList_1600666 = new ArrayList<>();
-////        imageList_1600666.add(new ProductImage("5b98a6a6fe67871b2068add0", R.drawable.img_1600666));
-////
-////        List<ProductImage> imageList_1701299 = new ArrayList<>();
-////        imageList_1701299.add(new ProductImage("5b98a6a6fe67871b2068add0", R.drawable.img_1701299));
-////
-////        List<ProductImage> imageList_1704264 = new ArrayList<>();
-////        imageList_1704264.add(new ProductImage("5b98a6a6fe67871b2068add0", R.drawable.img_1704264));
-////
-////        List<ProductImage> imageList_1501266 = new ArrayList<>();
-////        imageList_1501266.add(new ProductImage("5b98a6a6fe67871b2068add0", R.drawable.img_1501266));
-//
-//        List<Overview> overviews = new ArrayList<>();
-//        overviews.add(new Overview("5b989eb9a6bce5234c9522ea", "", "ASRock trang bị cho H110M-DVS R2.0 chuẩn linh kiện Super Alloy bền bỉ - trước đây vốn chỉ xuất hiện trên các bo mạch chủ trung cấp và cao cấp thể hiện trong thông điệp Stable and Reliable - Ổn định và tin cậy."));
-//
-//        Product product_1603653 = new Product("1603653", productType, store, "Bo mạch chính/ Mainboard Asrock H110M-DVS R2.0", "1.320", specifications, overviews, "New", new SaleOff("1", 5));
-//        Product product_1600666 = new Product("1600666", productType, store, "Bo mạch chính/ Mainboard Gigabyte H110M-DS2 DDR4", "1.465", specifications, overviews, "New", new SaleOff("1", 6));
-//        Product product_1701299 = new Product("1701299", productType, store, "Bo mạch chính/ Mainboard Gigabyte B250M-Gaming 3", "1.899", specifications, overviews, "New", new SaleOff("1", 0));
-//        Product product_1704264 = new Product("1704264", productType, store, "Bo mạch chính/ Mainboard Msi A320M Bazooka", "2.180", specifications, overviews, "New", new SaleOff("1", 0));
-//        Product product_1501266 = new Product("1501266", productType, store, "Bo mạch chính/ Mainboard Asus H81M-K", "1.280", specifications, overviews, "New", new SaleOff("1", 0));
-//
-//        purchaseItemList = new ArrayList<>();
-//        purchaseItemList.add(new PurchaseItem(product_1603653, 1));
-//        purchaseItemList.add(new PurchaseItem(product_1600666, 1));
-//        purchaseItemList.add(new PurchaseItem(product_1701299, 1));
-//        purchaseItemList.add(new PurchaseItem(product_1704264, 1));
-//        purchaseItemList.add(new PurchaseItem(product_1501266, 1));
-//
-//    }
-
-
 }

@@ -13,10 +13,13 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.bignerdranch.expandablerecyclerview.Model.ParentObject;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.n8plus.vhiep.cyberzone.R;
+import com.n8plus.vhiep.cyberzone.data.model.Account;
 import com.n8plus.vhiep.cyberzone.data.model.Category;
+import com.n8plus.vhiep.cyberzone.data.model.Customer;
 import com.n8plus.vhiep.cyberzone.data.model.Filter;
 import com.n8plus.vhiep.cyberzone.data.model.Overview;
 import com.n8plus.vhiep.cyberzone.data.model.Product;
@@ -60,6 +63,7 @@ public class HomePresenter implements HomeContract.Presenter {
     private final String URL_IMAGE = Constant.URL_HOST + "productImages";
     private final String URL_FILTER = Constant.URL_HOST + "filterTypes";
     private final String URL_REVIEW = Constant.URL_HOST + "reviewProducts";
+    private final String URL_CUSTOMER = Constant.URL_HOST + "customers";
     private final String URL_TIME = "http://api.geonames.org/timezoneJSON?formatted=true&lat=10.041791&lng=105.747099&username=cyberzone&style=full";
     private Gson gson;
     private int fromIndex = 0;
@@ -81,6 +85,32 @@ public class HomePresenter implements HomeContract.Presenter {
     @Override
     public void loadAllProductType() {
         fetchProductType();
+    }
+
+    @Override
+    public void loadDataCustomer(final String accountId) {
+        JsonObjectRequest customerRequest = new JsonObjectRequest(Request.Method.GET, URL_CUSTOMER + "/account/" + accountId, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    Customer customer = gson.fromJson(String.valueOf(response.getJSONObject("customer")), Customer.class);
+                    Log.i("HomePresenter", "Customer: " + customer.getName());
+                    if (customer != null) {
+                        customer.setAccount(new Account(accountId));
+                        Constant.customer = customer;
+                        mHomeView.setNameCustomer(Constant.customer.getName());
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("HomePresenter", error.toString());
+            }
+        });
+        MySingleton.getInstance(((Activity) mHomeView).getApplicationContext()).addToRequestQueue(customerRequest);
     }
 
     @Override
@@ -112,7 +142,17 @@ public class HomePresenter implements HomeContract.Presenter {
 
     @Override
     public void prepareDataProductType(String productTypeId) {
-        mHomeView.moveToProductActivity(productTypeId);
+        mHomeView.moveToProductActivity(productTypeId, null);
+    }
+
+    @Override
+    public void signOut() {
+
+    }
+
+    @Override
+    public void prepareDataKeyword(String keyword) {
+        mHomeView.moveToProductActivity(null, keyword);
     }
 
     private void fetchProductType() {
@@ -148,7 +188,7 @@ public class HomePresenter implements HomeContract.Presenter {
                     Log.i("HomePresenter", "GET: " + productPurchases.get(0).getCount() + " count");
                     if (productPurchases.size() > 0) {
                         for (int i = 0; i < productPurchases.size(); i++) {
-                            JsonObjectRequest productRequest = new JsonObjectRequest(Request.Method.GET, URL_PRODUCT + "/" + productPurchases.get(i).getId(), null, new Response.Listener<JSONObject>() {
+                            JsonObjectRequest productRequest = new JsonObjectRequest(Request.Method.GET, URL_PRODUCT + "/" + productPurchases.get(i).getProduct().getProductId(), null, new Response.Listener<JSONObject>() {
                                 @Override
                                 public void onResponse(JSONObject response) {
                                     try {
@@ -365,66 +405,4 @@ public class HomePresenter implements HomeContract.Presenter {
         });
         MySingleton.getInstance(((Activity) mHomeView).getApplicationContext()).addToRequestQueue(timeRequest);
     }
-
-
-//    private void fakeData() {
-//        productsSuggestion = new ArrayList<>();
-//        List<Specification> specifications = new ArrayList<>();
-//        specifications.add(new Specification("Bảo hành", "36"));
-//        specifications.add(new Specification("Thương hiệu", "Asrock"));
-//        specifications.add(new Specification("Model", "H110M-DVS R2.0"));
-//        specifications.add(new Specification("Loại", "Micro-ATX"));
-//        specifications.add(new Specification("Loại Socket", "LGA 1151"));
-//        specifications.add(new Specification("Chipset", "Intel H110"));
-//        specifications.add(new Specification("Số khe Ram", "2"));
-//        specifications.add(new Specification("Dung lượng Ram tối đa", "32GB"));
-//        specifications.add(new Specification("Loại Ram", "DDR4 2133"));
-//        specifications.add(new Specification("VGA Onboard", "Intel HD Graphics"));
-//
-//        ProductType productType = new ProductType("5b98a6a6fe67871b2068add0", "Bo mạch chủ");
-//        Store store = new Store("5b989eb9a6bce5234c9522ea", "Máy tính Phong Vũ");
-//
-////        List<ProductImage> imageList_1603653 = new ArrayList<>();
-////        imageList_1603653.add(new ProductImage("5b98a6a6fe67871b2068add0", R.drawable.img_1603653_1));
-////
-////        List<ProductImage> imageList_1600666 = new ArrayList<>();
-////        imageList_1600666.add(new ProductImage("5b98a6a6fe67871b2068add0", R.drawable.img_1600666));
-////
-////        List<ProductImage> imageList_1701299 = new ArrayList<>();
-////        imageList_1701299.add(new ProductImage("5b98a6a6fe67871b2068add0", R.drawable.img_1701299));
-////
-////        List<ProductImage> imageList_1704264 = new ArrayList<>();
-////        imageList_1704264.add(new ProductImage("5b98a6a6fe67871b2068add0", R.drawable.img_1704264));
-////
-////        List<ProductImage> imageList_1501266 = new ArrayList<>();
-////        imageList_1501266.add(new ProductImage("5b98a6a6fe67871b2068add0", R.drawable.img_1501266));
-//
-//        List<Overview> overviews = new ArrayList<>();
-//        overviews.add(new Overview("", "ASRock trang bị cho H110M-DVS R2.0 chuẩn linh kiện Super Alloy bền bỉ - trước đây vốn chỉ xuất hiện trên các bo mạch chủ trung cấp và cao cấp thể hiện trong thông điệp Stable and Reliable - Ổn định và tin cậy."));
-//
-//        Product product_1603653 = new Product("1603653", productType, store, "Bo mạch chính/ Mainboard Asrock H110M-DVS R2.0", "1320", specifications, overviews, "New", new SaleOff("1", 5));
-//        Product product_1600666 = new Product("1600666", productType, store, "Bo mạch chính/ Mainboard Gigabyte H110M-DS2 DDR4", "1465", specifications, overviews, "New", new SaleOff("1", 6));
-//        Product product_1701299 = new Product("1701299", productType, store, "Bo mạch chính/ Mainboard Gigabyte B250M-Gaming 3", "1899", specifications, overviews, "New", new SaleOff("1", 0));
-//        Product product_1704264 = new Product("1704264", productType, store, "Bo mạch chính/ Mainboard Msi A320M Bazooka", "2180", specifications, overviews, "New", new SaleOff("1", 0));
-//        Product product_1501266 = new Product("1501266", productType, store, "Bo mạch chính/ Mainboard Asus H81M-K", "1280", specifications, overviews, "New", new SaleOff("1", 0));
-//
-//        productsSuggestion.add(product_1603653);
-//        productsSuggestion.add(product_1600666);
-//        productsSuggestion.add(product_1701299);
-//        productsSuggestion.add(product_1704264);
-//        productsSuggestion.add(product_1501266);
-//
-////        productTypes = new ArrayList<>();
-////        productTypes.add(new ProductType("5b98a6a6fe67871b2068add0", "Bộ xử lý - CPU", R.drawable.processor));
-////        productTypes.add(new ProductType("5b98a6a6fe67871b2068add0", "Bo mạch chủ", R.drawable.motherboard));
-////        productTypes.add(new ProductType("5b98a6a6fe67871b2068add0", "Card màn hình", R.drawable.vga_card));
-////        productTypes.add(new ProductType("5b98a6a6fe67871b2068add0", "Nguồn - PSU", R.drawable.psu));
-////        productTypes.add(new ProductType("5b98a6a6fe67871b2068add0", "Thùng máy - Case", R.drawable.case_pc));
-////        productTypes.add(new ProductType("5b98a6a6fe67871b2068add0", "Tản nhiệt", R.drawable.radial_fan));
-////        productTypes.add(new ProductType("5b98a6a6fe67871b2068add0", "Màn hình", R.drawable.monitor));
-////        productTypes.add(new ProductType("5b98a6a6fe67871b2068add0", "RAM", R.drawable.memory));
-////        productTypes.add(new ProductType("5b98a6a6fe67871b2068add0", "SSD & HDD", R.drawable.ssd_hdd));
-////        productTypes.add(new ProductType("5b98a6a6fe67871b2068add0", "Chuột & Bàn phím", R.drawable.mouse));
-////        productTypes.add(new ProductType("5b98a6a6fe67871b2068add0", "Webcam", R.drawable.webcam));
-//    }
 }

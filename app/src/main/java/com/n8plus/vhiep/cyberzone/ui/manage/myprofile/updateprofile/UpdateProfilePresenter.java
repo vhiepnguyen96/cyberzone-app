@@ -92,7 +92,7 @@ public class UpdateProfilePresenter implements UpdateProfileContract.Presenter {
         updateOps.put(phoneObject);
         updateOps.put(emailObject);
 
-        JsonArrayRequest updateRequest = new JsonArrayRequest(Request.Method.PATCH, URL_CUSTOMER + "/" + Constant.customerId, updateOps,
+        JsonArrayRequest updateRequest = new JsonArrayRequest(Request.Method.PATCH, URL_CUSTOMER + "/" + Constant.customer.getId(), updateOps,
                 new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {

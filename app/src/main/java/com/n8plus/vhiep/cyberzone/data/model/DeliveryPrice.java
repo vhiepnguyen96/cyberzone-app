@@ -7,18 +7,26 @@ import java.io.Serializable;
 public class DeliveryPrice implements Serializable {
     @SerializedName("_id")
     private String id;
-    @SerializedName("productQuantity")
-    private int productQuantity;
+    @SerializedName("totalPriceMin")
+    private int totalPriceMin;
+    @SerializedName("totalPriceMax")
+    private int totalPriceMax;
     @SerializedName("transportFee")
     private String transportFee;
     @SerializedName("description")
     private String description;
 
-    public DeliveryPrice(String id, int productQuantity, String transportFee, String description) {
+    public DeliveryPrice(String id, int totalPriceMin, int totalPriceMax, String transportFee, String description) {
         this.id = id;
-        this.productQuantity = productQuantity;
+        this.totalPriceMin = totalPriceMin;
+        this.totalPriceMax = totalPriceMax;
         this.transportFee = transportFee;
         this.description = description;
+    }
+
+    public DeliveryPrice(String id, String transportFee) {
+        this.id = id;
+        this.transportFee = transportFee;
     }
 
     public String getId() {
@@ -29,12 +37,20 @@ public class DeliveryPrice implements Serializable {
         this.id = id;
     }
 
-    public int getProductQuantity() {
-        return productQuantity;
+    public int getTotalPriceMin() {
+        return totalPriceMin;
     }
 
-    public void setProductQuantity(int productQuantity) {
-        this.productQuantity = productQuantity;
+    public void setTotalPriceMin(int totalPriceMin) {
+        this.totalPriceMin = totalPriceMin;
+    }
+
+    public int getTotalPriceMax() {
+        return totalPriceMax;
+    }
+
+    public void setTotalPriceMax(int totalPriceMax) {
+        this.totalPriceMax = totalPriceMax;
     }
 
     public String getTransportFee() {

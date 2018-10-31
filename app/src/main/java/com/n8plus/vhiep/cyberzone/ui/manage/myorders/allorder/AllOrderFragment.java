@@ -12,6 +12,7 @@ import android.widget.ListView;
 import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.data.model.Order;
 import com.n8plus.vhiep.cyberzone.ui.manage.myorders.adapter.MyOrderAdapter;
+import com.n8plus.vhiep.cyberzone.util.Constant;
 
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class AllOrderFragment extends Fragment implements AllOrderContract.View 
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mListAllOrder = (ListView) view.findViewById(R.id.lv_all_order);
 
-        mAllOrderPresenter.loadData();
+        mAllOrderPresenter.loadAllOrder(Constant.customer.getId());
 
         super.onViewCreated(view, savedInstanceState);
     }
@@ -40,6 +41,10 @@ public class AllOrderFragment extends Fragment implements AllOrderContract.View 
     public void setAdapterAllOrder(List<Order> orderList) {
         mMyOrderAdapter = new MyOrderAdapter(mListAllOrder.getContext(), R.layout.row_my_order, orderList);
         mListAllOrder.setAdapter(mMyOrderAdapter);
+    }
 
+    @Override
+    public void setNotifyDataSetChanged() {
+        mMyOrderAdapter.notifyDataSetChanged();
     }
 }

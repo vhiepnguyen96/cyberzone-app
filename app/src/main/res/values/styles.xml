@@ -42,6 +42,11 @@
         <item name="android:textColor">@color/colorPrimary</item>
     </style>
 
+    <style name="HintEditTextCustom" parent="TextAppearance.Design.Hint">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/whiteColor</item>
+    </style>
+
     <style name="TextView.InputLabel" parent="TextAppearance.AppCompat.Caption">
         <item name="android:textColor">?android:textColorHint</item>
         <item name="android:textSize">14sp</item>
@@ -92,5 +97,19 @@
 
     <style name="FullscreenActionBarStyle" parent="Widget.AppCompat.ActionBar">
         <item name="android:background">@color/black_overlay</item>
+    </style>
+
+    <style name="AppTheme.Dark.Dialog" parent="Theme.AppCompat.Dialog">
+        <item name="colorAccent">@color/white</item>
+        <item name="android:textColorPrimary">@color/whiteColor</item>
+        <item name="android:background">@color/colorPrimary</item>
+    </style>
+
+    <style name="FacebookLoginButton">
+        <item name="android:textSize">14sp</item>
+        <item name="android:background">@color/colorPrimary</item>
+        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:layout_gravity">center_horizontal</item>
     </style>
 </resources>

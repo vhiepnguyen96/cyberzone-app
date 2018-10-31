@@ -43,6 +43,7 @@ import com.bignerdranch.expandablerecyclerview.Model.ParentObject;
 import com.n8plus.vhiep.cyberzone.data.model.Filter;
 import com.n8plus.vhiep.cyberzone.data.model.FilterChild;
 import com.n8plus.vhiep.cyberzone.ui.cart.CartActivity;
+import com.n8plus.vhiep.cyberzone.ui.login.LoginActivity;
 import com.n8plus.vhiep.cyberzone.ui.manage.ManageActivity;
 import com.n8plus.vhiep.cyberzone.ui.product.adapter.FilterExpandableAdapter;
 import com.n8plus.vhiep.cyberzone.ui.product.adapter.ProductVerticalAdapter;
@@ -53,6 +54,7 @@ import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.ui.home.HomeActivity;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.ItemDecorationColumns;
+import com.n8plus.vhiep.cyberzone.util.SessionManager;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -77,9 +79,10 @@ public class ProductActivity extends AppCompatActivity implements ProductContrac
     private RecyclerProductAdapter mRecyclerProductAdapter;
     private FilterExpandableAdapter mFilterExpandableAdapter;
     private ProductPresenter mProductPresenter;
+    private SessionManager mSessionManager;
+    private Menu mMenu;
     private static int layout = 0;
-    private List<Product> mProductList;
-    private ArrayList<ParentObject> mFilterObject;
+    //    private ArrayList<ParentObject> mFilterObject;
     private ItemDecorationColumns mItemDecorationColumns;
     private DividerItemDecoration mDividerItemDecoration;
     private String[] mSortArray;
@@ -100,6 +103,7 @@ public class ProductActivity extends AppCompatActivity implements ProductContrac
 
         // Presenter
         mProductPresenter = new ProductPresenter(this);
+        mSessionManager = new SessionManager(this);
 
         Intent intent = getIntent();
         if (intent != null && intent.getStringExtra("productTypeId") != null) {
@@ -119,10 +123,7 @@ public class ProductActivity extends AppCompatActivity implements ProductContrac
         mImageBackHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(ProductActivity.this, HomeActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
+                finish();
             }
         });
 
@@ -140,28 +141,29 @@ public class ProductActivity extends AppCompatActivity implements ProductContrac
                 layout++;
                 if (layout % 2 == 1) {
                     mImageLayoutRecycler.setImageResource(R.drawable.grid);
-                    mRecyclerProduct.setLayoutManager(new LinearLayoutManager(mRecyclerProduct.getContext(), LinearLayoutManager.VERTICAL, false));
-                    mRecyclerProductAdapter = new RecyclerProductAdapter(R.layout.row_product_item_vertical, mProductList);
-                    mRecyclerProduct.removeItemDecoration(mItemDecorationColumns);
-                    mRecyclerProduct.addItemDecoration(mDividerItemDecoration);
-                    mRecyclerProduct.setAdapter(mRecyclerProductAdapter);
+                    mProductPresenter.changeProductLinearLayout();
 
                 } else {
                     mImageLayoutRecycler.setImageResource(R.drawable.linear);
-                    mRecyclerProduct.setLayoutManager(new GridLayoutManager(mRecyclerProduct.getContext(), 2));
-                    mRecyclerProductAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, mProductList);
-                    mRecyclerProduct.removeItemDecoration(mDividerItemDecoration);
-                    mRecyclerProduct.addItemDecoration(mItemDecorationColumns);
-                    mRecyclerProduct.setAdapter(mRecyclerProductAdapter);
+                    mProductPresenter.changeProductGridLayout();
                 }
             }
         });
 
         mSpinnerSort.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 1) {
+                if (position == 0) {
+                    if (mRecyclerProductAdapter != null) {
+                        Collections.sort(mRecyclerProductAdapter.getProductList(), new Comparator<Product>() {
+                            @Override
+                            public int compare(Product o1, Product o2) {
+                                return Float.valueOf(o2.getAverageReview()).compareTo(Float.valueOf(o1.getAverageReview()));
+                            }
+                        });
+                        mRecyclerProductAdapter.notifyDataSetChanged();
+                    }
+                } else if (position == 1) {
                     Collections.sort(mRecyclerProductAdapter.getProductList(), new Comparator<Product>() {
                         @Override
                         public int compare(Product o1, Product o2) {
@@ -189,13 +191,7 @@ public class ProductActivity extends AppCompatActivity implements ProductContrac
         mResetFilter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                for (int i = 0; i < mFilterObject.size(); i++) {
-                    ParentObject parentObject = mFilterObject.get(i);
-                    for (int j = 0; j < parentObject.getChildObjectList().size(); j++) {
-                        ((FilterChild) parentObject.getChildObjectList().get(j)).setState(false);
-                    }
-                }
-                mFilterExpandableAdapter.notifyDataSetChanged();
+                mProductPresenter.resetFilter();
             }
         });
 
@@ -213,30 +209,30 @@ public class ProductActivity extends AppCompatActivity implements ProductContrac
         mSearchProduct.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                mRecyclerProductAdapter.searchProduct(query);
-                if (query.isEmpty()) {
-                    mSpinnerSort.setSelection(0);
-                }
-                displayNotFound(mRecyclerProductAdapter.getProductList().size() == 0 ? true : false);
+                mProductPresenter.loadProductByKeyWord(query);
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                mRecyclerProductAdapter.searchProduct(newText);
-                if (newText.isEmpty()) {
-                    mSpinnerSort.setSelection(0);
-                }
-                displayNotFound(mRecyclerProductAdapter.getProductList().size() == 0 ? true : false);
-                return true;
+                return false;
             }
         });
 
+        mSearchProduct.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    mProductPresenter.loadProductByKeyWord(mSearchProduct.getQuery().toString());
+                }
+            }
+        });
     }
 
     @Override
     protected void onRestart() {
         setCartMenuItem();
+        prepareOptionMenu(mSessionManager.isLoggedIn());
         super.onRestart();
     }
 
@@ -276,7 +272,6 @@ public class ProductActivity extends AppCompatActivity implements ProductContrac
         mItemDecorationColumns = new ItemDecorationColumns(10, 2);
         mDividerItemDecoration = new DividerItemDecoration(mRecyclerProduct.getContext(), DividerItemDecoration.VERTICAL);
         mDividerItemDecoration.setDrawable(getResources().getDrawable(R.drawable.divider_linear_layout));
-        mRecyclerProduct.addItemDecoration(mItemDecorationColumns);
     }
 
     public void setCountFilter(int count) {
@@ -336,6 +331,13 @@ public class ProductActivity extends AppCompatActivity implements ProductContrac
             case R.id.mnu_account:
                 startActivity(new Intent(ProductActivity.this, ManageActivity.class));
                 break;
+            case R.id.mnu_signin:
+                startActivity(new Intent(ProductActivity.this, LoginActivity.class));
+                break;
+            case R.id.mnu_signout:
+                mSessionManager.signOut();
+                prepareOptionMenu(mSessionManager.isLoggedIn());
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -343,7 +345,8 @@ public class ProductActivity extends AppCompatActivity implements ProductContrac
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_bar, menu);
-        menu.findItem(R.id.mnu_wishlist).setVisible(false);
+        mMenu = menu;
+        prepareOptionMenu(mSessionManager.isLoggedIn());
         menu.findItem(R.id.mnu_cart).setActionView(R.layout.cart_menu_item);
         return super.onCreateOptionsMenu(menu);
     }
@@ -367,11 +370,23 @@ public class ProductActivity extends AppCompatActivity implements ProductContrac
     }
 
     @Override
-    public void setAdapterProduct(List<Product> products) {
-        mProductList = products;
-        mRecyclerProduct.setLayoutManager(new GridLayoutManager(this, 2));
-        mRecyclerProductAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, mProductList);
-        mRecyclerProduct.setAdapter(mRecyclerProductAdapter);
+    public void setAdapterProduct(List<Product> products, String layout) {
+        displayNotFound(products.size() == 0 ? true : false);
+        if (layout.equals("GridLayout")) {
+            mRecyclerProduct.setLayoutManager(new GridLayoutManager(this, 2));
+            mRecyclerProductAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, products);
+            mRecyclerProduct.setAdapter(mRecyclerProductAdapter);
+            mRecyclerProduct.removeItemDecoration(mDividerItemDecoration);
+            if (mRecyclerProduct.getItemDecorationCount() == 0) {
+                mRecyclerProduct.addItemDecoration(mItemDecorationColumns);
+            }
+        } else {
+            mRecyclerProduct.setLayoutManager(new LinearLayoutManager(mRecyclerProduct.getContext(), LinearLayoutManager.VERTICAL, false));
+            mRecyclerProductAdapter = new RecyclerProductAdapter(R.layout.row_product_item_vertical, products);
+            mRecyclerProduct.removeItemDecoration(mItemDecorationColumns);
+            mRecyclerProduct.addItemDecoration(mDividerItemDecoration);
+            mRecyclerProduct.setAdapter(mRecyclerProductAdapter);
+        }
     }
 
     @Override
@@ -381,8 +396,7 @@ public class ProductActivity extends AppCompatActivity implements ProductContrac
 
     @Override
     public void generateFilters(ArrayList<ParentObject> parentObjects) {
-        mFilterObject = parentObjects;
-        mFilterExpandableAdapter = new FilterExpandableAdapter(mRecyclerFilter.getContext(), mFilterObject);
+        mFilterExpandableAdapter = new FilterExpandableAdapter(mRecyclerFilter.getContext(), parentObjects);
         mFilterExpandableAdapter.setCustomParentAnimationViewId(R.id.ibn_header_more);
         mFilterExpandableAdapter.setParentClickableViewAnimationDefaultDuration();
         mFilterExpandableAdapter.setParentAndIconExpandOnClick(true);
@@ -402,5 +416,30 @@ public class ProductActivity extends AppCompatActivity implements ProductContrac
     public void setCartMenuItem() {
         mFrameProductCount.setVisibility(Constant.countProductInCart() == 0 ? View.INVISIBLE : View.VISIBLE);
         mTextProductCount.setText(String.valueOf(Constant.countProductInCart()));
+    }
+
+    @Override
+    public void setKeyword(String keyword) {
+        mSearchProduct.setQuery(keyword, false);
+    }
+
+    public void prepareOptionMenu(boolean isLoggedIn) {
+        if (isLoggedIn) {
+            mMenu.findItem(R.id.mnu_account).setVisible(true);
+            mMenu.findItem(R.id.mnu_signout).setVisible(true);
+            mMenu.findItem(R.id.mnu_signin).setVisible(false);
+        } else {
+            mMenu.findItem(R.id.mnu_signin).setVisible(true);
+            mMenu.findItem(R.id.mnu_account).setVisible(false);
+            mMenu.findItem(R.id.mnu_signout).setVisible(false);
+        }
+    }
+
+    public void searchProductLocal(String query) {
+        mRecyclerProductAdapter.searchProduct(query);
+        if (query.isEmpty()) {
+            mSpinnerSort.setSelection(0);
+        }
+        displayNotFound(mRecyclerProductAdapter.getProductList().size() == 0 ? true : false);
     }
 }

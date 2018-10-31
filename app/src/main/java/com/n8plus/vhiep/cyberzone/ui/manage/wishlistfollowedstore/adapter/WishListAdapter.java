@@ -12,17 +12,19 @@ import android.widget.TextView;
 import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.data.model.Product;
 import com.n8plus.vhiep.cyberzone.data.model.WishList;
+import com.n8plus.vhiep.cyberzone.ui.manage.wishlistfollowedstore.wishlist.WishListFragment;
 import com.n8plus.vhiep.cyberzone.ui.product.adapter.ProductVerticalAdapter;
 import com.squareup.picasso.Picasso;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 public class WishListAdapter extends BaseAdapter {
-    private Context context;
+    private WishListFragment context;
     private int resource;
-    private WishList wishList;
+    private List<WishList> wishList;
 
-    public WishListAdapter(Context context, int resource, WishList wishList) {
+    public WishListAdapter(WishListFragment context, int resource, List<WishList> wishList) {
         this.context = context;
         this.resource = resource;
         this.wishList = wishList;
@@ -30,18 +32,18 @@ public class WishListAdapter extends BaseAdapter {
 
     public class ViewHolder {
         public ImageView img_wishlist_product;
-        public TextView tv_wishlist_name_store, tv_wishlist_product_name, tv_wishlist_product_price, tv_wishlist_productbasic_price, tv_wishlist_discount;
-        public LinearLayout lnr_remove_wishlist, lnr_add_to_cart;
+        public TextView tv_wishlist_product_name, tv_wishlist_product_price, tv_wishlist_product_basic_price, tv_wishlist_product_discount;
+        public LinearLayout lnr_product, lnr_product_discount, lnr_remove_wishlist, lnr_add_to_cart;
     }
 
     @Override
     public int getCount() {
-        return wishList.getProductList().size();
+        return wishList.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return wishList.getProductList().get(position);
+        return wishList.get(position);
     }
 
     @Override
@@ -50,18 +52,20 @@ public class WishListAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
+        DecimalFormat df = new DecimalFormat("#.000");
         if (convertView == null) {
-            LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater layoutInflater = (LayoutInflater) context.getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = layoutInflater.inflate(resource, null);
             holder = new ViewHolder();
             holder.img_wishlist_product = (ImageView) convertView.findViewById(R.id.img_wishlist_product);
-            holder.tv_wishlist_name_store = (TextView) convertView.findViewById(R.id.tv_wishlist_name_store);
             holder.tv_wishlist_product_name = (TextView) convertView.findViewById(R.id.tv_wishlist_product_name);
             holder.tv_wishlist_product_price = (TextView) convertView.findViewById(R.id.tv_wishlist_product_price);
-            holder.tv_wishlist_productbasic_price = (TextView) convertView.findViewById(R.id.tv_wishlist_productbasic_price);
-            holder.tv_wishlist_discount = (TextView) convertView.findViewById(R.id.tv_wishlist_discount);
+            holder.tv_wishlist_product_basic_price = (TextView) convertView.findViewById(R.id.tv_wishlist_product_basic_price);
+            holder.tv_wishlist_product_discount = (TextView) convertView.findViewById(R.id.tv_wishlist_product_discount);
+            holder.lnr_product = (LinearLayout) convertView.findViewById(R.id.lnr_product);
+            holder.lnr_product_discount = (LinearLayout) convertView.findViewById(R.id.lnr_product_discount);
             holder.lnr_remove_wishlist = (LinearLayout) convertView.findViewById(R.id.lnr_remove_wishlist);
             holder.lnr_add_to_cart = (LinearLayout) convertView.findViewById(R.id.lnr_add_to_cart);
 
@@ -70,25 +74,55 @@ public class WishListAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        Product product = wishList.getProductList().get(position);
-        holder.tv_wishlist_name_store.setText(product.getStore().getStoreName());
-        if (product.getImageList() != null && product.getImageList().size() > 0){
+        Product product = wishList.get(position).getProduct();
+        if (product.getImageList() != null && product.getImageList().size() > 0) {
             Picasso.get().load(product.getImageList().get(0).getImageURL()).into(holder.img_wishlist_product);
         }
-//        holder.img_wishlist_product.setImageResource(product.getImageList().get(0).getImageId());
         holder.tv_wishlist_product_name.setText(product.getProductName());
-        if (product.getSaleOff().getDiscount() > 0) {
-            holder.tv_wishlist_productbasic_price.setText(product.getPrice().toString());
-            float basicPrice = Float.valueOf(product.getPrice());
-            int discount = product.getSaleOff().getDiscount();
-            float salePrice = basicPrice - (basicPrice * discount / 100);
-            holder.tv_wishlist_product_price.setText(String.format("%.3f", salePrice));
-            holder.tv_wishlist_discount.setText(String.valueOf(product.getSaleOff().getDiscount()));
-            convertView.findViewById(R.id.layout_wishlist_discount).setVisibility(View.VISIBLE);
-        } else {
-            holder.tv_wishlist_product_price.setText(product.getPrice().toString());
-            convertView.findViewById(R.id.layout_wishlist_discount).setVisibility(View.INVISIBLE);
+
+        if (product.getPrice() != null) {
+            if (product.getSaleOff() != null && product.getSaleOff().getDiscount() > 0){
+                int basicPrice = Integer.valueOf(product.getPrice());
+                int discount = product.getSaleOff().getDiscount();
+                int salePrice = basicPrice - (basicPrice * discount / 100);
+
+                holder.tv_wishlist_product_basic_price.setText(basicPrice > 1000 ? df.format(Product.convertToPrice(String.valueOf(basicPrice))).replace(",", ".") : String.valueOf(basicPrice));
+                holder.tv_wishlist_product_price.setText(salePrice > 1000 ? df.format(Product.convertToPrice(String.valueOf(salePrice))).replace(",", ".") : String.valueOf(salePrice));
+
+                holder.tv_wishlist_product_discount.setText(String.valueOf(product.getSaleOff().getDiscount()));
+                holder.lnr_product_discount.setVisibility(View.VISIBLE);
+            } else {
+                holder.tv_wishlist_product_price.setText(Integer.valueOf(product.getPrice()) > 1000 ? df.format(Product.convertToPrice(product.getPrice())).replace(",", ".") : product.getPrice());
+                holder.lnr_product_discount.setVisibility(View.GONE);
+            }
         }
+
+        holder.lnr_product.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (context instanceof WishListFragment) {
+                    context.actionMoveToProductDetail(position);
+                }
+            }
+        });
+
+        holder.lnr_remove_wishlist.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (context instanceof WishListFragment) {
+                    context.actionRemoveFromWishList(position);
+                }
+            }
+        });
+
+        holder.lnr_add_to_cart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (context instanceof WishListFragment) {
+                    context.actionAddToCart(position);
+                }
+            }
+        });
 
         return convertView;
     }

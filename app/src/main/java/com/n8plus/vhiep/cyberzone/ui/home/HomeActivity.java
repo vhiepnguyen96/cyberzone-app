@@ -38,11 +38,19 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.facebook.login.LoginManager;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.n8plus.vhiep.cyberzone.R;
+import com.n8plus.vhiep.cyberzone.data.model.Account;
 import com.n8plus.vhiep.cyberzone.ui.home.adapter.PopularCategoryAdapter;
 import com.n8plus.vhiep.cyberzone.ui.home.adapter.ProductHorizontalAdapter;
 import com.n8plus.vhiep.cyberzone.ui.cart.CartActivity;
+import com.n8plus.vhiep.cyberzone.ui.login.LoginActivity;
 import com.n8plus.vhiep.cyberzone.ui.manage.ManageActivity;
 import com.n8plus.vhiep.cyberzone.ui.product.ProductActivity;
 import com.n8plus.vhiep.cyberzone.ui.home.navigation.category.CategoryFragment;
@@ -53,6 +61,7 @@ import com.n8plus.vhiep.cyberzone.data.model.Specification;
 import com.n8plus.vhiep.cyberzone.ui.product.adapter.RecyclerProductAdapter;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.ItemDecorationColumns;
+import com.n8plus.vhiep.cyberzone.util.SessionManager;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -72,7 +81,9 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     private SwipeRefreshLayout mRefreshLayout;
     private NestedScrollView mScrollViewMain;
     private HomePresenter mHomePresenter;
+    private SessionManager mSessionManager;
     private DividerItemDecoration mOnSaleItemDecoration, mBestSellerItemDecoration;
+    private Menu mMenuHome;
 
     FragmentManager fragmentManager;
     FragmentTransaction fragmentTransaction;
@@ -89,6 +100,7 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
         setFullScreenNavigationView();
         customDivider();
         mHomePresenter = new HomePresenter(this);
+        mSessionManager = new SessionManager(this);
 
         // Load fragment
         fragmentManager = getSupportFragmentManager();
@@ -110,6 +122,7 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
         // Set data
         mHomePresenter.loadData();
         mHomePresenter.loadAllProductType();
+        mHomePresenter.loadDataCustomer(mSessionManager.getAccountLogin());
 
         // Listener
         mCloseDrawer.setOnClickListener(new View.OnClickListener() {
@@ -166,11 +179,25 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
                 return false;
             }
         });
+
+        mSearchHome.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                mHomePresenter.prepareDataKeyword(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
     }
 
     @Override
     protected void onRestart() {
         setCartMenuItem();
+        prepareOptionMenu(mSessionManager.isLoggedIn());
         super.onRestart();
     }
 
@@ -224,6 +251,7 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
         mBestSellerItemDecoration.setDrawable(getResources().getDrawable(R.drawable.divider_horizontal));
         mRecyclerBestSeller.addItemDecoration(mBestSellerItemDecoration);
         mRecyclerOnSales.addItemDecoration(mOnSaleItemDecoration);
+        mRecyclerSuggestion.addItemDecoration(new ItemDecorationColumns(10, 2));
     }
 
     public void hideKeyboard(View view) {
@@ -247,7 +275,14 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
             case R.id.mnu_account:
                 startActivity(new Intent(HomeActivity.this, ManageActivity.class));
                 break;
-
+            case R.id.mnu_signin:
+                startActivity(new Intent(HomeActivity.this, LoginActivity.class));
+                break;
+            case R.id.mnu_signout:
+                mSessionManager.signOut();
+                prepareOptionMenu(mSessionManager.isLoggedIn());
+                setNameCustomer("");
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -255,9 +290,24 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_bar, menu);
-        menu.findItem(R.id.mnu_wishlist).setVisible(false);
+        mMenuHome = menu;
+        prepareOptionMenu(mSessionManager.isLoggedIn());
         menu.findItem(R.id.mnu_cart).setActionView(R.layout.cart_menu_item);
         return super.onCreateOptionsMenu(menu);
+    }
+
+    public void prepareOptionMenu(boolean isLoggedIn) {
+        if (mMenuHome != null){
+            if (isLoggedIn) {
+                mMenuHome.findItem(R.id.mnu_account).setVisible(true);
+                mMenuHome.findItem(R.id.mnu_signout).setVisible(true);
+                mMenuHome.findItem(R.id.mnu_signin).setVisible(false);
+            } else {
+                mMenuHome.findItem(R.id.mnu_signin).setVisible(true);
+                mMenuHome.findItem(R.id.mnu_account).setVisible(false);
+                mMenuHome.findItem(R.id.mnu_signout).setVisible(false);
+            }
+        }
     }
 
     @Override
@@ -284,6 +334,7 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
         mBestSellerAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, productList);
         mRecyclerBestSeller.setLayoutManager(mLayoutBestSeller);
         mRecyclerBestSeller.setAdapter(mBestSellerAdapter);
+        mRecyclerBestSeller.setNestedScrollingEnabled(true);
     }
 
     @Override
@@ -292,30 +343,37 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
         mOnSaleAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, productList);
         mRecyclerOnSales.setLayoutManager(mLayoutOnSale);
         mRecyclerOnSales.setAdapter(mOnSaleAdapter);
+        mRecyclerOnSales.setNestedScrollingEnabled(true);
     }
 
     @Override
     public void setAdapterPopularCategory(List<ProductType> productTypeList) {
-        mRecyclerPopularCategory.setHasFixedSize(true);
-        mRecyclerPopularCategory.setNestedScrollingEnabled(false);
         mPopularCategoryAdapter = new PopularCategoryAdapter(productTypeList);
         mRecyclerPopularCategory.setLayoutManager(new GridLayoutManager(mRecyclerPopularCategory.getContext(), 3));
         mRecyclerPopularCategory.setAdapter(mPopularCategoryAdapter);
+        mRecyclerPopularCategory.setHasFixedSize(true);
+        mRecyclerPopularCategory.setNestedScrollingEnabled(false);
+    }
+
+    @Override
+    public void setNameCustomer(String nameCustomer) {
+        mTextName.setText("Chào, " + nameCustomer);
     }
 
     @Override
     public void setAdapterSuggestion(List<Product> productList) {
-        mRecyclerSuggestion.setNestedScrollingEnabled(false);
         mSuggestionAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, productList);
         mRecyclerSuggestion.setLayoutManager(new GridLayoutManager(mRecyclerSuggestion.getContext(), 2));
         mRecyclerSuggestion.setAdapter(mSuggestionAdapter);
-        mRecyclerSuggestion.addItemDecoration(new ItemDecorationColumns(10, 2));
+        mRecyclerSuggestion.setNestedScrollingEnabled(false);
     }
 
     @Override
     public void setCartMenuItem() {
-        mFrameProductCount.setVisibility(Constant.countProductInCart() == 0 ? View.INVISIBLE : View.VISIBLE);
-        mTextProductCount.setText(String.valueOf(Constant.countProductInCart()));
+        if (mFrameProductCount != null){
+            mFrameProductCount.setVisibility(Constant.countProductInCart() == 0 ? View.INVISIBLE : View.VISIBLE);
+            mTextProductCount.setText(String.valueOf(Constant.countProductInCart()));
+        }
     }
 
     @Override
@@ -344,10 +402,17 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     }
 
     @Override
-    public void moveToProductActivity(String productTypeId) {
+    public void moveToProductActivity(String productTypeId, String keyword) {
         Intent intent = new Intent(HomeActivity.this, ProductActivity.class);
-        intent.putExtra("productTypeId", productTypeId);
+        if (productTypeId != null) intent.putExtra("productTypeId", productTypeId);
+        if (keyword != null) intent.putExtra("keyword", keyword);
         startActivity(intent);
+    }
+
+    @Override
+    public void moveToLoginActivity() {
+        Intent signInIntent = new Intent(HomeActivity.this, LoginActivity.class);
+        startActivity(signInIntent);
     }
 }
 

@@ -22,6 +22,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.n8plus.vhiep.cyberzone.R;
+import com.n8plus.vhiep.cyberzone.data.model.Address;
+import com.n8plus.vhiep.cyberzone.data.model.Order;
 import com.n8plus.vhiep.cyberzone.ui.checkorder.CheckOrderActivity;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.ErrorDialogHandler;
@@ -48,14 +50,13 @@ import java.util.concurrent.Callable;
 
 
 public class PaymentActivity extends AppCompatActivity implements PaymentContract.View {
-    private TextView mTotalProduct, mSubTotalPrice, mShippingFee, mTotalPrice;
+    private TextView mOrderId, mTotalProduct, mSubTotalPrice, mShippingFee, mTotalPrice, mTotalPriceUSD, mCustomerName, mCustomerPhone, mCustomerAddress;
     private CardMultilineWidget mCardInputWidget;
-    private Button mPayment;
+    private Button mPayment, mConfirmOrder;
     private PaymentPresenter mPaymentPresenter;
     ErrorDialogHandler mErrorDialogHandler;
     private Stripe mStripe;
     private Card mCard;
-    private Integer mAmount;
     private String mName;
     private Token mToken;
 
@@ -66,7 +67,7 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
         initView();
 
         // Custom
-        setBackgroundStatusBar();
+//        setBackgroundStatusBar();
         customToolbar();
         mErrorDialogHandler = new ErrorDialogHandler(getSupportFragmentManager());
 
@@ -74,8 +75,8 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
         mPaymentPresenter = new PaymentPresenter(this);
 
         Intent intent = getIntent();
-        if (intent != null) {
-            mPaymentPresenter.loadDataPayment(intent.getStringExtra("countProduct"), intent.getIntExtra("tempPrice", 0), intent.getIntExtra("deliveryPrice", 0));
+        if (intent != null && intent.getSerializableExtra("order") != null) {
+            mPaymentPresenter.loadDataPayment((Order) intent.getSerializableExtra("order"));
         }
 
         // Listener
@@ -85,61 +86,59 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
                 submitCard();
             }
         });
+
+        mConfirmOrder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPaymentPresenter.confirmOrder();
+            }
+        });
     }
 
     public void submitCard() {
-        Card cardToSave = mCardInputWidget.getCard();
-
-//        Card cardToSave = new Card("4242424242424242", 01, 19, "444");
-
-        if (cardToSave == null) {
+        mCard = mCardInputWidget.getCard();
+        if (mCard == null) {
             mErrorDialogHandler.showError("Invalid Card Data");
             return;
+        } else {
+            mStripe = new Stripe(PaymentActivity.this, "pk_test_CeyyXLIDl0bfY9IiYwTIYZAU");
+            mStripe.createToken(
+                    mCard,
+                    new TokenCallback() {
+                        @Override
+                        public void onError(Exception error) {
+                            Toast.makeText(getApplicationContext(),
+                                    error.getLocalizedMessage(),
+                                    Toast.LENGTH_LONG).show();
+                        }
+
+                        @Override
+                        public void onSuccess(Token token) {
+                            mToken = token;
+                            if (!mToken.getUsed()) {
+                                Log.i("Token id: ", mToken.getId());
+                                Toast.makeText(getApplicationContext(), "Token: " + mToken.getId(), Toast.LENGTH_SHORT).show();
+                                mPaymentPresenter.chectOut(mToken);
+                            }
+                        }
+                    }
+            );
         }
-
-        mStripe = new Stripe(getApplicationContext());
-        mStripe.createToken(cardToSave, "pk_test_CeyyXLIDl0bfY9IiYwTIYZAU", new TokenCallback() {
-            @Override
-            public void onError(Exception error) {
-                Toast.makeText(getApplicationContext(),
-                        error.getLocalizedMessage(),
-                        Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            public void onSuccess(Token token) {
-                Log.i("Token", token.getId());
-                Toast.makeText(getApplicationContext(), "Token: "+token.getId(), Toast.LENGTH_SHORT).show();
-                mPaymentPresenter.chectOut(token);
-            }
-        });
-
-//        mStripe.createToken(
-//                cardToSave,
-//                new TokenCallback() {
-//                    @Override
-//                    public void onError(Exception error) {
-//                        Toast.makeText(getApplicationContext(),
-//                                error.getLocalizedMessage(),
-//                                Toast.LENGTH_LONG).show();
-//                    }
-//
-//                    @Override
-//                    public void onSuccess(Token token) {
-//                        Toast.makeText(getApplicationContext(), "Token: "+token.getId(), Toast.LENGTH_SHORT).show();
-//                        mPaymentPresenter.chectOut(token);
-//                    }
-//                }
-//        );
     }
 
     private void initView() {
+        mOrderId = (TextView) findViewById(R.id.tv_order_id);
         mTotalProduct = (TextView) findViewById(R.id.tv_total_product);
         mSubTotalPrice = (TextView) findViewById(R.id.tv_subtotal_price);
         mShippingFee = (TextView) findViewById(R.id.tv_shipping_fee);
         mTotalPrice = (TextView) findViewById(R.id.tv_total_price);
+        mTotalPriceUSD = (TextView) findViewById(R.id.tv_total_price_usd);
+        mCustomerName = (TextView) findViewById(R.id.tv_customer_name);
+        mCustomerPhone = (TextView) findViewById(R.id.tv_customer_phone);
+        mCustomerAddress = (TextView) findViewById(R.id.tv_customer_address);
         mCardInputWidget = (CardMultilineWidget) findViewById(R.id.card_stripe);
         mPayment = (Button) findViewById(R.id.btn_payment);
+        mConfirmOrder = (Button) findViewById(R.id.btn_confirm_order);
     }
 
     public void setBackgroundStatusBar() {
@@ -173,6 +172,20 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
     }
 
     @Override
+    public void setLayoutPayemnt(String payemntMethod) {
+        if (payemntMethod.equals("Thanh toán khi nhận hàng")){
+            findViewById(R.id.lnr_payment_cod).setVisibility(View.VISIBLE);
+        } else {
+            findViewById(R.id.lnr_payment_online).setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void setOrderId(String orderId) {
+        mOrderId.setText(orderId);
+    }
+
+    @Override
     public void setCountProduct(String countProduct) {
         mTotalProduct.setText(countProduct);
     }
@@ -190,5 +203,18 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
     @Override
     public void setTotalPrice(String totalPrice) {
         mTotalPrice.setText(totalPrice);
+    }
+
+    @Override
+    public void setTotalPriceUSD(String totalPriceUSD) {
+        findViewById(R.id.lnr_total_price_usd).setVisibility(View.VISIBLE);
+        mTotalPriceUSD.setText(totalPriceUSD);
+    }
+
+    @Override
+    public void setDeliveryAddress(Address deliveryAddress) {
+        mCustomerName.setText(deliveryAddress.getPresentation());
+        mCustomerPhone.setText(deliveryAddress.getPhone());
+        mCustomerAddress.setText(deliveryAddress.getAddress());
     }
 }

@@ -1,5 +1,6 @@
 package com.n8plus.vhiep.cyberzone.ui.productdetails;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
@@ -9,6 +10,7 @@ import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -33,6 +35,10 @@ import com.n8plus.vhiep.cyberzone.data.model.Product;
 import com.n8plus.vhiep.cyberzone.data.model.ProductImage;
 import com.n8plus.vhiep.cyberzone.data.model.PurchaseItem;
 import com.n8plus.vhiep.cyberzone.data.model.ReviewProduct;
+import com.n8plus.vhiep.cyberzone.data.model.Store;
+import com.n8plus.vhiep.cyberzone.ui.home.HomeActivity;
+import com.n8plus.vhiep.cyberzone.ui.login.LoginActivity;
+import com.n8plus.vhiep.cyberzone.ui.manage.ManageActivity;
 import com.n8plus.vhiep.cyberzone.ui.productdetails.adapter.CustomerRatingAdapter;
 import com.n8plus.vhiep.cyberzone.ui.productdetails.adapter.PolicyAdapter;
 import com.n8plus.vhiep.cyberzone.ui.productdetails.adapter.SlideImageAdapter;
@@ -45,6 +51,7 @@ import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.ui.product.ProductActivity;
 import com.n8plus.vhiep.cyberzone.ui.store.StoreActivity;
 import com.n8plus.vhiep.cyberzone.util.Constant;
+import com.n8plus.vhiep.cyberzone.util.SessionManager;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -78,7 +85,9 @@ public class ProductDetailActivity extends AppCompatActivity implements ProductD
     private SpecificationAdapter mSpecificationLiteAdapter;
     private PolicyAdapter mPolicyAdapter;
     private CustomerRatingAdapter mRatingProductAdapter;
+    private Menu mMenu;
     private ProductDetailPresenter mProductDetailPresenter;
+    private SessionManager mSessionManager;
     private ArrayList<Specification> mSpecifications = new ArrayList<Specification>();
     private static int wishlist = 0;
 
@@ -95,6 +104,7 @@ public class ProductDetailActivity extends AppCompatActivity implements ProductD
 
         // Presenter
         mProductDetailPresenter = new ProductDetailPresenter(this);
+        mSessionManager = new SessionManager(this);
 
         Intent intent = getIntent();
         if (intent != null) {
@@ -106,24 +116,24 @@ public class ProductDetailActivity extends AppCompatActivity implements ProductD
         mImageBackShop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(ProductDetailActivity.this, ProductActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
+                finish();
             }
         });
 
         mImageFavorite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                wishlist++;
-                if (wishlist % 2 == 1) {
-                    mImageFavorite.setImageResource(R.drawable.ic_favorite_red_24dp);
-                    Toast.makeText(v.getContext(), "Đã thêm vào danh sách yêu thích!", Toast.LENGTH_SHORT).show();
+                if (mSessionManager.isLoggedIn()) {
+                    wishlist++;
+                    if (wishlist % 2 == 1) {
+                        mProductDetailPresenter.addToWishList();
+                    } else {
+                        mProductDetailPresenter.removeFromWishList();
+                    }
                 } else {
-                    mImageFavorite.setImageResource(R.drawable.ic_favorite_border_black_24dp);
-                    Toast.makeText(v.getContext(), "Đã bỏ khỏi danh sách yêu thích!", Toast.LENGTH_SHORT).show();
+                    showRequireLogin();
                 }
+
             }
         });
 
@@ -154,10 +164,7 @@ public class ProductDetailActivity extends AppCompatActivity implements ProductD
         mGoToStore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(ProductDetailActivity.this, StoreActivity.class);
-//                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
+                mProductDetailPresenter.prepareDataStore();
             }
         });
 
@@ -252,6 +259,22 @@ public class ProductDetailActivity extends AppCompatActivity implements ProductD
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.mnu_home:
+                Intent intent = new Intent(ProductDetailActivity.this, HomeActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                break;
+            case R.id.mnu_account:
+                startActivity(new Intent(ProductDetailActivity.this, ManageActivity.class));
+                break;
+            case R.id.mnu_signin:
+                startActivity(new Intent(ProductDetailActivity.this, LoginActivity.class));
+                break;
+            case R.id.mnu_signout:
+                mSessionManager.signOut();
+                prepareOptionMenu(mSessionManager.isLoggedIn());
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -259,7 +282,8 @@ public class ProductDetailActivity extends AppCompatActivity implements ProductD
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_bar, menu);
-        menu.findItem(R.id.mnu_wishlist).setVisible(false);
+        mMenu = menu;
+        prepareOptionMenu(mSessionManager.isLoggedIn());
         menu.findItem(R.id.mnu_cart).setActionView(R.layout.cart_menu_item);
         return super.onCreateOptionsMenu(menu);
     }
@@ -308,6 +332,41 @@ public class ProductDetailActivity extends AppCompatActivity implements ProductD
         return super.onPrepareOptionsMenu(menu);
     }
 
+    public void prepareOptionMenu(boolean isLoggedIn) {
+        if (isLoggedIn) {
+            mMenu.findItem(R.id.mnu_account).setVisible(true);
+            mMenu.findItem(R.id.mnu_signout).setVisible(true);
+            mMenu.findItem(R.id.mnu_signin).setVisible(false);
+        } else {
+            mMenu.findItem(R.id.mnu_signin).setVisible(true);
+            mMenu.findItem(R.id.mnu_account).setVisible(false);
+            mMenu.findItem(R.id.mnu_signout).setVisible(false);
+        }
+    }
+
+    public void showRequireLogin() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Thông báo");
+        builder.setMessage("Bạn chưa đăng nhập!");
+        builder.setCancelable(false);
+        builder.setPositiveButton("Đăng nhập ngay", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                startActivity(new Intent(ProductDetailActivity.this, LoginActivity.class));
+                dialogInterface.dismiss();
+                finish();
+            }
+        });
+        builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
     @Override
     public void setImageList(List<ProductImage> imageList) {
         mSlideImage.setAdapter(new SlideImageAdapter(ProductDetailActivity.this, imageList));
@@ -320,17 +379,18 @@ public class ProductDetailActivity extends AppCompatActivity implements ProductD
     }
 
     @Override
-    public void setProductPrice(String price, int discount) {
-        int basicPrice = Integer.valueOf(price);
-        if (discount > 0) {
-            int salePrice = basicPrice - (basicPrice * discount / 100);
-            mPriceBasic.setText(String.format("%.3f", Product.convertToPrice(String.valueOf(basicPrice))));
-            mPriceSale.setText(String.format("%.3f", Product.convertToPrice(String.valueOf(salePrice))));
-            mLinearPriceOnSale.setVisibility(View.VISIBLE);
-        } else {
-            mPriceSale.setText(String.format("%.3f", Product.convertToPrice(String.valueOf(basicPrice))));
-            mLinearPriceOnSale.setVisibility(View.INVISIBLE);
-        }
+    public void setProductPrice(String price) {
+        mPriceBasic.setText(price);
+    }
+
+    @Override
+    public void setProductPriceSale(String priceSale) {
+        mPriceSale.setText(priceSale);
+    }
+
+    @Override
+    public void setLayoutPriceSale(boolean b) {
+        mLinearPriceOnSale.setVisibility(b ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -446,6 +506,13 @@ public class ProductDetailActivity extends AppCompatActivity implements ProductD
     }
 
     @Override
+    public void moveToStore(Store store) {
+        Intent intent = new Intent(ProductDetailActivity.this, StoreActivity.class);
+        intent.putExtra("store", store);
+        startActivity(intent);
+    }
+
+    @Override
     public void moveToCart() {
         startActivity(new Intent(ProductDetailActivity.this, CartActivity.class));
     }
@@ -459,6 +526,24 @@ public class ProductDetailActivity extends AppCompatActivity implements ProductD
     public void setCartMenuItem() {
         mFrameProductCount.setVisibility(Constant.countProductInCart() == 0 ? View.INVISIBLE : View.VISIBLE);
         mTextProductCount.setText(String.valueOf(Constant.countProductInCart()));
+    }
+
+    @Override
+    public void setWishListResult(boolean b) {
+        mImageFavorite.setImageResource(b ? R.drawable.ic_favorite_red_24dp : R.drawable.ic_favorite_border_black_24dp);
+        wishlist = b ? 1 : 0;
+    }
+
+    @Override
+    public void addToWishListResult(boolean b) {
+        Toast.makeText(this, b ? "Đã thêm vào danh sách yêu thích!" : "Vui lòng thử lại!", Toast.LENGTH_SHORT).show();
+        mImageFavorite.setImageResource(b ? R.drawable.ic_favorite_red_24dp : R.drawable.ic_favorite_border_black_24dp);
+    }
+
+    @Override
+    public void removeFromWishListResult(boolean b) {
+        Toast.makeText(this, b ? "Đã xóa khỏi danh sách yêu thích!" : "Vui lòng thử lại!", Toast.LENGTH_SHORT).show();
+        mImageFavorite.setImageResource(b ? R.drawable.ic_favorite_border_black_24dp : R.drawable.ic_favorite_red_24dp);
     }
 
 

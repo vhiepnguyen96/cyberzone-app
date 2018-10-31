@@ -45,9 +45,19 @@ public class CustomerReviewAdapter extends RecyclerView.Adapter<CustomerReviewAd
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ReviewStore reviewStore = reviewStoreList.get(position);
-        holder.nameCustomer.setText(reviewStore.getNameCustomer());
+        holder.nameCustomer.setText(reviewStore.getCustomer().getName());
         holder.dateReview.setText(DateFormat.getDateInstance(DateFormat.SHORT).format(reviewStore.getDateReview()));
-        holder.review.setImageResource(reviewStore.getRatingLevel());
+        switch (reviewStore.getRatingLevel().getLevel()){
+            case 1:
+                holder.review.setImageResource(R.drawable.emoji_good);
+                break;
+            case 2:
+                holder.review.setImageResource(R.drawable.emoji_normal);
+                break;
+            case 3:
+                holder.review.setImageResource(R.drawable.emoji_notgood);
+                break;
+        }
         holder.contentReview.setText(reviewStore.getReview());
     }
 

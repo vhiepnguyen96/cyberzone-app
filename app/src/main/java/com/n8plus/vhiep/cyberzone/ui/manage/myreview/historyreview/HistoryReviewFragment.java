@@ -42,4 +42,9 @@ public class HistoryReviewFragment extends Fragment implements HistoryReviewCont
         mHistoryReviewAdapter = new HistoryReviewAdapter(mListHistoryReview.getContext(), R.layout.row_history_review, historyReviewList);
         mListHistoryReview.setAdapter(mHistoryReviewAdapter);
     }
+
+    @Override
+    public void setNotifyDataSetChanged() {
+        mHistoryReviewAdapter.notifyDataSetChanged();
+    }
 }

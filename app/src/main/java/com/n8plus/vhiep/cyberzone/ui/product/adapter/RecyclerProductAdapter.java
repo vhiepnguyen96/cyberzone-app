@@ -27,6 +27,8 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class RecyclerProductAdapter extends RecyclerView.Adapter<RecyclerProductAdapter.MyViewHolder> {
@@ -108,41 +110,21 @@ public class RecyclerProductAdapter extends RecyclerView.Adapter<RecyclerProduct
             int discount = product.getSaleOff().getDiscount();
             int salePrice = basicPrice - (basicPrice * discount / 100);
 
-            holder.txt_ver_productBasicPrice.setText(df.format(Product.convertToPrice(String.valueOf(basicPrice))));
-            holder.txt_ver_productPrice.setText(df.format(Product.convertToPrice(String.valueOf(salePrice))));
+            holder.txt_ver_productBasicPrice.setText(basicPrice > 1000 ? df.format(Product.convertToPrice(String.valueOf(basicPrice))).replace(",", ".") : String.valueOf(basicPrice));
+            holder.txt_ver_productPrice.setText(salePrice > 1000 ? df.format(Product.convertToPrice(String.valueOf(salePrice))).replace(",", ".") : String.valueOf(salePrice));
 
             holder.txt_ver_discount.setText(String.valueOf(product.getSaleOff().getDiscount()));
             holder.layout_ver_discount.setVisibility(View.VISIBLE);
         } else {
-            holder.txt_ver_productPrice.setText(df.format(Product.convertToPrice(product.getPrice())));
+            holder.txt_ver_productPrice.setText(Integer.valueOf(product.getPrice()) > 1000 ? df.format(Product.convertToPrice(product.getPrice())).replace(",", ".") : product.getPrice());
             holder.layout_ver_discount.setVisibility(View.GONE);
         }
 
         if (product.getReviewProducts() != null && product.getReviewProducts().size() > 0) {
             holder.lnr_product_rating_grid.setVisibility(View.VISIBLE);
             holder.tv_product_rating_count_grid.setText(String.valueOf(product.getReviewProducts().size()));
-            int c5star = 0, c4star = 0, c3star = 0, c2star = 0, c1star = 0;
-            for (int i = 0; i < product.getReviewProducts().size(); i++) {
-                switch ((int) product.getReviewProducts().get(i).getRatingStar().getRatingStar()) {
-                    case 5:
-                        c5star++;
-                        break;
-                    case 4:
-                        c4star++;
-                        break;
-                    case 3:
-                        c3star++;
-                        break;
-                    case 2:
-                        c2star++;
-                        break;
-                    case 1:
-                        c1star++;
-                        break;
-                }
-            }
-            float average_star = (5 * c5star + 4 * c4star + 3 * c3star + 2 * c2star + 1 * c1star) / product.getReviewProducts().size();
-            holder.rbr_product_rating_gird.setRating(average_star);
+
+            holder.rbr_product_rating_gird.setRating(product.getAverageReview());
         }
 
         holder.tv_store_location_product.setText(product.getStore().getLocation());
@@ -205,5 +187,19 @@ public class RecyclerProductAdapter extends RecyclerView.Adapter<RecyclerProduct
             }
         }
         notifyDataSetChanged();
+    }
+
+    public void sortPopularProduct() {
+        if (productList != null && productList.size() > 0) {
+            Collections.sort(productList, new Comparator<Product>() {
+                @Override
+                public int compare(Product o1, Product o2) {
+                    if (o1.getReviewProducts() != null && o2.getReviewProducts() != null) {
+                        return Float.valueOf(o2.getAverageReview()).compareTo(Float.valueOf(o1.getAverageReview()));
+                    } else return 0;
+                }
+            });
+            notifyDataSetChanged();
+        }
     }
 }

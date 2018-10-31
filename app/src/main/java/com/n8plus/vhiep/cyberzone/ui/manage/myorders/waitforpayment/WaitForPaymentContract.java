@@ -9,8 +9,9 @@ import java.util.List;
 public interface WaitForPaymentContract {
     interface View {
         void setAdapterWaitForPayment(List<Order> waitForPaymentList);
+        void setNotifyDataSetChanged();
     }
     interface Presenter extends BasePresenter<View> {
-        void loadData();
+        void loadOrderWaitToPayment(String customerId);
     }
 }

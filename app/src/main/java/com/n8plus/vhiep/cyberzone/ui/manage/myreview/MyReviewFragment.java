@@ -24,7 +24,7 @@ import com.n8plus.vhiep.cyberzone.ui.manage.myreview.historyreview.HistoryReview
 import com.n8plus.vhiep.cyberzone.ui.manage.myreview.notwritereview.NotWriteReviewFragment;
 import com.n8plus.vhiep.cyberzone.ui.store.adapter.SectionsPageAdapter;
 
-public class MyReviewFragment extends Fragment implements MyOrderContract.View {
+public class MyReviewFragment extends Fragment implements MyReviewContract.View {
     private Toolbar mToolbar;
     private TabLayout mTabReview;
     private ViewPager mViewPager;

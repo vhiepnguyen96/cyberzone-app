@@ -119,15 +119,15 @@
                     android:weightSum="10">
 
                     <LinearLayout
-                        android:layout_gravity="center"
                         android:layout_width="0dp"
                         android:layout_height="50dp"
                         android:layout_weight="2">
 
                         <ImageView
+                            android:layout_gravity="center"
                             android:id="@+id/img_product_review"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
                             android:src="@drawable/img_1501266" />
                     </LinearLayout>
 

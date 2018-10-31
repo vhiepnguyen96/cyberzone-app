@@ -93,22 +93,23 @@ public class ProductOrderAdapter extends BaseAdapter {
         DecimalFormat df = new DecimalFormat("#.000");
 
         if (resource == R.layout.row_product_order) {
-            if (product.getImageList() != null && product.getImageList().size() > 0) {
-                Picasso.get().load(product.getImageList().get(0).getImageURL()).into(holder.img_order_product);
+            if (product.getImageDefault() != null) {
+                Picasso.get().load(product.getImageDefault()).into(holder.img_order_product);
             }
-//            holder.img_order_product.setImageResource(product.getImageList().get(0).getImageId());
+
             holder.txt_order_productName.setText(product.getProductName());
             if (product.getSaleOff() != null && product.getSaleOff().getDiscount() > 0) {
                 int basicPrice = Integer.valueOf(product.getPrice());
                 int discount = product.getSaleOff().getDiscount();
                 int salePrice = basicPrice - (basicPrice * discount / 100);
 
-                holder.txt_order_productBasicPrice.setText(df.format(Product.convertToPrice(String.valueOf(basicPrice))));
-                holder.txt_order_productPrice.setText(df.format(Product.convertToPrice(String.valueOf(salePrice))));
+                holder.txt_order_productBasicPrice.setText(basicPrice > 1000 ? df.format(Product.convertToPrice(String.valueOf(basicPrice))).replace(",", ".") : String.valueOf(basicPrice));
+                holder.txt_order_productPrice.setText(salePrice > 1000 ? df.format(Product.convertToPrice(String.valueOf(salePrice))).replace(",", ".") : String.valueOf(salePrice));
+
                 holder.txt_order_discount.setText(String.valueOf(product.getSaleOff().getDiscount()));
                 convertView.findViewById(R.id.layout_order_discount).setVisibility(View.VISIBLE);
             } else {
-                holder.txt_order_productPrice.setText(df.format(Product.convertToPrice(product.getPrice())));
+                holder.txt_order_productPrice.setText(Integer.valueOf(product.getPrice()) > 1000 ? df.format(Product.convertToPrice(product.getPrice())).replace(",", ".") : product.getPrice());
                 convertView.findViewById(R.id.layout_order_discount).setVisibility(View.INVISIBLE);
             }
             holder.txt_order_quantity.setText(String.valueOf(purchaseItemList.get(position).getQuantity()));
@@ -116,20 +117,19 @@ public class ProductOrderAdapter extends BaseAdapter {
             if (product.getImageList() != null && product.getImageList().size() > 0) {
                 Picasso.get().load(product.getImageList().get(0).getImageURL()).into(holder.img_cart_product);
             }
-//            holder.img_cart_product.setImageResource(product.getImageList().get(0).getImageId());
             holder.txt_cart_productName.setText(product.getProductName());
             if (product.getSaleOff() != null && product.getSaleOff().getDiscount() > 0) {
                 int basicPrice = Integer.valueOf(product.getPrice());
                 int discount = product.getSaleOff().getDiscount();
                 int salePrice = basicPrice - (basicPrice * discount / 100);
 
-                holder.txt_cart_productBasicPrice.setText(df.format(Product.convertToPrice(String.valueOf(basicPrice))));
-                holder.txt_cart_productPrice.setText(df.format(Product.convertToPrice(String.valueOf(salePrice))));
+                holder.txt_cart_productBasicPrice.setText(basicPrice > 1000 ? df.format(Product.convertToPrice(String.valueOf(basicPrice))).replace(",", ".") : String.valueOf(basicPrice));
+                holder.txt_cart_productPrice.setText(salePrice > 1000 ? df.format(Product.convertToPrice(String.valueOf(salePrice))).replace(",", ".") : String.valueOf(salePrice));
                 holder.txt_cart_discount.setText(String.valueOf(product.getSaleOff().getDiscount()));
 
                 convertView.findViewById(R.id.layout_cart_discount).setVisibility(View.VISIBLE);
             } else {
-                holder.txt_cart_productPrice.setText(df.format(Product.convertToPrice(product.getPrice())));
+                holder.txt_cart_productPrice.setText(Integer.valueOf(product.getPrice()) > 1000 ? df.format(Product.convertToPrice(product.getPrice())).replace(",", ".") : product.getPrice());
                 convertView.findViewById(R.id.layout_cart_discount).setVisibility(View.INVISIBLE);
             }
             holder.snp_quantity_product.setValue(purchaseItemList.get(position).getQuantity());

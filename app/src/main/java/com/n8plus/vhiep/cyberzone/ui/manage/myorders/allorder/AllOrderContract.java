@@ -8,8 +8,9 @@ import java.util.List;
 public interface AllOrderContract {
     interface View {
         void setAdapterAllOrder(List<Order> orderList);
+        void setNotifyDataSetChanged();
     }
     interface Presenter extends BasePresenter<View> {
-        void loadData();
+        void loadAllOrder(String customerId);
     }
 }

@@ -1,29 +1,46 @@
 package com.n8plus.vhiep.cyberzone.data.model;
 
+import com.google.gson.annotations.SerializedName;
+
+import java.io.Serializable;
 import java.util.List;
 
-public class WishList {
-    private String customerId;
-    private List<Product> productList;
+public class WishList implements Serializable{
+    @SerializedName("_id")
+    private String id;
+    @SerializedName("customer")
+    private Customer customer;
+    @SerializedName("product")
+    private Product product;
 
-    public WishList(String customerId, List<Product> productList) {
-        this.customerId = customerId;
-        this.productList = productList;
+    public WishList(String id, Customer customer, Product product) {
+        this.id = id;
+        this.customer = customer;
+        this.product = product;
     }
 
-    public String getCustomerId() {
-        return customerId;
+    public String getId() {
+        return id;
     }
 
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public List<Product> getProductList() {
-        return productList;
+    public Customer getCustomer() {
+        return customer;
     }
 
-    public void setProductList(List<Product> productList) {
-        this.productList = productList;
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
     }
 }
+

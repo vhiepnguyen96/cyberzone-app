@@ -1,29 +1,66 @@
 package com.n8plus.vhiep.cyberzone.data.model;
 
+import com.google.gson.annotations.SerializedName;
+
+import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-public class Order {
+public class Order implements Serializable {
+    @SerializedName("_id")
     private String orderId;
-    private String customerId;
-    private List<PurchaseItem> purchaseList;
-    private int totalQuantity;
+    @SerializedName("customer")
+    private Customer customer;
+    @SerializedName("deliveryAddress")
     private Address deliveryAddress;
-    private String transportFee;
+    @SerializedName("deliveryPrice")
+    private DeliveryPrice deliveryPrice;
+    @SerializedName("totalQuantity")
+    private int totalQuantity;
+    @SerializedName("totalPrice")
     private String totalPrice;
+    @SerializedName("purchaseDate")
     private Date purchaseDate;
-    private String orderState;
+    @SerializedName("paymentMethod")
+    private PaymentMethod paymentMethod;
+    @SerializedName("orderState")
+    private OrderState orderState;
+    @SerializedName("orderItems")
+    private List<PurchaseItem> purchaseList;
 
-    public Order(String orderId, String customerId, List<PurchaseItem> purchaseList, int totalQuantity, Address deliveryAddress, String transportFee, String totalPrice, Date purchaseDate, String orderState) {
+    public Order(String orderId, Customer customer, Address deliveryAddress, DeliveryPrice deliveryPrice, int totalQuantity, String totalPrice, Date purchaseDate, PaymentMethod paymentMethod, OrderState orderState) {
         this.orderId = orderId;
-        this.customerId = customerId;
-        this.purchaseList = purchaseList;
-        this.totalQuantity = totalQuantity;
+        this.customer = customer;
         this.deliveryAddress = deliveryAddress;
-        this.transportFee = transportFee;
+        this.deliveryPrice = deliveryPrice;
+        this.totalQuantity = totalQuantity;
         this.totalPrice = totalPrice;
         this.purchaseDate = purchaseDate;
+        this.paymentMethod = paymentMethod;
         this.orderState = orderState;
+    }
+
+    public Order(String orderId, Customer customer, Address deliveryAddress, DeliveryPrice deliveryPrice, int totalQuantity, String totalPrice, Date purchaseDate, PaymentMethod paymentMethod, OrderState orderState, List<PurchaseItem> purchaseList) {
+        this.orderId = orderId;
+        this.customer = customer;
+        this.deliveryAddress = deliveryAddress;
+        this.deliveryPrice = deliveryPrice;
+        this.totalQuantity = totalQuantity;
+        this.totalPrice = totalPrice;
+        this.purchaseDate = purchaseDate;
+        this.paymentMethod = paymentMethod;
+        this.orderState = orderState;
+        this.purchaseList = purchaseList;
+    }
+
+    public Order(Customer customer, Address deliveryAddress, DeliveryPrice deliveryPrice, int totalQuantity, String totalPrice, List<PurchaseItem> purchaseList) {
+        this.customer = customer;
+        this.deliveryAddress = deliveryAddress;
+        this.deliveryPrice = deliveryPrice;
+        this.totalQuantity = totalQuantity;
+        this.totalPrice = totalPrice;
+        this.purchaseList = purchaseList;
     }
 
     public String getOrderId() {
@@ -34,28 +71,12 @@ public class Order {
         this.orderId = orderId;
     }
 
-    public String getCustomerId() {
-        return customerId;
+    public Customer getCustomer() {
+        return customer;
     }
 
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
-    }
-
-    public List<PurchaseItem> getPurchaseList() {
-        return purchaseList;
-    }
-
-    public void setPurchaseList(List<PurchaseItem> purchaseList) {
-        this.purchaseList = purchaseList;
-    }
-
-    public int getTotalQuantity() {
-        return totalQuantity;
-    }
-
-    public void setTotalQuantity(int totalQuantity) {
-        this.totalQuantity = totalQuantity;
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
     }
 
     public Address getDeliveryAddress() {
@@ -66,12 +87,20 @@ public class Order {
         this.deliveryAddress = deliveryAddress;
     }
 
-    public String getTransportFee() {
-        return transportFee;
+    public DeliveryPrice getDeliveryPrice() {
+        return deliveryPrice;
     }
 
-    public void setTransportFee(String transportFee) {
-        this.transportFee = transportFee;
+    public void setDeliveryPrice(DeliveryPrice deliveryPrice) {
+        this.deliveryPrice = deliveryPrice;
+    }
+
+    public int getTotalQuantity() {
+        return totalQuantity;
+    }
+
+    public void setTotalQuantity(int totalQuantity) {
+        this.totalQuantity = totalQuantity;
     }
 
     public String getTotalPrice() {
@@ -90,11 +119,34 @@ public class Order {
         this.purchaseDate = purchaseDate;
     }
 
-    public String getOrderState() {
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public OrderState getOrderState() {
         return orderState;
     }
 
-    public void setOrderState(String orderState) {
+    public void setOrderState(OrderState orderState) {
         this.orderState = orderState;
+    }
+
+    public List<PurchaseItem> getPurchaseList() {
+        return purchaseList;
+    }
+
+    public void setPurchaseList(List<PurchaseItem> purchaseList) {
+        this.purchaseList = purchaseList;
+    }
+
+    public String getPurchaseDateCustom() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(purchaseDate);
+        String date = calendar.get(Calendar.DATE) + " Thg " + (calendar.get(Calendar.MONTH) + 1) + " " + calendar.get(Calendar.YEAR);
+        return date;
     }
 }

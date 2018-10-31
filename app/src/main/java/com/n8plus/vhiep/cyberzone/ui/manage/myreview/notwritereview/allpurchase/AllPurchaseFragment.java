@@ -15,17 +15,18 @@ import android.widget.Toast;
 import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.data.model.Order;
 import com.n8plus.vhiep.cyberzone.data.model.Product;
+import com.n8plus.vhiep.cyberzone.data.model.PurchaseItem;
 import com.n8plus.vhiep.cyberzone.ui.manage.myreview.adapter.ProductPurchaseAdapter;
 import com.n8plus.vhiep.cyberzone.ui.manage.myreview.notwritereview.writereview.WriteReviewFragment;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class AllPurchaseFragment extends Fragment implements AllPurchaseContract.View {
     private ListView mListAllPurchase;
     private ProductPurchaseAdapter mProductPurchaseAdapter;
     private AllPurchasePresenter mAllPurchasePresenter;
-    private List<Product> mAllProductPurchase;
 
     @Nullable
     @Override
@@ -46,14 +47,31 @@ public class AllPurchaseFragment extends Fragment implements AllPurchaseContract
     }
 
     @Override
-    public void setAdapterAllPurchase(List<Order> orderList) {
-        mAllProductPurchase = new ArrayList<>();
-        for (int i = 0; i < orderList.size(); i++) {
-            for (int j=0; j<orderList.get(i).getPurchaseList().size(); j++){
-                mAllProductPurchase.add(orderList.get(i).getPurchaseList().get(j).getProduct());
-            }
-        }
-        mProductPurchaseAdapter = new ProductPurchaseAdapter(mListAllPurchase.getContext(), R.layout.row_purchase, mAllProductPurchase);
+    public void setAdapterAllPurchase(List<PurchaseItem> purchaseItemList, List<Date> datePurchaseList) {
+        mProductPurchaseAdapter = new ProductPurchaseAdapter(this, R.layout.row_purchase, purchaseItemList, datePurchaseList);
         mListAllPurchase.setAdapter(mProductPurchaseAdapter);
+    }
+
+    @Override
+    public void setNotifyDataSetChanged() {
+        mProductPurchaseAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void writeReview(int position) {
+        mAllPurchasePresenter.prepareDataWriteReview(position);
+    }
+
+    @Override
+    public void moveToWriteReview(PurchaseItem orderItem) {
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("orderItem", orderItem);
+
+        WriteReviewFragment writeReviewFragment = new WriteReviewFragment();
+        writeReviewFragment.setArguments(bundle);
+
+        FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.frm_not_write_review, writeReviewFragment);
+        fragmentTransaction.commit();
     }
 }

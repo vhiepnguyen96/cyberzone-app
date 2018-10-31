@@ -2,8 +2,12 @@ package com.n8plus.vhiep.cyberzone.ui.manage.myreview.notwritereview;
 
 import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.data.model.Address;
+import com.n8plus.vhiep.cyberzone.data.model.Customer;
+import com.n8plus.vhiep.cyberzone.data.model.DeliveryPrice;
 import com.n8plus.vhiep.cyberzone.data.model.Order;
+import com.n8plus.vhiep.cyberzone.data.model.OrderState;
 import com.n8plus.vhiep.cyberzone.data.model.Overview;
+import com.n8plus.vhiep.cyberzone.data.model.PaymentMethod;
 import com.n8plus.vhiep.cyberzone.data.model.Product;
 import com.n8plus.vhiep.cyberzone.data.model.ProductImage;
 import com.n8plus.vhiep.cyberzone.data.model.ProductType;
@@ -17,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class NotWriteReviewPresenter implements AllOrderContract.Presenter {
+public class NotWriteReviewPresenter implements NotWriteReviewContract.Presenter {
     private List<Order> orderList;
     private AllOrderContract.View mAllOrderView;
 
@@ -66,8 +70,8 @@ public class NotWriteReviewPresenter implements AllOrderContract.Presenter {
         Address address = new Address("a1", "Nguyễn Văn Hiệp", "01646158456", "Số nhà 100, Hẻm 138, Đường Trần Hưng Đạo, Phường An Nghiệp, Quận Ninh Kiều, TP Cần Thơ");
 
         orderList = new ArrayList<>();
-        orderList.add(new Order("5b9b7430b18f6d1178239040", "5b962cd9738558095492b986", purchaseItems, 3, address, "0.020", "5.550", new Date(), "Đang chờ thanh toán"));
-        orderList.add(new Order("5b9b7430b18f6d1178239041", "5b962cd9738558095492b986", purchaseItems, 3, address, "0.020", "5.550", new Date(), "Đã hủy đơn"));
-        orderList.add(new Order("5b9b7430b18f6d1178239042", "5b962cd9738558095492b986", purchaseItems, 3, address, "0.020", "5.550", new Date(), "Đã giao hàng"));
+        orderList.add(new Order("5b9b7430b18f6d1178239040", new Customer("5b962cd9738558095492b986", "Nguyễn Văn Hiệp"), address, new DeliveryPrice("fasfasfa", "20"), 3, "5.550", new Date(), new PaymentMethod("sfafsa", "Thanh toán trực tuyến"), new OrderState("sfafsafa", "Đang chờ thanh toán"), purchaseItems));
+        orderList.add(new Order("5b9b7430b18f6d1178239040", new Customer("5b962cd9738558095492b986", "Nguyễn Văn Hiệp"), address, new DeliveryPrice("fasfasfa", "20"), 3, "5.550", new Date(), new PaymentMethod("sfafsa", "Thanh toán trực tuyến"), new OrderState("sfafsafa", "Đã hủy đơn"), purchaseItems));
+        orderList.add(new Order("5b9b7430b18f6d1178239040", new Customer("5b962cd9738558095492b986", "Nguyễn Văn Hiệp"), address, new DeliveryPrice("fasfasfa", "20"), 3, "5.550", new Date(), new PaymentMethod("sfafsa", "Thanh toán trực tuyến"), new OrderState("sfafsafa", "Đã giao hàng"), purchaseItems));
     }
 }

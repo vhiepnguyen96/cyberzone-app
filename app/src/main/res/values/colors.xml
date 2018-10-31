@@ -9,8 +9,10 @@
     <color name="colorText">#1B2326</color>
     <color name="whiteColor">#FFFFFF</color>
     <color name="backgroundColor">#F0F1F6</color>
+    <color name="textHintColor">#999999</color>
     <color name="redColor">#e42828</color>
     <color name="colorGray">#F0F1F6</color>
     <color name="black_overlay">#66000000</color>
     <color name="rate_star">#FBC852</color>
+    <color name="bg_back_opacity">#59000000</color>
 </resources>

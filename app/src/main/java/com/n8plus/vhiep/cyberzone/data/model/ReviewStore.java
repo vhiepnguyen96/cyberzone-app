@@ -1,18 +1,27 @@
 package com.n8plus.vhiep.cyberzone.data.model;
 
+import com.google.gson.annotations.SerializedName;
+
+import java.io.Serializable;
 import java.util.Date;
 
-public class ReviewStore {
+public class ReviewStore implements Serializable{
+    @SerializedName("_id")
     private String id;
-    private String nameCustomer;
+    @SerializedName("customer")
+    private Customer customer;
+    @SerializedName("store")
     private Store store;
-    private int ratingLevel;
+    @SerializedName("ratingLevel")
+    private RatingLevel ratingLevel;
+    @SerializedName("review")
     private String review;
+    @SerializedName("dateReview")
     private Date dateReview;
 
-    public ReviewStore(String id, String nameCustomer, Store store, int ratingLevel, String review, Date dateReview) {
+    public ReviewStore(String id, Customer customer, Store store, RatingLevel ratingLevel, String review, Date dateReview) {
         this.id = id;
-        this.nameCustomer = nameCustomer;
+        this.customer = customer;
         this.store = store;
         this.ratingLevel = ratingLevel;
         this.review = review;
@@ -27,12 +36,12 @@ public class ReviewStore {
         this.id = id;
     }
 
-    public String getNameCustomer() {
-        return nameCustomer;
+    public Customer getCustomer() {
+        return customer;
     }
 
-    public void setNameCustomer(String nameCustomer) {
-        this.nameCustomer = nameCustomer;
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
     }
 
     public Store getStore() {
@@ -43,11 +52,11 @@ public class ReviewStore {
         this.store = store;
     }
 
-    public int getRatingLevel() {
+    public RatingLevel getRatingLevel() {
         return ratingLevel;
     }
 
-    public void setRatingLevel(int ratingLevel) {
+    public void setRatingLevel(RatingLevel ratingLevel) {
         this.ratingLevel = ratingLevel;
     }
 

@@ -1,9 +1,23 @@
 package com.n8plus.vhiep.cyberzone.ui.manage.myreview.notwritereview.allpurchase;
 
+import android.app.Activity;
+import android.support.v4.app.Fragment;
+import android.util.Log;
+
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.data.model.Address;
+import com.n8plus.vhiep.cyberzone.data.model.Customer;
+import com.n8plus.vhiep.cyberzone.data.model.DeliveryPrice;
 import com.n8plus.vhiep.cyberzone.data.model.Order;
+import com.n8plus.vhiep.cyberzone.data.model.OrderState;
 import com.n8plus.vhiep.cyberzone.data.model.Overview;
+import com.n8plus.vhiep.cyberzone.data.model.PaymentMethod;
 import com.n8plus.vhiep.cyberzone.data.model.Product;
 import com.n8plus.vhiep.cyberzone.data.model.ProductImage;
 import com.n8plus.vhiep.cyberzone.data.model.ProductType;
@@ -12,62 +26,181 @@ import com.n8plus.vhiep.cyberzone.data.model.SaleOff;
 import com.n8plus.vhiep.cyberzone.data.model.Specification;
 import com.n8plus.vhiep.cyberzone.data.model.Store;
 import com.n8plus.vhiep.cyberzone.ui.manage.myorders.allorder.AllOrderContract;
+import com.n8plus.vhiep.cyberzone.util.Constant;
+import com.n8plus.vhiep.cyberzone.util.MySingleton;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 public class AllPurchasePresenter implements AllPurchaseContract.Presenter {
-    private List<Order> orderList;
     private AllPurchaseContract.View mAllPurchaseView;
+    private List<OrderState> mOrderStates;
+    private List<Order> mOrderList;
+    private List<PurchaseItem> mOrderItemsNotReview;
+    private final String URL_ORDER = Constant.URL_HOST + "orders";
+    private final String URL_PRODUCT = Constant.URL_HOST + "products";
+    private final String URL_ORDER_ITEM = Constant.URL_HOST + "orderItems";
+    private final String URL_ORDER_STATE = Constant.URL_HOST + "orderStates";
+    private Gson gson;
 
     public AllPurchasePresenter(AllPurchaseContract.View mAllPurchaseView) {
         this.mAllPurchaseView = mAllPurchaseView;
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.setDateFormat("M/d/yy hh:mm a");
+        gson = gsonBuilder.create();
     }
 
     @Override
     public void loadData() {
-        prepareData();
-        mAllPurchaseView.setAdapterAllPurchase(orderList);
+        loadOrderState();
     }
 
-    private void prepareData() {
-        List<Specification> specifications = new ArrayList<>();
-        specifications.add(new Specification("Bảo hành", "36"));
-        specifications.add(new Specification("Thương hiệu", "Asrock"));
-        specifications.add(new Specification("Model", "H110M-DVS R2.0"));
-        specifications.add(new Specification("Loại", "Micro-ATX"));
-        specifications.add(new Specification("Loại Socket", "LGA 1151"));
-        specifications.add(new Specification("Chipset", "Intel H110"));
-        specifications.add(new Specification("Số khe Ram", "2"));
-        specifications.add(new Specification("Dung lượng Ram tối đa", "32GB"));
-        specifications.add(new Specification("Loại Ram", "DDR4 2133"));
-        specifications.add(new Specification("VGA Onboard", "Intel HD Graphics"));
+    @Override
+    public void loadOrderState() {
+        JsonObjectRequest orderStateRequest = new JsonObjectRequest(Request.Method.GET, URL_ORDER_STATE, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            mOrderStates = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("orderStates")), OrderState[].class));
+                            Log.i("AllPurchasePresenter", "GET: " + mOrderStates.size() + " orderStates");
+                            for (OrderState state : mOrderStates) {
+                                if (state.getStateName().equals("Đã giao hàng")) {
+                                    loadOrderPurchased(Constant.customer.getId(), state.getId());
+                                }
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("AllPurchasePresenter", error.toString());
+                    }
+                });
+        MySingleton.getInstance(((Fragment) mAllPurchaseView).getContext().getApplicationContext()).addToRequestQueue(orderStateRequest);
+    }
 
-        List<Overview> overviews = new ArrayList<>();
-        overviews.add(new Overview("", "ASRock trang bị cho H110M-DVS R2.0 chuẩn linh kiện Super Alloy bền bỉ - trước đây vốn chỉ xuất hiện trên các bo mạch chủ trung cấp và cao cấp thể hiện trong thông điệp Stable and Reliable - Ổn định và tin cậy."));
+    @Override
+    public void loadOrderPurchased(String customerId, String orderStateId) {
+        mOrderList = new ArrayList<>();
+        JSONObject object = new JSONObject();
+        try {
+            object.put("customerId", customerId);
+            object.put("orderStateId", orderStateId);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Log.i("AllPurchasePresenter", "object: " + object.toString());
+        JsonObjectRequest orderPurchasedRequest = new JsonObjectRequest(Request.Method.POST, URL_ORDER + "/getByState", object,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            mOrderList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("orders")), Order[].class));
+                            Log.i("AllPurchasePresenter", "GET: " + mOrderList.size() + " mOrderList");
+                            for (int i = 0; i < mOrderList.size(); i++) {
+                                loadOrderItems(i);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("AllPurchasePresenter", error.toString());
+                    }
+                });
+        MySingleton.getInstance(((Fragment) mAllPurchaseView).getContext().getApplicationContext()).addToRequestQueue(orderPurchasedRequest);
+    }
 
-        ProductType productType = new ProductType("5b98a6a6fe67871b2068add0", "Bo mạch chủ");
-        Store store = new Store("5b989eb9a6bce5234c9522ea", "Máy tính Phong Vũ");
+    @Override
+    public void loadOrderItems(final int position) {
+        JsonObjectRequest orderItemRequest = new JsonObjectRequest(Request.Method.GET, URL_ORDER_ITEM + "/order/" + mOrderList.get(position).getOrderId(), null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            List<PurchaseItem> purchaseItems = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("orderItems")), PurchaseItem[].class));
+                            Log.i("AllPurchasePresenter", "GET: " + purchaseItems.size() + " purchaseItems");
 
-//        List<ProductImage> imageList_1603653 = new ArrayList<>();
-//        imageList_1603653.add(new ProductImage("5b98a6a6fe67871b2068add0", R.drawable.img_1603653_1));
-//
-//        List<ProductImage> imageList_1600666 = new ArrayList<>();
-//        imageList_1600666.add(new ProductImage("5b98a6a6fe67871b2068add0", R.drawable.img_1600666));
+                            // Get order item not review
+                            List<PurchaseItem> orderItemsNotReview = new ArrayList<>();
+                            for (int i = 0; i < purchaseItems.size(); i++) {
+                                if (!purchaseItems.get(i).isReview()) {
+                                    orderItemsNotReview.add(purchaseItems.get(i));
+                                }
+                            }
 
-        Product product_1603653 = new Product("1603653", productType, store, "Bo mạch chính/ Mainboard Asrock H110M-DVS R2.0", "1.320", specifications, overviews, "New", new SaleOff("1", 5));
-        Product product_1600666 = new Product("1600666", productType, store, "Bo mạch chính/ Mainboard Gigabyte H110M-DS2 DDR4", "1.465", specifications, overviews, "New", new SaleOff("1", 6));
+                            Log.i("AllPurchasePresenter", "GET: " + orderItemsNotReview.size() + " orderItemsNotReview");
 
-        List<PurchaseItem> purchaseItems = new ArrayList<>();
-        purchaseItems.add(new PurchaseItem(product_1603653, 1));
-        purchaseItems.add(new PurchaseItem(product_1600666, 2));
+                            mOrderList.get(position).setPurchaseList(orderItemsNotReview);
+                            setDataAdapterReview(mOrderList);
 
-        Address address = new Address("a1", "Nguyễn Văn Hiệp", "01646158456", "Số nhà 100, Hẻm 138, Đường Trần Hưng Đạo, Phường An Nghiệp, Quận Ninh Kiều, TP Cần Thơ");
+                            for (int i = 0; i < mOrderList.get(position).getPurchaseList().size(); i++) {
+                                // Load store
+                                final int itemPosition = i;
+                                String productId = mOrderList.get(position).getPurchaseList().get(itemPosition).getProduct().getProductId();
+                                JsonObjectRequest storeRequest = new JsonObjectRequest(Request.Method.GET, URL_PRODUCT + "/getStore/" + productId, null,
+                                        new Response.Listener<JSONObject>() {
+                                            @Override
+                                            public void onResponse(JSONObject response) {
+                                                try {
+                                                    mOrderList.get(position).getPurchaseList().get(itemPosition).getProduct().setStore(gson.fromJson(String.valueOf(response.getJSONObject("store")), Store.class));
+                                                    mAllPurchaseView.setNotifyDataSetChanged();
+                                                } catch (JSONException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        },
+                                        new Response.ErrorListener() {
+                                            @Override
+                                            public void onErrorResponse(VolleyError error) {
+                                                Log.e("AllPurchasePresenter", error.toString());
+                                            }
+                                        });
+                                MySingleton.getInstance(((Fragment) mAllPurchaseView).getContext().getApplicationContext()).addToRequestQueue(storeRequest);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("AllPurchasePresenter", error.toString());
+                    }
+                });
+        MySingleton.getInstance(((Fragment) mAllPurchaseView).getContext().getApplicationContext()).addToRequestQueue(orderItemRequest);
+    }
 
-        orderList = new ArrayList<>();
-        orderList.add(new Order("5b9b7430b18f6d1178239040", "5b962cd9738558095492b986", purchaseItems, 3, address, "0.020", "5.550", new Date(), "Đang chờ thanh toán"));
-        orderList.add(new Order("5b9b7430b18f6d1178239041", "5b962cd9738558095492b986", purchaseItems, 3, address, "0.020", "5.550", new Date(), "Đã hủy đơn"));
-        orderList.add(new Order("5b9b7430b18f6d1178239042", "5b962cd9738558095492b986", purchaseItems, 3, address, "0.020", "5.550", new Date(), "Đã giao hàng"));
+    @Override
+    public void setDataAdapterReview(List<Order> orderList) {
+        mOrderItemsNotReview = new ArrayList<>();
+        List<Date> datePurchaseList = new ArrayList<>();
+        for (int i = 0; i < orderList.size(); i++) {
+            if (orderList.get(i).getPurchaseList() != null && orderList.get(i).getPurchaseList().size() > 0) {
+                for (int j = 0; j < orderList.get(i).getPurchaseList().size(); j++) {
+                    mOrderItemsNotReview.add(orderList.get(i).getPurchaseList().get(j));
+                    datePurchaseList.add(orderList.get(i).getPurchaseDate());
+                }
+            }
+        }
+        mAllPurchaseView.setAdapterAllPurchase(mOrderItemsNotReview, datePurchaseList);
+    }
+
+    @Override
+    public void prepareDataWriteReview(int position) {
+        mAllPurchaseView.moveToWriteReview(mOrderItemsNotReview.get(position));
     }
 }

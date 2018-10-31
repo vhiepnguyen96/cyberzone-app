@@ -10,6 +10,6 @@ public interface ListReviewContract {
         void setAdapterCustomerReview(List<ReviewStore> reviewStoreList);
     }
     interface Presenter extends BasePresenter<View>{
-        void loadData();
+        void loadStoreReviews(List<ReviewStore> reviewStores);
     }
 }

@@ -55,14 +55,12 @@ public class LoadDeliveryAddressFragment extends Fragment implements LoadDeliver
         mAddAddress = (Button) view.findViewById(R.id.btn_add_address);
 
         // Presenter
-        mLoadDeliveryAddressPresenter.loadAllDeliveryAddress(Constant.customerId);
+        mLoadDeliveryAddressPresenter.loadAllDeliveryAddress(Constant.customer.getId());
         Bundle bundle = getArguments();
         if (bundle != null && bundle.getSerializable("provinceList") != null){
             mLoadDeliveryAddressPresenter.loadProvinceList((List<Province>) bundle.getSerializable("provinceList"));
-            Toast.makeText(this.getContext(), "Có provinceList", Toast.LENGTH_SHORT).show();
         } else {
             mLoadDeliveryAddressPresenter.loadProvince();
-            Toast.makeText(this.getContext(), "Ko có provinceList", Toast.LENGTH_SHORT).show();
         }
 
         // Listener
@@ -128,7 +126,7 @@ public class LoadDeliveryAddressFragment extends Fragment implements LoadDeliver
     @Override
     public void deleteAddressSuccess() {
         Toast.makeText(this.getContext(), "Xóa thành công", Toast.LENGTH_SHORT).show();
-        mLoadDeliveryAddressPresenter.loadAllDeliveryAddress(Constant.customerId);
+        mLoadDeliveryAddressPresenter.loadAllDeliveryAddress(Constant.customer.getId());
     }
 
     @Override

@@ -22,7 +22,7 @@
                 android:id="@+id/tv_store_name_purchase"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="MÁY TÍNH PHONG VŨ"
+                android:text="Bán bởi Phong Vũ"
                 android:textColor="@android:color/black"
                 android:textSize="16sp" />
         </LinearLayout>
@@ -31,8 +31,8 @@
             android:id="@+id/write_review"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:gravity="center"
-            android:layout_weight="2.2">
+            android:layout_weight="2.2"
+            android:gravity="center">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -43,7 +43,7 @@
         </LinearLayout>
     </LinearLayout>
 
-    <LinearLayout
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -56,6 +56,7 @@
             android:layout_weight="2">
 
             <ImageView
+                android:layout_gravity="center"
                 android:id="@+id/img_product_purchase"
                 android:layout_width="64dp"
                 android:layout_height="64dp"
@@ -63,15 +64,16 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_marginLeft="8dp"
-            android:orientation="vertical"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="8">
+            android:layout_marginLeft="16dp"
+            android:layout_weight="8"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/tv_product_name_purchase"
                 android:layout_width="match_parent"
+                android:lineSpacingExtra="4dp"
                 android:layout_height="wrap_content"
                 android:text="Bo mạch chính/ Mainboard Msi Z370-A Pro"
                 android:textColor="@android:color/black" />

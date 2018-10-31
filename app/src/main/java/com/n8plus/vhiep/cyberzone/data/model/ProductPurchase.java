@@ -6,21 +6,21 @@ import java.io.Serializable;
 
 public class ProductPurchase implements Serializable {
     @SerializedName("_id")
-    private String id;
+    private Product product;
     @SerializedName("count")
     private int count;
 
-    public ProductPurchase(String id, int count) {
-        this.id = id;
+    public ProductPurchase(Product product, int count) {
+        this.product = product;
         this.count = count;
     }
 
-    public String getId() {
-        return id;
+    public Product getProduct() {
+        return product;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public int getCount() {

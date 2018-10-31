@@ -8,10 +8,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.data.model.Order;
 import com.n8plus.vhiep.cyberzone.ui.manage.myorders.adapter.MyOrderAdapter;
+import com.n8plus.vhiep.cyberzone.util.Constant;
 
 import java.util.List;
 
@@ -31,8 +33,7 @@ public class WaitForPaymentFragment extends Fragment implements WaitForPaymentCo
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mListWaitForPayment = (ListView) view.findViewById(R.id.lv_wait_for_payment);
 
-        // Presenter
-        mWaitForPaymentPresenter.loadData();
+        mWaitForPaymentPresenter.loadOrderWaitToPayment(Constant.customer.getId());
 
         super.onViewCreated(view, savedInstanceState);
     }
@@ -41,5 +42,10 @@ public class WaitForPaymentFragment extends Fragment implements WaitForPaymentCo
     public void setAdapterWaitForPayment(List<Order> waitForPaymentList) {
         mMyOrderAdapter = new MyOrderAdapter(mListWaitForPayment.getContext(), R.layout.row_my_order, waitForPaymentList);
         mListWaitForPayment.setAdapter(mMyOrderAdapter);
+    }
+
+    @Override
+    public void setNotifyDataSetChanged() {
+        mMyOrderAdapter.notifyDataSetChanged();
     }
 }

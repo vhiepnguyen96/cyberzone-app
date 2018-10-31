@@ -190,7 +190,7 @@ public class AddDeliveryAddressFragment extends Fragment implements AddDeliveryA
             @Override
             public void onClick(View v) {
                 String address = mEditTextAddress.getText().toString() + ", " + ((Ward) mChooseWard.getSelectedItem()).getName() + ", " + ((District) mChooseDistrict.getSelectedItem()).getName() + ", " + ((Province) mChooseProvince.getSelectedItem()).getName();
-                mAddDeliveryAddressPresenter.addDeliveryAddress(Constant.customerId, new Address(mEditTextName.getText().toString(), mEditTextPhone.getText().toString(), address));
+                mAddDeliveryAddressPresenter.addDeliveryAddress(Constant.customer.getId(), new Address(mEditTextName.getText().toString(), mEditTextPhone.getText().toString(), address));
             }
         });
 

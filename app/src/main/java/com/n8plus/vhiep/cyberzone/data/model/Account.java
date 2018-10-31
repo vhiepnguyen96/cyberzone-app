@@ -14,9 +14,19 @@ public class Account implements Serializable {
     @SerializedName("role")
     private Role role;
 
+    public Account(String id) {
+        this.id = id;
+    }
+
     public Account(String id, String username) {
         this.id = id;
         this.username = username;
+    }
+
+    public Account(String id, String username, String password) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
     }
 
     public Account(String id, String username, String password, Role role) {

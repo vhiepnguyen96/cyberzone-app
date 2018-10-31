@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.android.volley.Header;
 import com.android.volley.Request;
@@ -71,19 +72,28 @@ public class ProductPresenter implements ProductContract.Presenter {
 
     @Override
     public void loadProductByList(List<Product> productList) {
+        products = productList;
         fetchFilter();
-        mProductView.setAdapterProduct(productList);
+        mProductView.setAdapterProduct(productList, "GridLayout");
     }
 
     @Override
     public void loadProductByProductType(String productTypeId) {
+        fetchFilter();
         fetchProduct(productTypeId);
     }
 
     @Override
     public void loadProductByKeyWord(String keyword) {
-        Header header = new Header("name", keyword);
-        fetchProduct(header);
+        mProductView.setKeyword(keyword);
+        JSONObject object = new JSONObject();
+        try {
+            object.put("name", keyword);
+            fetchFilter();
+            fetchProduct(object);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public void fetchProduct() {
@@ -95,7 +105,7 @@ public class ProductPresenter implements ProductContract.Presenter {
                     products = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("products")), Product[].class));
                     Log.i("ProductPresenter", "GET: " + products.size() + " products");
                     if (products.size() > 0) {
-                        mProductView.setAdapterProduct(products);
+                        mProductView.setAdapterProduct(products, "GridLayout");
                         fetchCurrentTime();
                         for (int i = 0; i < products.size(); i++) {
                             fetchImageProduct(i);
@@ -126,7 +136,7 @@ public class ProductPresenter implements ProductContract.Presenter {
                     products = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("products")), Product[].class));
                     Log.i("ProductPresenter", "GET: " + products.size() + " products");
                     if (products.size() > 0) {
-                        mProductView.setAdapterProduct(products);
+                        mProductView.setAdapterProduct(products, "GridLayout");
                         fetchCurrentTime();
                         for (int i = 0; i < products.size(); i++) {
                             fetchImageProduct(i);
@@ -147,21 +157,20 @@ public class ProductPresenter implements ProductContract.Presenter {
         MySingleton.getInstance(((Activity) mProductView).getApplicationContext()).addToRequestQueue(productRequestTypeId);
     }
 
-    public void fetchProduct(Header header) {
+    public void fetchProduct(JSONObject jsonObject) {
         products = new ArrayList<>();
-        JsonObjectRequest productRequestKeyWord = new JsonObjectRequest(Request.Method.POST, URL_PRODUCT + "/findByName/" + header.getValue(), null, new Response.Listener<JSONObject>() {
+        JsonObjectRequest productRequestKeyWord = new JsonObjectRequest(Request.Method.POST, URL_PRODUCT + "/findByName/", jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
                     products = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("products")), Product[].class));
                     Log.i("ProductPresenter", "GET: " + products.size() + " products");
                     if (products.size() > 0) {
-                        mProductView.setAdapterProduct(products);
+                        mProductView.setAdapterProduct(products, "GridLayout");
                         fetchCurrentTime();
                         for (int i = 0; i < products.size(); i++) {
-                            fetchImageProduct(i);
                             fetchReviewProduct(i);
-                            mProductView.setNotifyDataSetChanged();
+                            fetchImageProduct(i);
                         }
                     }
                 } catch (JSONException e) {
@@ -186,7 +195,7 @@ public class ProductPresenter implements ProductContract.Presenter {
                     Log.d("ProductPresenter", "Product images: " + imageList.size());
                     if (imageList.size() > 0) {
                         products.get(position).setImageList(imageList);
-//                        mProductView.setNotifyDataSetChanged();
+                        mProductView.setNotifyDataSetChanged();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -210,7 +219,7 @@ public class ProductPresenter implements ProductContract.Presenter {
                     Log.d("ProductDetailPresenter", "Review product: " + reviewProducts.size());
                     if (reviewProducts.size() > 0) {
                         products.get(position).setReviewProducts(reviewProducts);
-//                        mProductView.setNotifyDataSetChanged();
+                        mProductView.setNotifyDataSetChanged();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -279,6 +288,27 @@ public class ProductPresenter implements ProductContract.Presenter {
         MySingleton.getInstance(((Activity) mProductView).getApplicationContext()).addToRequestQueue(timeRequest);
     }
 
+    @Override
+    public void changeProductGridLayout() {
+        mProductView.setAdapterProduct(products, "GridLayout");
+    }
+
+    @Override
+    public void changeProductLinearLayout() {
+        mProductView.setAdapterProduct(products, "LinearLayout");
+    }
+
+    @Override
+    public void resetFilter() {
+        for (int i = 0; i < parentObjects.size(); i++) {
+            ParentObject parentObject = parentObjects.get(i);
+            for (int j = 0; j < parentObject.getChildObjectList().size(); j++) {
+                ((FilterChild) parentObject.getChildObjectList().get(j)).setState(false);
+            }
+        }
+        mProductView.generateFilters(parentObjects);
+    }
+
     private void fakeDataFilter() {
         List<FilterChild> categoryItem = new ArrayList<>();
         categoryItem.add(new FilterChild("1603653", "CPU Intel", "a", true));
@@ -303,46 +333,4 @@ public class ProductPresenter implements ProductContract.Presenter {
         parentObjects.add(new Filter("1603653", "Thương hiệu", brandItem));
         parentObjects.add(new Filter("1603653", "Mức giá", priceItem));
     }
-
-//    public void fakeDataProduct() {
-//        products = new ArrayList<>();
-//        List<Specification> specifications = new ArrayList<>();
-//        specifications.add(new Specification("Bảo hành", "36"));
-//        specifications.add(new Specification("Thương hiệu", "Asrock"));
-//        specifications.add(new Specification("Model", "H110M-DVS R2.0"));
-//        specifications.add(new Specification("Loại", "Micro-ATX"));
-//        specifications.add(new Specification("Loại Socket", "LGA 1151"));
-//        specifications.add(new Specification("Chipset", "Intel H110"));
-//        specifications.add(new Specification("Số khe Ram", "2"));
-//        specifications.add(new Specification("Dung lượng Ram tối đa", "32GB"));
-//        specifications.add(new Specification("Loại Ram", "DDR4 2133"));
-//        specifications.add(new Specification("VGA Onboard", "Intel HD Graphics"));
-//
-//        List<Overview> overviews = new ArrayList<>();
-//        overviews.add(new Overview("", "ASRock trang bị cho H110M-DVS R2.0 chuẩn linh kiện Super Alloy bền bỉ - trước đây vốn chỉ xuất hiện trên các bo mạch chủ trung cấp và cao cấp thể hiện trong thông điệp Stable and Reliable - Ổn định và tin cậy."));
-//        overviews.add(new Overview("", "Phụ kiện đi kèm cơ bản nhưng đầy đủ: gồm sách hướng dẫn, đĩa cài driver, I/O ( miếng chặn main) và 2 cáp SATA3 6Gb/s."));
-//        overviews.add(new Overview("", "H110M-DVS R2.0 có size M-ATX thường thấy của phân khúc mainboard giá thấp. Với cái nhìn đầu tiên, chiếc mainboard khá đẹp mắt với tone mạch màu đen bóng, có thêm sắc cam từ miếng tản nhiệt chipset."));
-//        overviews.add(new Overview("", "ASRock sử dụng công nghệ Super Alloy cho các sản phẩm mainboard của mình, PCB của bo mạch chủ được xây dựng từ sợi thủy tinh mật độ cao (High Density Glass Fabric PCB) giúp cho sản phẩm giảm thiểu hư hỏng hoặc rò rỉ điện khi gặp môi trường có độ ẩm cao - đặc biệt thật sự cần thiết cho thị trường Việt Nam, một quốc gia với khí hậu nóng ẩm."));
-//
-//        ProductType productType = new ProductType("5b98a6a6fe67871b2068add0", "Bo mạch chủ");
-//        Store store = new Store("5b989eb9a6bce5234c9522ea", "Máy tính Phong Vũ");
-//
-//        Product product_1603653 = new Product("1603653", productType, store, "Bo mạch chính/ Mainboard Asrock H110M-DVS R2.0", "1.320", specifications, overviews, "New", new SaleOff("1", 5));
-//        Product product_1600666 = new Product("1600666", productType, store, "Bo mạch chính/ Mainboard Gigabyte H110M-DS2 DDR4", "1.465", specifications, overviews, "New", new SaleOff("1", 6));
-//        Product product_1701299 = new Product("1701299", productType, store, "Bo mạch chính/ Mainboard Gigabyte B250M-Gaming 3", "1.899", specifications, overviews, "New", new SaleOff("1", 0));
-//        Product product_1704264 = new Product("1704264", productType, store, "Bo mạch chính/ Mainboard Msi A320M Bazooka", "2.180", specifications, overviews, "New", new SaleOff("1", 0));
-//        Product product_1501266 = new Product("1501266", productType, store, "Bo mạch chính/ Mainboard Asus H81M-K", "1.280", specifications, overviews, "New", new SaleOff("1", 0));
-//
-//        products.add(product_1603653);
-//        products.add(product_1600666);
-//        products.add(product_1701299);
-//        products.add(product_1704264);
-//        products.add(product_1501266);
-//
-//        products.add(product_1603653);
-//        products.add(product_1600666);
-//        products.add(product_1701299);
-//        products.add(product_1704264);
-//        products.add(product_1501266);
-//    }
 }

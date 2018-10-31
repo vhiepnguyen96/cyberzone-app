@@ -1,8 +1,10 @@
 package com.n8plus.vhiep.cyberzone.ui.cart;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -15,8 +17,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.n8plus.vhiep.cyberzone.data.model.DeliveryPrice;
 import com.n8plus.vhiep.cyberzone.data.model.PurchaseItem;
+import com.n8plus.vhiep.cyberzone.ui.login.LoginActivity;
 import com.n8plus.vhiep.cyberzone.ui.manage.myorders.adapter.ProductOrderAdapter;
+import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.UIUtils;
 import com.n8plus.vhiep.cyberzone.ui.checkorder.CheckOrderActivity;
 import com.n8plus.vhiep.cyberzone.ui.product.adapter.ProductVerticalAdapter;
@@ -44,7 +49,7 @@ public class CartActivity extends AppCompatActivity implements CartContract.View
         initView();
 
         // Custom
-        setBackgroundStatusBar();
+//        setBackgroundStatusBar();
         customToolbar();
 
         // Presenter
@@ -60,7 +65,7 @@ public class CartActivity extends AppCompatActivity implements CartContract.View
         });
     }
 
-    public void initView(){
+    public void initView() {
         mListViewCart = (ListView) findViewById(R.id.lsv_cart);
         mLinearCheckOrder = (LinearLayout) findViewById(R.id.lnrCkeckOrder);
         mProductCount = (TextView) findViewById(R.id.txt_productCount);
@@ -132,19 +137,46 @@ public class CartActivity extends AppCompatActivity implements CartContract.View
     }
 
     @Override
-    public void moveToCheckOrder(List<PurchaseItem> purchaseItems,  int tempPrice, int deliveryPrice) {
-        if (purchaseItems.size() > 0){
-            Intent intent = new Intent(CartActivity.this, CheckOrderActivity.class);
-            intent.putExtra("purchaseItems", (Serializable) purchaseItems);
-            intent.putExtra("tempPrice", tempPrice);
-            intent.putExtra("deliveryPrice", deliveryPrice);
-            startActivity(intent);
+    public void moveToCheckOrder(List<PurchaseItem> purchaseItems, int tempPrice, DeliveryPrice deliveryPrice) {
+        if (purchaseItems.size() > 0) {
+            if (Constant.customer != null) {
+                Intent intent = new Intent(CartActivity.this, CheckOrderActivity.class);
+                intent.putExtra("purchaseItems", (Serializable) purchaseItems);
+                intent.putExtra("tempPrice", tempPrice);
+                intent.putExtra("deliveryPrice", deliveryPrice);
+                startActivity(intent);
+            } else {
+                showRequireLogin();
+            }
         } else {
             Toast.makeText(this, "Vui lòng kiểm tra lại giỏ hàng!", Toast.LENGTH_SHORT).show();
         }
     }
 
-    public void updateCart(){
+    public void updateCart() {
         mCartPresenter.loadData();
+    }
+
+    public void showRequireLogin() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Thông báo");
+        builder.setMessage("Bạn cần đăng nhập để mua hàng !");
+        builder.setCancelable(false);
+        builder.setPositiveButton("Đăng nhập ngay", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                startActivity(new Intent(CartActivity.this, LoginActivity.class));
+                dialogInterface.dismiss();
+                finish();
+            }
+        });
+        builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 }

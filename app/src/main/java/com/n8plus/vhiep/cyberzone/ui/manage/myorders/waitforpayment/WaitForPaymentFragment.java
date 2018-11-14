@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -20,6 +21,7 @@ import java.util.List;
 public class WaitForPaymentFragment extends Fragment implements WaitForPaymentContract.View{
     private ListView mListWaitForPayment;
     private MyOrderAdapter mMyOrderAdapter;
+    private LinearLayout mLinearOrderNone;
     private WaitForPaymentPresenter mWaitForPaymentPresenter;
     @Nullable
     @Override
@@ -32,10 +34,16 @@ public class WaitForPaymentFragment extends Fragment implements WaitForPaymentCo
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mListWaitForPayment = (ListView) view.findViewById(R.id.lv_wait_for_payment);
+        mLinearOrderNone = (LinearLayout) view.findViewById(R.id.lnr_order_none);
 
         mWaitForPaymentPresenter.loadOrderWaitToPayment(Constant.customer.getId());
 
         super.onViewCreated(view, savedInstanceState);
+    }
+
+    @Override
+    public void setLayoutOrderNone(boolean b) {
+        mLinearOrderNone.setVisibility(b ? View.VISIBLE : View.GONE);
     }
 
     @Override

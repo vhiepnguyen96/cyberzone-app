@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface HomePageContract {
     interface View{
-        void setAdapterProduct(List<Product> products, String layout);
+        void setAdapterProduct(List<Product> products, int layout);
         void setNotifyDataSetChanged();
     }
     interface Presenter extends BasePresenter<View>{

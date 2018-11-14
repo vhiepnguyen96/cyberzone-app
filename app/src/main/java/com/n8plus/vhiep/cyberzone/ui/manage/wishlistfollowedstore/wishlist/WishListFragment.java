@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -23,6 +24,7 @@ public class WishListFragment extends Fragment implements WishListContract.View 
     private ListView mWishlist;
     private WishListAdapter mWishListAdapter;
     private WishListPresenter mWishListPresenter;
+    private LinearLayout mLinearNone;
 
     @Nullable
     @Override
@@ -35,11 +37,17 @@ public class WishListFragment extends Fragment implements WishListContract.View 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mWishlist = (ListView) view.findViewById(R.id.lv_wishlist);
+        mLinearNone = (LinearLayout) view.findViewById(R.id.lnr_none);
 
         // Presenter
         mWishListPresenter.loadData();
 
         super.onViewCreated(view, savedInstanceState);
+    }
+
+    @Override
+    public void setLayoutNone(boolean b) {
+        mLinearNone.setVisibility(b ? View.VISIBLE : View.GONE);
     }
 
     @Override

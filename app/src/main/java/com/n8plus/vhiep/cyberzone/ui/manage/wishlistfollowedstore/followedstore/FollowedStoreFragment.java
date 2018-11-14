@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -23,6 +24,7 @@ public class FollowedStoreFragment extends Fragment implements FollowedStoreCont
     private ListView mListFollowedStore;
     private FollowStoreAdapter mFollowStoreAdapter;
     private FollowedStorePresenter mFollowedStorePresenter;
+    private LinearLayout mLinearNone;
 
     @Nullable
     @Override
@@ -35,12 +37,19 @@ public class FollowedStoreFragment extends Fragment implements FollowedStoreCont
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mListFollowedStore = (ListView) view.findViewById(R.id.lv_followed_store);
+        mLinearNone = (LinearLayout) view.findViewById(R.id.lnr_none);
 
         // Presenter
         mFollowedStorePresenter.loadData();
 
         super.onViewCreated(view, savedInstanceState);
     }
+
+    @Override
+    public void setLayoutNone(boolean b) {
+        mLinearNone.setVisibility(b ? View.VISIBLE : View.GONE);
+    }
+
 
     @Override
     public void setAdapterFollowStore(List<FollowStore> followStores) {

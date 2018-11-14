@@ -171,6 +171,7 @@ public class HistoryReviewPresenter implements HistoryReviewContract.Presenter {
                 }
             }
         }
+        mHistoryReviewView.setLayoutReviewNone(mHistoryReviews.size() > 0 ? false : true);
         mHistoryReviewView.setAdapterHistoryReview(mHistoryReviews);
     }
 

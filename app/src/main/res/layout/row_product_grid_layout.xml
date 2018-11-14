@@ -1,44 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="175dp"
+    android:id="@+id/lnr_grid_layout"
+    android:layout_width="180dp"
     android:layout_height="wrap_content"
     android:background="@color/whiteColor"
     android:orientation="vertical"
     android:padding="10dp">
 
     <RelativeLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
-        <ImageView
-            android:id="@+id/img_ver_product"
-            android:layout_width="140dp"
-            android:layout_height="140dp"
-            android:layout_gravity="center"
-            android:padding="4dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/img_1603653_1" />
+        <LinearLayout
+            android:gravity="center"
+            android:id="@+id/lnr_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:padding="4dp"
+                android:id="@+id/img_ver_product"
+                android:layout_width="140dp"
+                android:layout_height="140dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/img_1603653_1" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tv_product_quantity_none"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/img_ver_product"
+            android:layout_alignBottom="@+id/lnr_image"
             android:background="@drawable/background_gradient"
+            android:padding="2dp"
             android:text="Tạm hết hàng"
             android:textColor="@android:color/white"
-            android:padding="2dp"
             android:textSize="12sp" />
     </RelativeLayout>
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/txt_ver_productName"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:maxLines="3"
@@ -94,7 +101,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:orientation="horizontal">
@@ -177,7 +184,7 @@
 
             <TextView
                 android:id="@+id/tv_store_location_product"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Hồ Chí Minh"
                 android:textSize="12sp"

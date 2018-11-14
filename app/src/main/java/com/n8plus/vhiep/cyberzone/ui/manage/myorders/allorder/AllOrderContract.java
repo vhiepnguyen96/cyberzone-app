@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface AllOrderContract {
     interface View {
+        void setLayoutOrderNone(boolean b);
         void setAdapterAllOrder(List<Order> orderList);
         void setNotifyDataSetChanged();
     }

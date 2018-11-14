@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,6 +26,7 @@ import java.util.List;
 
 public class AllPurchaseFragment extends Fragment implements AllPurchaseContract.View {
     private ListView mListAllPurchase;
+    private LinearLayout mLinearReviewNone;
     private ProductPurchaseAdapter mProductPurchaseAdapter;
     private AllPurchasePresenter mAllPurchasePresenter;
 
@@ -39,11 +41,17 @@ public class AllPurchaseFragment extends Fragment implements AllPurchaseContract
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mListAllPurchase = (ListView) view.findViewById(R.id.lsv_all_purchase);
+        mLinearReviewNone = (LinearLayout) view.findViewById(R.id.lnr_review_none);
 
         // Presenter
         mAllPurchasePresenter.loadData();
 
         super.onViewCreated(view, savedInstanceState);
+    }
+
+    @Override
+    public void setLayoutReviewNone(boolean b) {
+        mLinearReviewNone.setVisibility(b ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -69,7 +77,6 @@ public class AllPurchaseFragment extends Fragment implements AllPurchaseContract
 
         WriteReviewFragment writeReviewFragment = new WriteReviewFragment();
         writeReviewFragment.setArguments(bundle);
-
         FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.frm_not_write_review, writeReviewFragment);
         fragmentTransaction.commit();

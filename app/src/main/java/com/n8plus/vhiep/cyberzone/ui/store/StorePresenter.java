@@ -41,7 +41,9 @@ public class StorePresenter implements StoreContract.Presenter {
         mStore = store;
         mStoreView.setStoreName(mStore.getStoreName());
         loadFollowStore(mStore.getStoreId());
-        checkFollowStore(mStore.getStoreId(), Constant.customer.getId());
+        if (Constant.customer != null){
+            checkFollowStore(mStore.getStoreId(), Constant.customer.getId());
+        }
         loadStoreReviews(mStore.getStoreId());
     }
 

@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface WishListContract {
     interface View {
+        void setLayoutNone(boolean b);
         void setAdapterWishList(List<WishList> wishList);
         void setNotifyDataSetChanged();
         void actionMoveToProductDetail(int position);

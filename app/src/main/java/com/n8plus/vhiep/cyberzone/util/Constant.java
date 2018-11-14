@@ -13,11 +13,14 @@ import java.util.List;
 public class Constant {
     //    public static String IP = "http://172.16.238.133";
 //    public static String IP = "http://192.168.10.29";
+//    public static String IP = "http://192.168.10.56";
     public static String IP = "http://172.16.198.84";
-    //    public static String IP = "http://172.20.10.5";
+//    public static String IP = "http://192.168.43.188";
     public static String URL_HOST = IP + ":3000/";
     public static String URL_TIME = "http://api.geonames.org/timezoneJSON?formatted=true&lat=10.041791&lng=105.747099&username=cyberzone&style=full";
 
+    public static final String PUBLISHABLE_KEY = "pk_test_CeyyXLIDl0bfY9IiYwTIYZAU";
+    public static final String SECRET_KEY = "sk_test_VWec3gEiwOvZ7wQ6BCWYCHk2";
     public static List<PurchaseItem> purchaseList = new ArrayList<>();
     public static Customer customer = null;
 

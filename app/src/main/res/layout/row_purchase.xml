@@ -22,7 +22,7 @@
                 android:id="@+id/tv_store_name_purchase"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Bán bởi Phong Vũ"
+                android:text=""
                 android:textColor="@android:color/black"
                 android:textSize="16sp" />
         </LinearLayout>
@@ -56,10 +56,10 @@
             android:layout_weight="2">
 
             <ImageView
-                android:layout_gravity="center"
                 android:id="@+id/img_product_purchase"
                 android:layout_width="64dp"
                 android:layout_height="64dp"
+                android:layout_gravity="center"
                 android:src="@drawable/img_1501266" />
         </LinearLayout>
 
@@ -73,8 +73,8 @@
             <TextView
                 android:id="@+id/tv_product_name_purchase"
                 android:layout_width="match_parent"
-                android:lineSpacingExtra="4dp"
                 android:layout_height="wrap_content"
+                android:lineSpacingExtra="4dp"
                 android:text="Bo mạch chính/ Mainboard Msi Z370-A Pro"
                 android:textColor="@android:color/black" />
 

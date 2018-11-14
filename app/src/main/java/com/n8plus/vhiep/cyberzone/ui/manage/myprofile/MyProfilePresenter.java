@@ -3,6 +3,7 @@ package com.n8plus.vhiep.cyberzone.ui.manage.myprofile;
 import android.app.Activity;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -10,6 +11,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.n8plus.vhiep.cyberzone.data.model.Account;
 import com.n8plus.vhiep.cyberzone.data.model.Customer;
 import com.n8plus.vhiep.cyberzone.data.model.Product;
 import com.n8plus.vhiep.cyberzone.ui.manage.mainmanage.MainManageContract;
@@ -25,6 +27,7 @@ public class MyProfilePresenter implements MyProfileContract.Presenter {
     private Customer mCustomer;
     private MyProfileContract.View mProfileView;
     private String URL_CUSTOMER = Constant.URL_HOST + "customers";
+    private String URL_ACCOUNT = Constant.URL_HOST + "accounts";
     private Gson gson;
 
     public MyProfilePresenter(MyProfileContract.View mProfileView) {
@@ -35,8 +38,39 @@ public class MyProfilePresenter implements MyProfileContract.Presenter {
     }
 
     @Override
-    public void loadProfile(String customerId) {
-        fetchCustomerProfile(customerId);
+    public void loadProfile(Customer customer) {
+        mCustomer = customer;
+        mProfileView.setNameCustomer(mCustomer.getName());
+        mProfileView.setGenderCustomer(mCustomer.getGender());
+        mProfileView.setBirthdayCustomer(mCustomer.getBirthday());
+        mProfileView.setPhoneNumberCustomer(mCustomer.getPhoneNumber());
+        mProfileView.setEmailCustomer(mCustomer.getEmail());
+        checkAccount(mCustomer.getAccount().getId());
+    }
+
+    @Override
+    public void checkAccount(String accountId) {
+        JsonObjectRequest customerProfileRequest = new JsonObjectRequest(Request.Method.GET, URL_ACCOUNT + "/" + accountId, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            Account account = gson.fromJson(String.valueOf(response.getJSONObject("account")), Account.class);
+                            Log.i("MyProfilePresenter", "Account: " + account.getUsername());
+                            mProfileView.setLayoutUpdatePassword(account != null ? true : false);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("HomePresenter", error.toString());
+                        mProfileView.setLayoutUpdatePassword(false);
+                    }
+                });
+        MySingleton.getInstance(((Fragment) mProfileView).getContext().getApplicationContext()).addToRequestQueue(customerProfileRequest);
     }
 
     @Override

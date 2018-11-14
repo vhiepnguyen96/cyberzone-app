@@ -96,13 +96,15 @@ public class UpdateProfilePresenter implements UpdateProfileContract.Presenter {
                 new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
-                        Toast.makeText(((Fragment) mUpdateProfileView).getContext(), "Thành công", Toast.LENGTH_SHORT).show();
+                        mUpdateProfileView.updateCustomerResult(true);
+                        mUpdateProfileView.actionBackProfile();
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.e("UpdateProfilePresenter", error.toString());
+                        mUpdateProfileView.updateCustomerResult(false);
                     }
                 });
 

@@ -11,12 +11,14 @@ public interface MyProfileContract {
         void setGenderCustomer(String genderCustomer);
         void setBirthdayCustomer(Date birthdayCustomer);
         void setPhoneNumberCustomer(String phoneNumberCustomer);
+        void setLayoutUpdatePassword(boolean b);
         void setEmailCustomer(String emailCustomer);
         void moveToUpdateProfile(Customer customer);
         void moveToUpdatePassword(Customer customer);
     }
     interface Presenter extends BasePresenter<View> {
-        void loadProfile(String customerId);
+        void loadProfile(Customer customer);
+        void checkAccount(String accountId);
         void prepareDataProfile();
         void prepareDataPassword();
     }

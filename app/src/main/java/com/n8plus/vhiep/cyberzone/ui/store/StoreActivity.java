@@ -2,11 +2,13 @@ package com.n8plus.vhiep.cyberzone.ui.store;
 
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -16,9 +18,12 @@ import android.widget.Toast;
 
 import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.data.model.Store;
+import com.n8plus.vhiep.cyberzone.ui.login.LoginActivity;
+import com.n8plus.vhiep.cyberzone.ui.productdetails.ProductDetailActivity;
 import com.n8plus.vhiep.cyberzone.ui.store.adapter.SectionsPageAdapter;
 import com.n8plus.vhiep.cyberzone.ui.store.homepage.HomePageFragment;
 import com.n8plus.vhiep.cyberzone.ui.store.information.InformationFragment;
+import com.n8plus.vhiep.cyberzone.util.SessionManager;
 
 public class StoreActivity extends AppCompatActivity implements StoreContract.View {
     private Toolbar mToolbarStore;
@@ -27,6 +32,7 @@ public class StoreActivity extends AppCompatActivity implements StoreContract.Vi
     private TabLayout mTabLayout;
     private TextView mStoreName, mPositiveReview, mFollow, mFollowCounter;
     private StorePresenter mStorePresenter;
+    private SessionManager mSessionManager;
     private static int follow = 0;
 
     @Override
@@ -42,6 +48,7 @@ public class StoreActivity extends AppCompatActivity implements StoreContract.Vi
         mFollowCounter = (TextView) findViewById(R.id.tv_follow_counter);
 
         mStorePresenter = new StorePresenter(this);
+        mSessionManager = new SessionManager(this);
 
         // Custom tab
         mSectionsPageAdapter = new SectionsPageAdapter(getSupportFragmentManager());
@@ -69,14 +76,41 @@ public class StoreActivity extends AppCompatActivity implements StoreContract.Vi
         mFollow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                follow++;
-                if (follow % 2 == 1) {
-                    mStorePresenter.followStore();
+                if (mSessionManager.isLoggedIn()) {
+                    follow++;
+                    if (follow % 2 == 1) {
+                        mStorePresenter.followStore();
+                    } else {
+                        mStorePresenter.unfollowStore();
+                    }
                 } else {
-                    mStorePresenter.unfollowStore();
+                    showRequireLogin();
                 }
             }
         });
+    }
+
+    private void showRequireLogin() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Thông báo");
+        builder.setMessage("Bạn chưa đăng nhập!");
+        builder.setCancelable(false);
+        builder.setPositiveButton("Đăng nhập ngay", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                startActivity(new Intent(StoreActivity.this, LoginActivity.class));
+                dialogInterface.dismiss();
+                finish();
+            }
+        });
+        builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
     @Override

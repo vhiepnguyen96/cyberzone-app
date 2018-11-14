@@ -63,16 +63,17 @@
                 <android.support.v4.widget.NestedScrollView
                     android:id="@+id/scroll_view_main"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent"
+                    android:fillViewport="true">
 
-                    <LinearLayout
+                    <RelativeLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
                         android:background="@color/backgroundColor"
-                        android:onClick="hideKeyboard"
-                        android:orientation="vertical">
+                        android:descendantFocusability="blocksDescendants">
 
                         <LinearLayout
+                            android:id="@+id/lnr_best_seller"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content">
 
@@ -117,19 +118,22 @@
 
                                     <android.support.v7.widget.RecyclerView
                                         android:id="@+id/recycler_best_seller"
-                                        android:layout_width="wrap_content"
+                                        android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
                                         android:background="@color/whiteColor"
                                         android:orientation="horizontal">
 
                                     </android.support.v7.widget.RecyclerView>
+
                                 </LinearLayout>
                             </LinearLayout>
                         </LinearLayout>
 
                         <LinearLayout
+                            android:id="@+id/lnr_on_sale"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/lnr_best_seller">
 
                             <LinearLayout
                                 android:layout_width="match_parent"
@@ -167,7 +171,7 @@
 
                                 <LinearLayout
                                     android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
+                                    android:layout_height="match_parent"
                                     android:padding="4dp">
 
                                     <android.support.v7.widget.RecyclerView
@@ -183,8 +187,10 @@
                         </LinearLayout>
 
                         <LinearLayout
+                            android:id="@+id/lnr_popular_category"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:layout_below="@+id/lnr_on_sale"
                             android:orientation="vertical"
                             android:padding="4dp">
 
@@ -218,77 +224,87 @@
 
                             <LinearLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:padding="4dp">
+                                android:layout_height="wrap_content">
 
                                 <android.support.v7.widget.RecyclerView
                                     android:id="@+id/recycler_popular_category"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content">
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:padding="4dp">
 
                                 </android.support.v7.widget.RecyclerView>
                             </LinearLayout>
                         </LinearLayout>
 
                         <LinearLayout
+                            android:id="@+id/lnr_suggestion"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/lnr_popular_category"
+                            android:orientation="vertical"
+                            android:padding="4dp">
 
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:padding="4dp">
+                                android:orientation="horizontal"
+                                android:paddingBottom="4dp"
+                                android:paddingLeft="4dp"
+                                android:paddingRight="4dp"
+                                android:weightSum="10">
 
-                                <LinearLayout
-                                    android:layout_width="match_parent"
+                                <TextView
+                                    android:layout_width="0dp"
                                     android:layout_height="wrap_content"
-                                    android:orientation="horizontal"
-                                    android:paddingBottom="4dp"
-                                    android:paddingLeft="4dp"
-                                    android:paddingRight="4dp"
-                                    android:weightSum="10">
+                                    android:layout_weight="5"
+                                    android:text="Đề xuất cho bạn"
+                                    android:textSize="20sp" />
 
-                                    <TextView
-                                        android:layout_width="0dp"
-                                        android:layout_height="wrap_content"
-                                        android:layout_weight="5"
-                                        android:text="Đề xuất cho bạn"
-                                        android:textSize="20sp" />
-
-                                    <TextView
-                                        android:id="@+id/txt_moreSuggestion"
-                                        android:layout_width="0dp"
-                                        android:layout_height="wrap_content"
-                                        android:layout_gravity="center"
-                                        android:layout_weight="5"
-                                        android:gravity="right"
-                                        android:text="Xem thêm"
-                                        android:textColor="@color/colorPrimary"
-                                        android:textSize="18sp" />
-                                </LinearLayout>
-
-                                <LinearLayout
-                                    android:layout_width="match_parent"
+                                <TextView
+                                    android:id="@+id/txt_moreSuggestion"
+                                    android:layout_width="0dp"
                                     android:layout_height="wrap_content"
-                                    android:paddingBottom="4dp"
-                                    android:paddingTop="4dp">
+                                    android:layout_gravity="center"
+                                    android:layout_weight="5"
+                                    android:gravity="right"
+                                    android:text="Xem thêm"
+                                    android:textColor="@color/colorPrimary"
+                                    android:textSize="18sp" />
+                            </LinearLayout>
 
-                                    <android.support.v7.widget.RecyclerView
-                                        android:id="@+id/recycler_suggestions"
-                                        android:layout_width="match_parent"
-                                        android:layout_height="wrap_content"
-                                        android:orientation="horizontal">
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
 
-                                    </android.support.v7.widget.RecyclerView>
-                                </LinearLayout>
+                                <android.support.v7.widget.RecyclerView
+                                    android:id="@+id/recycler_suggestions"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:padding="4dp">
+
+                                </android.support.v7.widget.RecyclerView>
+
                             </LinearLayout>
                         </LinearLayout>
-                    </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/lnr_progress"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/lnr_suggestion"
+                            android:gravity="center"
+                            android:visibility="gone">
+
+                            <ProgressBar
+                                android:id="@+id/progress_load_more"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+                        </LinearLayout>
+
+                    </RelativeLayout>
                 </android.support.v4.widget.NestedScrollView>
             </android.support.v4.widget.SwipeRefreshLayout>
         </android.support.design.widget.CoordinatorLayout>
-
     </FrameLayout>
 
     <android.support.design.widget.NavigationView

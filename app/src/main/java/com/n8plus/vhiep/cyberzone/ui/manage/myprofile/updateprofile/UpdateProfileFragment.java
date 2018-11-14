@@ -22,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.data.model.Customer;
@@ -34,7 +35,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-public class UpdateProfileFragment extends Fragment implements UpdateProfileContract.View {
+public class UpdateProfileFragment extends Fragment implements UpdateProfileContract.View, View.OnClickListener {
     private TextView mBirthday;
     private EditText mEditName, mEditPhoneNumber, mEditEmail;
     private ImageView mDatePicker;
@@ -79,29 +80,9 @@ public class UpdateProfileFragment extends Fragment implements UpdateProfileCont
             mUpdateProfilePresenter.setCustomerProfile(customer);
         }
 
-        mDatePicker.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mDatePickerDialog.show();
-            }
-        });
-
-        mUpdate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mUpdateProfilePresenter.updateCustomer(mEditName.getText().toString(), mRadioButtonBoy.isChecked() ? "Nam" : "Nữ", calendar.getTime(), mEditPhoneNumber.getText().toString(), mEditEmail.getText().toString());
-            }
-        });
-
-        mBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FragmentManager fragmentManager = getFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.frm_manage, new MyProfileFragment());
-                fragmentTransaction.commit();
-            }
-        });
+        mDatePicker.setOnClickListener(this);
+        mUpdate.setOnClickListener(this);
+        mBack.setOnClickListener(this);
 
         super.onViewCreated(view, savedInstanceState);
     }
@@ -132,10 +113,7 @@ public class UpdateProfileFragment extends Fragment implements UpdateProfileCont
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                FragmentManager fragmentManager = getFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.frm_manage, new MyProfileFragment());
-                fragmentTransaction.commit();
+                actionBackProfile();
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -172,5 +150,37 @@ public class UpdateProfileFragment extends Fragment implements UpdateProfileCont
     @Override
     public void setEmailCustomer(String emailCustomer) {
         mEditEmail.setText(emailCustomer);
+    }
+
+    @Override
+    public void updateCustomerResult(boolean b) {
+        Toast.makeText(this.getContext(), b ? "Cập nhật thành công" : "Cập nhật thất bại", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.img_date_picker:
+                mDatePickerDialog.show();
+                break;
+            case R.id.btn_update:
+                actionUpdateCustomer();
+                break;
+            case R.id.btn_back:
+                actionBackProfile();
+                break;
+        }
+    }
+
+    @Override
+    public void actionBackProfile() {
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.frm_manage, new MyProfileFragment());
+        fragmentTransaction.commit();
+    }
+
+    private void actionUpdateCustomer() {
+        mUpdateProfilePresenter.updateCustomer(mEditName.getText().toString(), mRadioButtonBoy.isChecked() ? "Nam" : "Nữ", calendar.getTime(), mEditPhoneNumber.getText().toString(), mEditEmail.getText().toString());
     }
 }

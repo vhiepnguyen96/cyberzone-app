@@ -29,6 +29,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -56,6 +57,7 @@ public class WaitForPaymentPresenter implements WaitForPaymentContract.Presenter
                             List<Order> orderList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("orders")), Order[].class));
                             Log.i("AllOrderPresenter", "GET: " + orderList.size() + " order");
                             if (orderList.size() > 0) {
+                                mWaitForPaymentView.setLayoutOrderNone(false);
                                 waitForPaymentList = getWaitForPaymentList(orderList);
                                 mWaitForPaymentView.setAdapterWaitForPayment(waitForPaymentList);
                                 for (int i = 0; i < waitForPaymentList.size(); i++) {
@@ -81,6 +83,8 @@ public class WaitForPaymentPresenter implements WaitForPaymentContract.Presenter
                                             });
                                     MySingleton.getInstance(((Fragment) mWaitForPaymentView).getContext().getApplicationContext()).addToRequestQueue(orderItemRequest);
                                 }
+                            } else {
+                                mWaitForPaymentView.setLayoutOrderNone(true);
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -91,6 +95,7 @@ public class WaitForPaymentPresenter implements WaitForPaymentContract.Presenter
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.e("AllOrderPresenter", error.toString());
+                        mWaitForPaymentView.setLayoutOrderNone(true);
                     }
                 });
         MySingleton.getInstance(((Fragment) mWaitForPaymentView).getContext().getApplicationContext()).addToRequestQueue(request);

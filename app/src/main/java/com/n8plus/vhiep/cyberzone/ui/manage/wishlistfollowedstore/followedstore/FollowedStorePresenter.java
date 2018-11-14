@@ -60,6 +60,7 @@ public class FollowedStorePresenter implements FollowedStoreContract.Presenter {
                             mFollowStores = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("followStores")), FollowStore[].class));
                             Log.d("FollowedStorePresenter", "GET followStores: " + mFollowStores.size());
                             if (mFollowStores.size() > 0) {
+                                mFollowedStoreView.setLayoutNone(false);
                                 mFollowedStoreView.setAdapterFollowStore(mFollowStores);
                                 for (int i = 0; i < mFollowStores.size(); i++) {
                                     JSONArray categories = response.getJSONArray("followStores").getJSONObject(i).getJSONObject("store").getJSONArray("categories");
@@ -86,6 +87,8 @@ public class FollowedStorePresenter implements FollowedStoreContract.Presenter {
                                     mFollowStores.get(i).getStore().setCategories(categoryList);
                                     mFollowedStoreView.setNotifyDataSetChanged();
                                 }
+                            } else {
+                                mFollowedStoreView.setLayoutNone(true);
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -95,7 +98,7 @@ public class FollowedStorePresenter implements FollowedStoreContract.Presenter {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-
+                        mFollowedStoreView.setLayoutNone(true);
                     }
                 });
         MySingleton.getInstance(((Fragment) mFollowedStoreView).getContext().getApplicationContext()).addToRequestQueue(wishListRequest);
@@ -114,7 +117,8 @@ public class FollowedStorePresenter implements FollowedStoreContract.Presenter {
                     public void onResponse(JSONObject response) {
                         Log.i("ProductDetailPresenter", response.toString());
                         mFollowedStoreView.unfollowStoreAlert(true);
-                        loadFollowStore(Constant.customer.getId());
+                        mFollowedStoreView.setNotifyDataSetChanged();
+                        loadData();
                     }
                 },
                 new Response.ErrorListener() {
@@ -126,19 +130,4 @@ public class FollowedStorePresenter implements FollowedStoreContract.Presenter {
                 });
         MySingleton.getInstance(((Fragment) mFollowedStoreView).getContext().getApplicationContext()).addToRequestQueue(followRequest);
     }
-
-//    private void prepareData(){
-//        List<Category> categories = new ArrayList<>();
-//        categories.add(new Category("5b974fb26153321ffc61b828", "Linh kiện máy tính"));
-//        categories.add(new Category("5b974fbf6153321ffc61b829", "Màn hình máy tính"));
-//        categories.add(new Category("5b974fc86153321ffc61b82a", "Ổ cứng HDD/SSD"));
-//
-//        mStoreList = new ArrayList<>();
-//        mStoreList.add(new Store("5b989eb9a6bce5234c9522ea", new Account("admin", "admin"), "Máy tính Phong Vũ", "Hồ Chí Minh", "0909159753", new Date(), categories));
-//        mStoreList.add(new Store("5b989eb9a6bce5234c9522ea", new Account("admin", "admin"), "Phi Long Gaming", "Hồ Chí Minh", "0909159753", new Date(), categories));
-//        mStoreList.add(new Store("5b989eb9a6bce5234c9522ea", new Account("admin", "admin"), "An Phát PC", "Đà Nẵng", "0909159753", new Date(), categories));
-//        mStoreList.add(new Store("5b989eb9a6bce5234c9522ea", new Account("admin", "admin"), "Hà Nội Computer", "Hà Nội", "0909159753", new Date(), categories));
-//        mStoreList.add(new Store("5b989eb9a6bce5234c9522ea", new Account("admin", "admin"), "Máy tính Duy Huỳnh", "Kiên Giang", "0909159753", new Date(), categories));
-//
-//    }
 }

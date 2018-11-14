@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 public class HomePagePresenter implements HomePageContract.Presenter {
+    private int GRID_LAYOUT = 1, LINEAR_LAYOUT = 2;
     private HomePageContract.View mHomePageView;
     private Store mStore;
     private List<Product> mProductList;
@@ -70,7 +71,7 @@ public class HomePagePresenter implements HomePageContract.Presenter {
                             mProductList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("products")), Product[].class));
                             Log.i("HomePagePresenter", "GET: " + mProductList.size() + " products");
                             if (mProductList.size() > 0) {
-                                mHomePageView.setAdapterProduct(mProductList, "GridLayout");
+                                mHomePageView.setAdapterProduct(mProductList, GRID_LAYOUT);
                                 fetchCurrentTime();
                                 for (int i = 0; i < mProductList.size(); i++) {
                                     fetchImageProduct(i);
@@ -94,12 +95,12 @@ public class HomePagePresenter implements HomePageContract.Presenter {
 
     @Override
     public void changeProductGridLayout() {
-        mHomePageView.setAdapterProduct(mProductList, "GridLayout");
+        mHomePageView.setAdapterProduct(mProductList, GRID_LAYOUT);
     }
 
     @Override
     public void changeProductLinearLayout() {
-        mHomePageView.setAdapterProduct(mProductList, "LinearLayout");
+        mHomePageView.setAdapterProduct(mProductList, LINEAR_LAYOUT);
     }
 
     public void fetchImageProduct(final int position) {

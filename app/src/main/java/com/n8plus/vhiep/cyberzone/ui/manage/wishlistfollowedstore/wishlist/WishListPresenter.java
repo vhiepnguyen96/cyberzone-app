@@ -68,6 +68,7 @@ public class WishListPresenter implements WishListContract.Presenter {
                             mWishList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("wishList")), WishList[].class));
                             Log.d("WishListPresenter", "wishList: " + mWishList.size());
                             if (mWishList.size() > 0) {
+                                mWishListView.setLayoutNone(false);
                                 mWishListView.setAdapterWishList(mWishList);
                                 fetchCurrentTime();
                                 for (int i = 0; i < mWishList.size(); i++) {
@@ -75,6 +76,8 @@ public class WishListPresenter implements WishListContract.Presenter {
                                         loadProduct(i);
                                     }
                                 }
+                            } else {
+                                mWishListView.setLayoutNone(true);
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -84,7 +87,7 @@ public class WishListPresenter implements WishListContract.Presenter {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-
+                        mWishListView.setLayoutNone(true);
                     }
                 });
         MySingleton.getInstance(((Fragment) mWishListView).getContext().getApplicationContext()).addToRequestQueue(wishListRequest);

@@ -1,5 +1,7 @@
 package com.n8plus.vhiep.cyberzone.ui.home;
 
+import android.os.Handler;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -25,6 +27,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -32,10 +35,12 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AbsListView;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,6 +51,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.n8plus.vhiep.cyberzone.R;
+import com.n8plus.vhiep.cyberzone.base.BaseRecyclerViewAdapter;
 import com.n8plus.vhiep.cyberzone.data.model.Account;
 import com.n8plus.vhiep.cyberzone.ui.home.adapter.PopularCategoryAdapter;
 import com.n8plus.vhiep.cyberzone.ui.home.adapter.ProductHorizontalAdapter;
@@ -58,19 +64,30 @@ import com.n8plus.vhiep.cyberzone.data.model.Overview;
 import com.n8plus.vhiep.cyberzone.data.model.Product;
 import com.n8plus.vhiep.cyberzone.data.model.ProductType;
 import com.n8plus.vhiep.cyberzone.data.model.Specification;
+import com.n8plus.vhiep.cyberzone.ui.product.adapter.LoadMoreProductAdapter;
 import com.n8plus.vhiep.cyberzone.ui.product.adapter.RecyclerProductAdapter;
+import com.n8plus.vhiep.cyberzone.ui.productdetails.ProductDetailActivity;
 import com.n8plus.vhiep.cyberzone.util.Constant;
+import com.n8plus.vhiep.cyberzone.util.EndlessRecyclerViewScrollListener;
+import com.n8plus.vhiep.cyberzone.util.ILoadMore;
 import com.n8plus.vhiep.cyberzone.util.ItemDecorationColumns;
+import com.n8plus.vhiep.cyberzone.util.LoadMoreRecyclerViewAdapter;
 import com.n8plus.vhiep.cyberzone.util.SessionManager;
+import com.n8plus.vhiep.cyberzone.util.TypeLoad;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HomeActivity extends AppCompatActivity implements HomeContract.View {
+public class HomeActivity extends AppCompatActivity implements HomeContract.View, BaseRecyclerViewAdapter.ItemClickListener, LoadMoreRecyclerViewAdapter.RetryLoadMoreListener {
+    private final String TAG = "HomeActivity";
+    private int GRID_LAYOUT = 1, LINEAR_LAYOUT = 2;
+    private final int BEST_SELLER_ADAPTER = 1, ON_SALE_ADAPTER = 2, SUGGESTION_ADAPTER = 3;
     private RecyclerView mRecyclerSuggestion, mRecyclerOnSales, mRecyclerBestSeller, mRecyclerPopularCategory;
-    private RecyclerProductAdapter mSuggestionAdapter, mOnSaleAdapter, mBestSellerAdapter;
-    private RecyclerView.LayoutManager mLayoutSuggestion, mLayoutOnSale, mLayoutBestSeller, mLayoutPopularCategory;
+    private RecyclerProductAdapter mOnSaleAdapter, mBestSellerAdapter;
+    private LoadMoreProductAdapter mLoadMoreSuggestionAdapter;
+    private RecyclerView.LayoutManager mLayoutOnSale, mLayoutBestSeller, mLayoutPopularCategory;
+    private GridLayoutManager mLayoutSuggestion;
     private PopularCategoryAdapter mPopularCategoryAdapter;
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavigationView;
@@ -79,11 +96,16 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     private TextView mTextName, mMoreSuggestion, mMoreOnSale, mMoreBestSeller, mTextProductCount, mMorePopularCategory;
     private SearchView mSearchHome;
     private SwipeRefreshLayout mRefreshLayout;
-    private NestedScrollView mScrollViewMain;
+    private NestedScrollView mNestedScrollView;
     private HomePresenter mHomePresenter;
     private SessionManager mSessionManager;
     private DividerItemDecoration mOnSaleItemDecoration, mBestSellerItemDecoration;
+    private LinearLayout mLinearProgress;
+    private ProgressBar mProgressLoadMore;
+    private Parcelable mBestSellerState, mOnSaleState, mSuggestionState;
     private Menu mMenuHome;
+    int currentItems, totalItems, scrollOutItems;
+    boolean isLoading = false;
 
     FragmentManager fragmentManager;
     FragmentTransaction fragmentTransaction;
@@ -121,7 +143,6 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
 
         // Set data
         mHomePresenter.loadData();
-        mHomePresenter.loadAllProductType();
         mHomePresenter.loadDataCustomer(mSessionManager.getAccountLogin());
 
         // Listener
@@ -129,6 +150,16 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
             @Override
             public void onClick(View v) {
                 mDrawerLayout.closeDrawers();
+            }
+        });
+
+        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                mRefreshLayout.setRefreshing(true);
+                mHomePresenter.loadData();
+                mHomePresenter.loadAllProductType();
+                mRefreshLayout.setRefreshing(false);
             }
         });
 
@@ -146,16 +177,6 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
             }
         });
 
-        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                mRefreshLayout.setRefreshing(true);
-                mHomePresenter.loadData();
-                mHomePresenter.loadAllProductType();
-                mRefreshLayout.setRefreshing(false);
-            }
-        });
-
         mMoreSuggestion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -170,7 +191,7 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
             }
         });
 
-        mScrollViewMain.setOnTouchListener(new View.OnTouchListener() {
+        mNestedScrollView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_MOVE) {
@@ -180,7 +201,30 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
             }
         });
 
-        mSearchHome.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//        mNestedScrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
+//            @Override
+//            public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+//                if (v.getChildAt(v.getChildCount() - 1) != null) {
+//                    if ((scrollY >= (v.getChildAt(v.getChildCount() - 1).getMeasuredHeight() - v.getMeasuredHeight())) && scrollY > oldScrollY) {
+//                        if (!isLoading) {
+//                            currentItems = mLayoutSuggestion.getChildCount();
+//                            totalItems = mLayoutSuggestion.getItemCount();
+//                            scrollOutItems = mLayoutSuggestion.findFirstVisibleItemPosition();
+//                            if ((currentItems + scrollOutItems) >= totalItems) {
+//                                Log.d(TAG, "LoadMore");
+//                                setVisibilityProgressBar(true);
+//                                isLoading = true;
+//                                mHomePresenter.loadMoreSuggestion();
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        });
+
+        mSearchHome.setOnQueryTextListener(new SearchView.OnQueryTextListener()
+
+        {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 mHomePresenter.prepareDataKeyword(query);
@@ -219,11 +263,13 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
         mMorePopularCategory = (TextView) findViewById(R.id.txt_morePopularCategory);
         mSearchHome = (SearchView) findViewById(R.id.search_home);
         mRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
-        mScrollViewMain = (NestedScrollView) findViewById(R.id.scroll_view_main);
+        mNestedScrollView = (NestedScrollView) findViewById(R.id.scroll_view_main);
         mRecyclerSuggestion = (RecyclerView) findViewById(R.id.recycler_suggestions);
         mRecyclerOnSales = (RecyclerView) findViewById(R.id.recycler_on_sales);
         mRecyclerBestSeller = (RecyclerView) findViewById(R.id.recycler_best_seller);
         mRecyclerPopularCategory = (RecyclerView) findViewById(R.id.recycler_popular_category);
+        mLinearProgress = (LinearLayout) findViewById(R.id.lnr_progress);
+        mProgressLoadMore = (ProgressBar) findViewById(R.id.progress_load_more);
     }
 
     private void setFullScreenNavigationView() {
@@ -244,14 +290,15 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     }
 
     private void customDivider() {
-        mRecyclerPopularCategory.addItemDecoration(new ItemDecorationColumns(4, 3));
         mOnSaleItemDecoration = new DividerItemDecoration(mRecyclerOnSales.getContext(), DividerItemDecoration.HORIZONTAL);
         mOnSaleItemDecoration.setDrawable(getResources().getDrawable(R.drawable.divider_horizontal));
         mBestSellerItemDecoration = new DividerItemDecoration(mRecyclerBestSeller.getContext(), DividerItemDecoration.HORIZONTAL);
         mBestSellerItemDecoration.setDrawable(getResources().getDrawable(R.drawable.divider_horizontal));
         mRecyclerBestSeller.addItemDecoration(mBestSellerItemDecoration);
         mRecyclerOnSales.addItemDecoration(mOnSaleItemDecoration);
-        mRecyclerSuggestion.addItemDecoration(new ItemDecorationColumns(10, 2));
+
+        mRecyclerPopularCategory.addItemDecoration(new ItemDecorationColumns(4, 3));
+        mRecyclerSuggestion.addItemDecoration(new ItemDecorationColumns(8, 2));
     }
 
     public void hideKeyboard(View view) {
@@ -297,7 +344,7 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     }
 
     public void prepareOptionMenu(boolean isLoggedIn) {
-        if (mMenuHome != null){
+        if (mMenuHome != null) {
             if (isLoggedIn) {
                 mMenuHome.findItem(R.id.mnu_account).setVisible(true);
                 mMenuHome.findItem(R.id.mnu_signout).setVisible(true);
@@ -331,8 +378,8 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     @Override
     public void setAdapterBestSeller(List<Product> productList) {
         mLayoutBestSeller = new LinearLayoutManager(mRecyclerBestSeller.getContext(), LinearLayoutManager.HORIZONTAL, false);
-        mBestSellerAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, productList);
         mRecyclerBestSeller.setLayoutManager(mLayoutBestSeller);
+        mBestSellerAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, productList, LINEAR_LAYOUT);
         mRecyclerBestSeller.setAdapter(mBestSellerAdapter);
         mRecyclerBestSeller.setNestedScrollingEnabled(true);
     }
@@ -340,7 +387,7 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     @Override
     public void setAdapterOnSale(List<Product> productList) {
         mLayoutOnSale = new LinearLayoutManager(mRecyclerOnSales.getContext(), LinearLayoutManager.HORIZONTAL, false);
-        mOnSaleAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, productList);
+        mOnSaleAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, productList, LINEAR_LAYOUT);
         mRecyclerOnSales.setLayoutManager(mLayoutOnSale);
         mRecyclerOnSales.setAdapter(mOnSaleAdapter);
         mRecyclerOnSales.setNestedScrollingEnabled(true);
@@ -351,8 +398,56 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
         mPopularCategoryAdapter = new PopularCategoryAdapter(productTypeList);
         mRecyclerPopularCategory.setLayoutManager(new GridLayoutManager(mRecyclerPopularCategory.getContext(), 3));
         mRecyclerPopularCategory.setAdapter(mPopularCategoryAdapter);
-        mRecyclerPopularCategory.setHasFixedSize(true);
         mRecyclerPopularCategory.setNestedScrollingEnabled(false);
+    }
+
+    @Override
+    public void setAdapterSuggestion(List<Product> productList) {
+        mLayoutSuggestion = new GridLayoutManager(mRecyclerSuggestion.getContext(), 2);
+        mRecyclerSuggestion.setLayoutManager(mLayoutSuggestion);
+        mLoadMoreSuggestionAdapter = new LoadMoreProductAdapter(this, this, this, GRID_LAYOUT);
+        mLoadMoreSuggestionAdapter.set(productList);
+        mRecyclerSuggestion.setAdapter(mLoadMoreSuggestionAdapter);
+        mRecyclerSuggestion.setNestedScrollingEnabled(false);
+
+        EndlessRecyclerViewScrollListener endlessScrollListener = new EndlessRecyclerViewScrollListener(mLayoutSuggestion) {
+            @Override
+            public void onLoadMore(int page) {
+                Log.d(TAG, "LoadPage: " + page);
+                mHomePresenter.loadMoreSuggestion(page);
+            }
+        };
+        mRecyclerSuggestion.addOnScrollListener(endlessScrollListener);
+    }
+
+    @Override
+    public void startLoadMore() {
+        mLoadMoreSuggestionAdapter.startLoadMore();
+    }
+
+    @Override
+    public void onLoadMoreFailed() {
+        mLoadMoreSuggestionAdapter.onLoadMoreFailed();
+    }
+
+    @Override
+    public void onReachEnd() {
+        mLoadMoreSuggestionAdapter.onReachEnd();
+    }
+
+    @Override
+    public void setDataListAdapter(List<Product> dataList) {
+        mLoadMoreSuggestionAdapter.set(dataList);
+    }
+
+    @Override
+    public void addDataListAdapter(List<Product> dataList) {
+        mLoadMoreSuggestionAdapter.add(dataList);
+    }
+
+    @Override
+    public void setAlert(String message) {
+        Toast.makeText(HomeActivity.this, message, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -361,29 +456,40 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     }
 
     @Override
-    public void setAdapterSuggestion(List<Product> productList) {
-        mSuggestionAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, productList);
-        mRecyclerSuggestion.setLayoutManager(new GridLayoutManager(mRecyclerSuggestion.getContext(), 2));
-        mRecyclerSuggestion.setAdapter(mSuggestionAdapter);
-        mRecyclerSuggestion.setNestedScrollingEnabled(false);
-    }
-
-    @Override
     public void setCartMenuItem() {
-        if (mFrameProductCount != null){
+        if (mFrameProductCount != null) {
             mFrameProductCount.setVisibility(Constant.countProductInCart() == 0 ? View.INVISIBLE : View.VISIBLE);
             mTextProductCount.setText(String.valueOf(Constant.countProductInCart()));
         }
     }
 
     @Override
-    public void setNotifyDataSetChanged(String adapter) {
-        if (adapter.contains("BestSeller")) {
-            mBestSellerAdapter.notifyDataSetChanged();
-        } else if (adapter.contains("OnSale")) {
-            mOnSaleAdapter.notifyDataSetChanged();
-        } else {
-            mSuggestionAdapter.notifyDataSetChanged();
+    public void setNotifyDataSetChanged(int adapter) {
+        switch (adapter) {
+            case BEST_SELLER_ADAPTER:
+                mBestSellerAdapter.notifyDataSetChanged();
+                break;
+            case ON_SALE_ADAPTER:
+                mOnSaleAdapter.notifyDataSetChanged();
+                break;
+            case SUGGESTION_ADAPTER:
+                mLoadMoreSuggestionAdapter.notifyDataSetChanged();
+                break;
+        }
+    }
+
+    @Override
+    public void setNotifyItemChanged(int adapter, int position) {
+        switch (adapter) {
+            case BEST_SELLER_ADAPTER:
+                mBestSellerAdapter.notifyItemChanged(position);
+                break;
+            case ON_SALE_ADAPTER:
+                mOnSaleAdapter.notifyItemChanged(position);
+                break;
+            case SUGGESTION_ADAPTER:
+                mLoadMoreSuggestionAdapter.notifyItemChanged(position);
+                break;
         }
     }
 
@@ -393,26 +499,28 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     }
 
     @Override
-    public void moveToProductActivity(List<Product> products) {
+    public void moveToProductActivity(TypeLoad type, Bundle data) {
         Intent intent = new Intent(HomeActivity.this, ProductActivity.class);
-        if (products.size() > 0) {
-            intent.putExtra("products", (Serializable) products);
-        }
+        intent.putExtra("TypeLoad", type);
+        intent.putExtra("Data", data);
         startActivity(intent);
     }
 
     @Override
-    public void moveToProductActivity(String productTypeId, String keyword) {
-        Intent intent = new Intent(HomeActivity.this, ProductActivity.class);
-        if (productTypeId != null) intent.putExtra("productTypeId", productTypeId);
-        if (keyword != null) intent.putExtra("keyword", keyword);
+    public void moveToProductDetail(Product product) {
+        Intent intent = new Intent(HomeActivity.this, ProductDetailActivity.class);
+        intent.putExtra("product", product);
         startActivity(intent);
     }
 
     @Override
-    public void moveToLoginActivity() {
-        Intent signInIntent = new Intent(HomeActivity.this, LoginActivity.class);
-        startActivity(signInIntent);
+    public void onItemClick(View view, int position) {
+        moveToProductDetail(mLoadMoreSuggestionAdapter.getDataList().get(position));
+    }
+
+    @Override
+    public void onRetryLoadMore() {
+
     }
 }
 

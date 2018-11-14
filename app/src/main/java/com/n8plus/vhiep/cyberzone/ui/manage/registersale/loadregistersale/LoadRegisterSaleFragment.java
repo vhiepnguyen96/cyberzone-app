@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
 import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.data.model.RegisterSale;
@@ -31,6 +32,7 @@ public class LoadRegisterSaleFragment extends Fragment implements LoadRegisterSa
     private RegisterSaleAdapter mRegisterSaleAdapter;
     private DividerItemDecoration mDividerItemDecoration;
     private Button mRegisterSale;
+    private LinearLayout mLinearNone;
 
     @Nullable
     @Override
@@ -43,6 +45,7 @@ public class LoadRegisterSaleFragment extends Fragment implements LoadRegisterSa
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         mRecyclerRegisterSale = (RecyclerView) view.findViewById(R.id.rcv_all_register_sale);
         mRegisterSale = (Button) view.findViewById(R.id.btn_add_register_sale);
+        mLinearNone = (LinearLayout) view.findViewById(R.id.lnr_none);
         customRecyclerView();
 
         // Presenter
@@ -61,6 +64,12 @@ public class LoadRegisterSaleFragment extends Fragment implements LoadRegisterSa
         });
 
         super.onViewCreated(view, savedInstanceState);
+    }
+
+
+    @Override
+    public void setLayoutNone(boolean b) {
+        mLinearNone.setVisibility(b ? View.VISIBLE : View.GONE);
     }
 
     @Override

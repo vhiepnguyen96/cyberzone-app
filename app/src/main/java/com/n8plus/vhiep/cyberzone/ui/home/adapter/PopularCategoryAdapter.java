@@ -61,6 +61,11 @@ public class PopularCategoryAdapter extends RecyclerView.Adapter<PopularCategory
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.row_popular_category, parent, false);
+
+        ViewGroup.LayoutParams layoutParams = itemView.getLayoutParams();
+        layoutParams.width = (int) (parent.getWidth() * 0.33) - 8;
+        itemView.setLayoutParams(layoutParams);
+
         return new MyViewHolder(itemView);
     }
 
@@ -68,7 +73,7 @@ public class PopularCategoryAdapter extends RecyclerView.Adapter<PopularCategory
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         if (producTypeList != null) {
             holder.txt_popularCategory.setText(producTypeList.get(position).getName());
-            if (producTypeList.get(position).getImageURL() != null){
+            if (producTypeList.get(position).getImageURL() != null) {
                 Picasso.get().load(producTypeList.get(position).getImageURL()).resize(64, 64).centerInside().into(holder.img_popularCategory);
             } else {
                 Picasso.get().load(R.drawable.ic_image_gray_24dp).resize(64, 64).centerInside().into(holder.img_popularCategory);

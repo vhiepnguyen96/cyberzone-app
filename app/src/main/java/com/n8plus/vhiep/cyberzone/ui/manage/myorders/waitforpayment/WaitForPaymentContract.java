@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface WaitForPaymentContract {
     interface View {
+        void setLayoutOrderNone(boolean b);
         void setAdapterWaitForPayment(List<Order> waitForPaymentList);
         void setNotifyDataSetChanged();
     }

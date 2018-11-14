@@ -1,29 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@color/whiteColor"
+    android:gravity="center"
     android:orientation="vertical"
-    android:paddingTop="16dp"
     android:paddingBottom="16dp"
     android:paddingLeft="8dp"
     android:paddingRight="8dp"
-    android:gravity="center"
-    android:background="@color/whiteColor"
-    android:layout_width="wrap_content"
-    android:layout_height="140dp">
+    android:paddingTop="16dp">
+
     <ImageView
         android:id="@+id/img_popularCategory"
-        android:src="@drawable/processor"
-        android:layout_gravity="center"
         android:layout_width="48dp"
-        android:layout_height="48dp" />
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:src="@drawable/processor" />
+
     <TextView
         android:id="@+id/txt_popularCategory"
-        android:text="CPU - Bộ xử lý Bộ xử lý"
-        android:textSize="14sp"
-        android:textColor="@color/colorText"
-        android:layout_marginTop="16dp"
-        android:textAlignment="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content" />
+        android:layout_marginTop="16dp"
+        android:maxLines="2"
+        android:text="CPU - Bộ xử lý Bộ xử lý"
+        android:textAlignment="center"
+        android:textColor="@color/colorText"
+        android:textSize="14sp" />
 </LinearLayout>

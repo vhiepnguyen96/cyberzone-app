@@ -51,7 +51,10 @@ public class LoadRegisterSalePresenter implements LoadRegisterSaleContract.Prese
                             mRegisterSales = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("registeredSales")), RegisterSale[].class));
                             Log.d("RegisterSalePresenter", "GET mRegisterSales: " + mRegisterSales.size());
                             if (mRegisterSales.size() > 0) {
+                                mLoadRegisterSaleView.setLayoutNone(false);
                                 mLoadRegisterSaleView.setAdapterRegisterSale(mRegisterSales);
+                            } else {
+                                mLoadRegisterSaleView.setLayoutNone(true);
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -62,6 +65,7 @@ public class LoadRegisterSalePresenter implements LoadRegisterSaleContract.Prese
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.d("RegisterSalePresenter", error.toString());
+                        mLoadRegisterSaleView.setLayoutNone(true);
                     }
                 });
         MySingleton.getInstance(((Fragment) mLoadRegisterSaleView).getContext().getApplicationContext()).addToRequestQueue(registerSaleRequest);

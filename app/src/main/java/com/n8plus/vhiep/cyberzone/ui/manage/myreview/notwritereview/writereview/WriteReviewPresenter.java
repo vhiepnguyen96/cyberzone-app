@@ -43,6 +43,7 @@ import java.util.Date;
 import java.util.List;
 
 public class WriteReviewPresenter implements WriteReviewContract.Presenter {
+    private final String TAG = "WriteReviewPresenter";
     private WriteReviewContract.View mWriteReviewView;
     private PurchaseItem mOrderItem;
     private Gson gson;
@@ -53,6 +54,7 @@ public class WriteReviewPresenter implements WriteReviewContract.Presenter {
     private final String URL_REVIEW_PRODUCT = Constant.URL_HOST + "reviewProducts";
     private final String URL_REVIEW_STORE = Constant.URL_HOST + "reviewStores";
     private final String URL_ORDER_ITEM = Constant.URL_HOST + "orderItems";
+    private final String URL_PRODUCT = Constant.URL_HOST + "products";
     private int success = 0;
 
     public WriteReviewPresenter(WriteReviewContract.View mWriteReviewView) {
@@ -66,9 +68,9 @@ public class WriteReviewPresenter implements WriteReviewContract.Presenter {
     public void loadDataReview(PurchaseItem orderItem) {
         mOrderItem = orderItem;
         mWriteReviewView.setProductName(mOrderItem.getProduct().getProductName());
-        mWriteReviewView.setStoreName(mOrderItem.getProduct().getStore().getStoreName());
         mWriteReviewView.setCustomerName(Constant.customer.getName());
-        Log.d("WriteReviewPresenter", "orderId: " + mOrderItem.getOrderId());
+        if (mOrderItem.getProduct().getStore() != null)
+            mWriteReviewView.setStoreName(mOrderItem.getProduct().getStore().getStoreName());
         loadRatingStar();
         loadRatingLevel();
     }

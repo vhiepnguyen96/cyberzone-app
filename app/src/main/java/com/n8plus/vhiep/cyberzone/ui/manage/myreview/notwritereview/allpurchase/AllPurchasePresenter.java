@@ -3,6 +3,7 @@ package com.n8plus.vhiep.cyberzone.ui.manage.myreview.notwritereview.allpurchase
 import android.app.Activity;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -39,14 +40,17 @@ import java.util.List;
 
 public class AllPurchasePresenter implements AllPurchaseContract.Presenter {
     private AllPurchaseContract.View mAllPurchaseView;
+    private final String TAG = "AllPurchasePresenter";
     private List<OrderState> mOrderStates;
     private List<Order> mOrderList;
+    private List<PurchaseItem> orderItemsNotReviewTemp;
     private List<PurchaseItem> mOrderItemsNotReview;
     private final String URL_ORDER = Constant.URL_HOST + "orders";
     private final String URL_PRODUCT = Constant.URL_HOST + "products";
     private final String URL_ORDER_ITEM = Constant.URL_HOST + "orderItems";
     private final String URL_ORDER_STATE = Constant.URL_HOST + "orderStates";
     private Gson gson;
+    private boolean isExists = true;
 
     public AllPurchasePresenter(AllPurchaseContract.View mAllPurchaseView) {
         this.mAllPurchaseView = mAllPurchaseView;
@@ -106,8 +110,12 @@ public class AllPurchasePresenter implements AllPurchaseContract.Presenter {
                         try {
                             mOrderList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("orders")), Order[].class));
                             Log.i("AllPurchasePresenter", "GET: " + mOrderList.size() + " mOrderList");
-                            for (int i = 0; i < mOrderList.size(); i++) {
-                                loadOrderItems(i);
+                            if (mOrderList.size() > 0) {
+                                for (int i = 0; i < mOrderList.size(); i++) {
+                                    loadOrderItems(i);
+                                }
+                            } else {
+                                mAllPurchaseView.setLayoutReviewNone(true);
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -130,45 +138,65 @@ public class AllPurchasePresenter implements AllPurchaseContract.Presenter {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            List<PurchaseItem> purchaseItems = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("orderItems")), PurchaseItem[].class));
+                            final List<PurchaseItem> purchaseItems = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("orderItems")), PurchaseItem[].class));
                             Log.i("AllPurchasePresenter", "GET: " + purchaseItems.size() + " purchaseItems");
 
                             // Get order item not review
-                            List<PurchaseItem> orderItemsNotReview = new ArrayList<>();
+                            final List<PurchaseItem> orderItemsNotReviewTemp = new ArrayList<>();
                             for (int i = 0; i < purchaseItems.size(); i++) {
                                 if (!purchaseItems.get(i).isReview()) {
-                                    orderItemsNotReview.add(purchaseItems.get(i));
-                                }
-                            }
-
-                            Log.i("AllPurchasePresenter", "GET: " + orderItemsNotReview.size() + " orderItemsNotReview");
-
-                            mOrderList.get(position).setPurchaseList(orderItemsNotReview);
-                            setDataAdapterReview(mOrderList);
-
-                            for (int i = 0; i < mOrderList.get(position).getPurchaseList().size(); i++) {
-                                // Load store
-                                final int itemPosition = i;
-                                String productId = mOrderList.get(position).getPurchaseList().get(itemPosition).getProduct().getProductId();
-                                JsonObjectRequest storeRequest = new JsonObjectRequest(Request.Method.GET, URL_PRODUCT + "/getStore/" + productId, null,
-                                        new Response.Listener<JSONObject>() {
-                                            @Override
-                                            public void onResponse(JSONObject response) {
-                                                try {
-                                                    mOrderList.get(position).getPurchaseList().get(itemPosition).getProduct().setStore(gson.fromJson(String.valueOf(response.getJSONObject("store")), Store.class));
-                                                    mAllPurchaseView.setNotifyDataSetChanged();
-                                                } catch (JSONException e) {
-                                                    e.printStackTrace();
+                                    final int index = i;
+                                    JsonObjectRequest productRequest = new JsonObjectRequest(Request.Method.GET, URL_PRODUCT + "/" + purchaseItems.get(i).getProduct().getProductId(), null,
+                                            new Response.Listener<JSONObject>() {
+                                                @Override
+                                                public void onResponse(JSONObject response) {
+                                                    // Is not review and valid
+                                                    orderItemsNotReviewTemp.add(purchaseItems.get(index));
+                                                    // If index is last position
+                                                    if (index == purchaseItems.size() - 1) {
+                                                        // Set order item not review for order
+                                                        mOrderList.get(position).setPurchaseList(orderItemsNotReviewTemp);
+                                                        // Get list order item not review
+                                                        setDataAdapterReview(mOrderList);
+                                                        // Load store of product in order item
+                                                        for (int i = 0; i < mOrderList.get(position).getPurchaseList().size(); i++) {
+                                                            final int itemPosition = i;
+                                                            String productId = mOrderList.get(position).getPurchaseList().get(itemPosition).getProduct().getProductId();
+                                                            Log.d(TAG, "productId: " + productId);
+                                                            JsonObjectRequest storeRequest = new JsonObjectRequest(Request.Method.GET, URL_PRODUCT + "/getStore/" + productId, null,
+                                                                    new Response.Listener<JSONObject>() {
+                                                                        @Override
+                                                                        public void onResponse(JSONObject response) {
+                                                                            try {
+                                                                                Store store = gson.fromJson(String.valueOf(response.getJSONObject("store")), Store.class);
+                                                                                if (store != null) {
+                                                                                    mOrderList.get(position).getPurchaseList().get(itemPosition).getProduct().setStore(store);
+                                                                                    mAllPurchaseView.setNotifyDataSetChanged();
+                                                                                }
+                                                                            } catch (JSONException e) {
+                                                                                e.printStackTrace();
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    new Response.ErrorListener() {
+                                                                        @Override
+                                                                        public void onErrorResponse(VolleyError error) {
+                                                                            Log.e("AllPurchasePresenter", error.toString());
+                                                                        }
+                                                                    });
+                                                            MySingleton.getInstance(((Fragment) mAllPurchaseView).getContext().getApplicationContext()).addToRequestQueue(storeRequest);
+                                                        }
+                                                    }
                                                 }
-                                            }
-                                        },
-                                        new Response.ErrorListener() {
-                                            @Override
-                                            public void onErrorResponse(VolleyError error) {
-                                                Log.e("AllPurchasePresenter", error.toString());
-                                            }
-                                        });
-                                MySingleton.getInstance(((Fragment) mAllPurchaseView).getContext().getApplicationContext()).addToRequestQueue(storeRequest);
+                                            },
+                                            new Response.ErrorListener() {
+                                                @Override
+                                                public void onErrorResponse(VolleyError error) {
+                                                    Log.e("AllPurchasePresenter", error.toString());
+                                                }
+                                            });
+                                    MySingleton.getInstance(((Fragment) mAllPurchaseView).getContext().getApplicationContext()).addToRequestQueue(productRequest);
+                                }
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -185,6 +213,35 @@ public class AllPurchasePresenter implements AllPurchaseContract.Presenter {
     }
 
     @Override
+    public boolean checkProductIsExists(PurchaseItem orderItem) {
+        JsonObjectRequest productRequest = new JsonObjectRequest(Request.Method.GET, URL_PRODUCT + "/" + orderItem.getProduct().getProductId(), null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            Product product = gson.fromJson(String.valueOf(response.getJSONObject("product")), Product.class);
+
+                            isExists = product != null ? true : false;
+                            Log.d(TAG, "okne: " + isExists);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        isExists = false;
+                        Log.d(TAG, "loine: " + isExists);
+                        Log.e("AllPurchasePresenter", error.toString());
+                    }
+                });
+        MySingleton.getInstance(((Fragment) mAllPurchaseView).getContext().getApplicationContext()).addToRequestQueue(productRequest);
+        Log.d(TAG, "returnne: " + isExists);
+        return isExists;
+    }
+
+    @Override
     public void setDataAdapterReview(List<Order> orderList) {
         mOrderItemsNotReview = new ArrayList<>();
         List<Date> datePurchaseList = new ArrayList<>();
@@ -196,6 +253,7 @@ public class AllPurchasePresenter implements AllPurchaseContract.Presenter {
                 }
             }
         }
+        mAllPurchaseView.setLayoutReviewNone(mOrderItemsNotReview.size() > 0 ? false : true);
         mAllPurchaseView.setAdapterAllPurchase(mOrderItemsNotReview, datePurchaseList);
     }
 

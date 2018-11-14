@@ -7,6 +7,7 @@ import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -20,6 +21,7 @@ import com.n8plus.vhiep.cyberzone.data.model.PurchaseItem;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.MySingleton;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,6 +38,7 @@ public class ChoosePaymentMethodPresenter implements ChoosePaymentMethodContract
     private String URL_ORDER = Constant.URL_HOST + "orders";
     private String URL_ORDER_STATE = Constant.URL_HOST + "orderStates";
     private String URL_ORDER_ITEM = Constant.URL_HOST + "orderItems";
+    private String URL_PRODUCT = Constant.URL_HOST + "products";
     private OrderState stateProcessing;
     private OrderState stateWaitForPayment;
     private Order mOrder;
@@ -188,22 +191,53 @@ public class ChoosePaymentMethodPresenter implements ChoosePaymentMethodContract
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
-                            countSuccess++;
-                            if (countSuccess == mOrder.getPurchaseList().size()) {
-                                Toast.makeText(((Activity) mChoosePayemntMethodView).getApplicationContext(), "Lưu đơn hàng!", Toast.LENGTH_SHORT).show();
-                                mChoosePayemntMethodView.moveToPayment(mOrder);
-                            }
-                            Log.i("PaymentMethodPresenter", "countSuccess: " + countSuccess);
+                            // Update quantity product
+                            int quantity = item.getProduct().getQuantity() - item.getQuantity();
+                            updateQuantityProduct(item.getProduct().getProductId(), quantity);
                         }
                     },
                     new Response.ErrorListener() {
                         @Override
                         public void onErrorResponse(VolleyError error) {
                             Log.e("PaymentMethodPresenter", error.toString());
-                            Toast.makeText(((Activity) mChoosePayemntMethodView).getApplicationContext(), "Lỗi khi lưu đơn hàng!", Toast.LENGTH_SHORT).show();
                         }
                     });
             MySingleton.getInstance(((Activity) mChoosePayemntMethodView).getApplicationContext()).addToRequestQueue(orderItemRequest);
         }
+    }
+
+    @Override
+    public void updateQuantityProduct(String productId, int quantity) {
+        JSONArray updateArr = new JSONArray();
+        try {
+            JSONObject quantityObj = new JSONObject();
+            quantityObj.put("propName", "quantity");
+            quantityObj.put("value", quantity);
+
+            updateArr.put(quantityObj);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonArrayRequest arrayRequest = new JsonArrayRequest(Request.Method.PATCH, URL_PRODUCT + "/" + productId, updateArr,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        countSuccess++;
+                        if (countSuccess == mOrder.getPurchaseList().size()) {
+                            Toast.makeText(((Activity) mChoosePayemntMethodView).getApplicationContext(), "Lưu đơn hàng!", Toast.LENGTH_SHORT).show();
+                            mChoosePayemntMethodView.moveToPayment(mOrder, orderStates);
+                        }
+                        Log.i("PaymentMethodPresenter", "countSuccess: " + countSuccess);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("PaymentMethodPresenter", error.toString());
+                        Toast.makeText(((Activity) mChoosePayemntMethodView).getApplicationContext(), "Lỗi khi lưu đơn hàng!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+        MySingleton.getInstance(((Activity) mChoosePayemntMethodView).getApplicationContext()).addToRequestQueue(arrayRequest);
     }
 }

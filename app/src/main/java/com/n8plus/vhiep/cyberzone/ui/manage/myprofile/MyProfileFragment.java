@@ -31,7 +31,7 @@ import com.n8plus.vhiep.cyberzone.util.Constant;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class MyProfileFragment extends Fragment implements MyProfileContract.View {
+public class MyProfileFragment extends Fragment implements MyProfileContract.View, View.OnClickListener {
     private Toolbar mToolbarProfile;
     private TextView mName, mGender, mBirthday, mPhoneNumber, mEmail;
     private Button mUpdateProfile, mChangePassword;
@@ -64,21 +64,12 @@ public class MyProfileFragment extends Fragment implements MyProfileContract.Vie
         actionbar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_black_24dp);
         actionbar.setTitle("Quản lý tài khoản");
 
-        myProfilePresenter.loadProfile(Constant.customer.getId());
+        // Presenter
+        myProfilePresenter.loadProfile(Constant.customer);
 
-        mUpdateProfile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                myProfilePresenter.prepareDataProfile();
-            }
-        });
-
-        mChangePassword.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                myProfilePresenter.prepareDataPassword();
-            }
-        });
+        // Listener
+        mUpdateProfile.setOnClickListener(this);
+        mChangePassword.setOnClickListener(this);
 
         super.onViewCreated(view, savedInstanceState);
     }
@@ -120,6 +111,11 @@ public class MyProfileFragment extends Fragment implements MyProfileContract.Vie
     }
 
     @Override
+    public void setLayoutUpdatePassword(boolean b) {
+        mChangePassword.setVisibility(b ? View.VISIBLE : View.GONE);
+    }
+
+    @Override
     public void setEmailCustomer(String emailCustomer) {
         mEmail.setText(emailCustomer);
     }
@@ -146,4 +142,15 @@ public class MyProfileFragment extends Fragment implements MyProfileContract.Vie
         fragmentTransaction.commit();
     }
 
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.btn_update_customer:
+                myProfilePresenter.prepareDataProfile();
+                break;
+            case R.id.btn_change_password:
+                myProfilePresenter.prepareDataPassword();
+                break;
+        }
+    }
 }

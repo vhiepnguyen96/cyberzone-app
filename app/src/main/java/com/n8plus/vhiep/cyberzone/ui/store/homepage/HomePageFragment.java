@@ -32,6 +32,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class HomePageFragment extends Fragment implements HomePageContract.View {
+    private int GRID_LAYOUT = 1, LINEAR_LAYOUT = 2;
     private Spinner mSpinnerSort;
     private ImageView mImageLayout;
     private RecyclerView mRecyclerAllProduct;
@@ -67,7 +68,7 @@ public class HomePageFragment extends Fragment implements HomePageContract.View 
 
         //Presenter
         Bundle bundle = getArguments();
-        if (bundle != null && bundle.getSerializable("store") != null){
+        if (bundle != null && bundle.getSerializable("store") != null) {
             mHomePagePresenter.loadData((Store) bundle.getSerializable("store"));
         }
 
@@ -98,7 +99,7 @@ public class HomePageFragment extends Fragment implements HomePageContract.View 
                                 return Float.valueOf(o2.getAverageReview()).compareTo(Float.valueOf(o1.getAverageReview()));
                             }
                         });
-                        mRecyclerProductAdapter.notifyDataSetChanged();
+                        mRecyclerAllProduct.setAdapter(mRecyclerProductAdapter);
                     }
                 } else if (position == 1) {
                     Collections.sort(mRecyclerProductAdapter.getProductList(), new Comparator<Product>() {
@@ -107,7 +108,7 @@ public class HomePageFragment extends Fragment implements HomePageContract.View 
                             return Float.valueOf(o1.getPrice()).compareTo(Float.valueOf(o2.getPrice()));
                         }
                     });
-                    mRecyclerProductAdapter.notifyDataSetChanged();
+                    mRecyclerAllProduct.setAdapter(mRecyclerProductAdapter);
                 } else if (position == 2) {
                     Collections.sort(mRecyclerProductAdapter.getProductList(), new Comparator<Product>() {
                         @Override
@@ -115,8 +116,9 @@ public class HomePageFragment extends Fragment implements HomePageContract.View 
                             return Float.valueOf(o2.getPrice()).compareTo(Float.valueOf(o1.getPrice()));
                         }
                     });
-                    mRecyclerProductAdapter.notifyDataSetChanged();
+                    mRecyclerAllProduct.setAdapter(mRecyclerProductAdapter);
                 }
+                mRecyclerAllProduct.setAdapter(mRecyclerProductAdapter);
             }
 
             @Override
@@ -129,15 +131,17 @@ public class HomePageFragment extends Fragment implements HomePageContract.View 
     }
 
     @Override
-    public void setAdapterProduct(List<Product> products, String layout) {
-        if (layout.equals("GridLayout")){
-            mRecyclerProductAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, products);
+    public void setAdapterProduct(List<Product> products, int layout) {
+        if (layout == GRID_LAYOUT) {
+            mRecyclerProductAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, products, layout);
             mRecyclerAllProduct.setLayoutManager(new GridLayoutManager(mRecyclerAllProduct.getContext(), 2));
             mRecyclerAllProduct.removeItemDecoration(mDividerItemDecoration);
-            mRecyclerAllProduct.addItemDecoration(mItemDecorationColumns);
+            if (mRecyclerAllProduct.getItemDecorationCount() == 0) {
+                mRecyclerAllProduct.addItemDecoration(mItemDecorationColumns);
+            }
             mRecyclerAllProduct.setAdapter(mRecyclerProductAdapter);
         } else {
-            mRecyclerProductAdapter = new RecyclerProductAdapter(R.layout.row_product_item_vertical, products);
+            mRecyclerProductAdapter = new RecyclerProductAdapter(R.layout.row_product_item_vertical, products, layout);
             mRecyclerAllProduct.setLayoutManager(new LinearLayoutManager(mRecyclerAllProduct.getContext(), LinearLayoutManager.VERTICAL, false));
             mRecyclerAllProduct.removeItemDecoration(mItemDecorationColumns);
             mRecyclerAllProduct.addItemDecoration(mDividerItemDecoration);
@@ -150,7 +154,7 @@ public class HomePageFragment extends Fragment implements HomePageContract.View 
         mRecyclerProductAdapter.notifyDataSetChanged();
     }
 
-    private void customSpinnerFilter(){
+    private void customSpinnerFilter() {
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(mSpinnerSort.getContext(),
                 R.array.sort_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

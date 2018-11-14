@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface AllPurchaseContract {
     interface View {
+        void setLayoutReviewNone(boolean b);
         void setAdapterAllPurchase(List<PurchaseItem> purchaseItemList, List<Date> datePurchaseList);
         void setNotifyDataSetChanged();
         void writeReview(int position);
@@ -20,6 +21,7 @@ public interface AllPurchaseContract {
         void loadOrderState();
         void loadOrderPurchased(String customerId, String orderStateId);
         void loadOrderItems(int position);
+        boolean checkProductIsExists(PurchaseItem orderItem);
         void setDataAdapterReview(List<Order> orderList);
         void prepareDataWriteReview(int position);
     }

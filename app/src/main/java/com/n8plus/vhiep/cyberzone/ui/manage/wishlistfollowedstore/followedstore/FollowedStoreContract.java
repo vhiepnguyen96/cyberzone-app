@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface FollowedStoreContract {
     interface View {
+        void setLayoutNone(boolean b);
         void setAdapterFollowStore(List<FollowStore> followStores);
         void setNotifyDataSetChanged();
         void actionUnfollowStore(int position);

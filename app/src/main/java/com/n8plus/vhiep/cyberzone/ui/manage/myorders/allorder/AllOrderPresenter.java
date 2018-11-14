@@ -59,6 +59,7 @@ public class AllOrderPresenter implements AllOrderContract.Presenter {
                         orderList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("orders")), Order[].class));
                         Log.i("AllOrderPresenter", "GET: " + orderList.size() + " order");
                         if (orderList.size() > 0) {
+                            mAllOrderView.setLayoutOrderNone(false);
                             mAllOrderView.setAdapterAllOrder(orderList);
                             for (int i = 0; i < orderList.size(); i++) {
                                 final int position = i;
@@ -83,6 +84,8 @@ public class AllOrderPresenter implements AllOrderContract.Presenter {
                                         });
                                 MySingleton.getInstance(((Fragment) mAllOrderView).getContext().getApplicationContext()).addToRequestQueue(orderItemRequest);
                             }
+                        } else {
+                            mAllOrderView.setLayoutOrderNone(true);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -93,6 +96,7 @@ public class AllOrderPresenter implements AllOrderContract.Presenter {
                 @Override
                 public void onErrorResponse(VolleyError error) {
                     Log.e("AllOrderPresenter", error.toString());
+                    mAllOrderView.setLayoutOrderNone(true);
                 }
             });
         MySingleton.getInstance(((Fragment) mAllOrderView).getContext().getApplicationContext()).addToRequestQueue(request);

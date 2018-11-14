@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.n8plus.vhiep.cyberzone.R;
@@ -18,6 +19,7 @@ import java.util.List;
 public class HistoryReviewFragment extends Fragment implements HistoryReviewContract.View {
     private HistoryReviewPresenter mHistoryReviewPresenter;
     private HistoryReviewAdapter mHistoryReviewAdapter;
+    private LinearLayout mLinearReviewNone;
     private ListView mListHistoryReview;
     @Nullable
     @Override
@@ -30,12 +32,19 @@ public class HistoryReviewFragment extends Fragment implements HistoryReviewCont
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mListHistoryReview = (ListView) view.findViewById(R.id.lsv_history_review);
+        mLinearReviewNone = (LinearLayout) view.findViewById(R.id.lnr_review_none);
 
         // Presnter
         mHistoryReviewPresenter.loadData();
 
         super.onViewCreated(view, savedInstanceState);
     }
+
+    @Override
+    public void setLayoutReviewNone(boolean b) {
+        mLinearReviewNone.setVisibility(b ? View.VISIBLE : View.GONE);
+    }
+
 
     @Override
     public void setAdapterHistoryReview(List<HistoryReview> historyReviewList) {

@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.n8plus.vhiep.cyberzone.R;
@@ -18,6 +19,7 @@ import java.util.List;
 
 public class AllOrderFragment extends Fragment implements AllOrderContract.View {
     private ListView mListAllOrder;
+    private LinearLayout mLinearOrderNone;
     private MyOrderAdapter mMyOrderAdapter;
     private AllOrderPresenter mAllOrderPresenter;
     @Nullable
@@ -31,10 +33,16 @@ public class AllOrderFragment extends Fragment implements AllOrderContract.View 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mListAllOrder = (ListView) view.findViewById(R.id.lv_all_order);
+        mLinearOrderNone = (LinearLayout) view.findViewById(R.id.lnr_order_none);
 
         mAllOrderPresenter.loadAllOrder(Constant.customer.getId());
 
         super.onViewCreated(view, savedInstanceState);
+    }
+
+    @Override
+    public void setLayoutOrderNone(boolean b) {
+        mLinearOrderNone.setVisibility(b ? View.VISIBLE : View.GONE);
     }
 
     @Override

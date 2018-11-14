@@ -198,7 +198,7 @@ public class ProductDetailPresenter implements ProductDetailContract.Presenter {
 
     private void fakeDataPolicies() {
         mPolicyList = new ArrayList<>();
-        mPolicyList.add(new Policy(R.drawable.delivery, "Miễn phí vận chuyển với đơn hàng từ 3 sản phẩm trở lên"));
+        mPolicyList.add(new Policy(R.drawable.delivery, "Miễn phí vận chuyển với đơn hàng từ 1.000.000 đ trở lên"));
         mPolicyList.add(new Policy(R.drawable.telephone, "Hỗ trợ online 24/7"));
         mPolicyList.add(new Policy(R.drawable.payment_method, "Thanh toán bảo mật"));
         mPolicyList.add(new Policy(R.drawable.dollar_symbol, "Chính sách đổi trả"));
@@ -223,26 +223,3 @@ public class ProductDetailPresenter implements ProductDetailContract.Presenter {
         }
     }
 }
-
-//    int count5 = 0, count4 = 0, count3 = 0, count2 = 0, count1 = 0;
-//            for (int i = 0; i < reviewProducts.size(); i++) {
-//        switch ((int) reviewProducts.get(i).getRatingStar().getRatingStar()) {
-//        case 5:
-//        count5++;
-//        break;
-//        case 4:
-//        count4++;
-//        break;
-//        case 3:
-//        count3++;
-//        break;
-//        case 2:
-//        count2++;
-//        break;
-//        case 1:
-//        count1++;
-//        break;
-//        }
-//        }
-//        float rating = (5 * count5 + 4 * count4 + 3 * count3 + 2 * count2 + 1 * count1) / (count5 + count4 + count3 + count2 + count1);
-//        Log.i("RATING", count5 + " | " + count4 + " | " + count3 + " | " + count2 + " | " + count1 + " | " + String.valueOf(rating));

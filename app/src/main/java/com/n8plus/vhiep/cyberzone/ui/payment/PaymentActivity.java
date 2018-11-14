@@ -1,6 +1,7 @@
 package com.n8plus.vhiep.cyberzone.ui.payment;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Observable;
 import android.graphics.Color;
@@ -14,6 +15,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,11 +26,14 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.data.model.Address;
 import com.n8plus.vhiep.cyberzone.data.model.Order;
+import com.n8plus.vhiep.cyberzone.data.model.OrderState;
 import com.n8plus.vhiep.cyberzone.ui.checkorder.CheckOrderActivity;
+import com.n8plus.vhiep.cyberzone.ui.home.HomeActivity;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.ErrorDialogHandler;
 import com.n8plus.vhiep.cyberzone.util.MySingleton;
 import com.stripe.android.PaymentConfiguration;
+import com.stripe.android.SourceCallback;
 import com.stripe.android.Stripe;
 import com.stripe.android.TokenCallback;
 import com.stripe.android.exception.APIConnectionException;
@@ -45,6 +50,7 @@ import com.stripe.android.view.CardMultilineWidget;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -52,13 +58,11 @@ import java.util.concurrent.Callable;
 public class PaymentActivity extends AppCompatActivity implements PaymentContract.View {
     private TextView mOrderId, mTotalProduct, mSubTotalPrice, mShippingFee, mTotalPrice, mTotalPriceUSD, mCustomerName, mCustomerPhone, mCustomerAddress;
     private CardMultilineWidget mCardInputWidget;
-    private Button mPayment, mConfirmOrder;
+    private Button mConfirmOrder;
+    private LinearLayout mPayment;
     private PaymentPresenter mPaymentPresenter;
     ErrorDialogHandler mErrorDialogHandler;
-    private Stripe mStripe;
-    private Card mCard;
-    private String mName;
-    private Token mToken;
+    private ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +83,12 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
             mPaymentPresenter.loadDataPayment((Order) intent.getSerializableExtra("order"));
         }
 
+        if (intent != null && intent.getSerializableExtra("orderStates") != null) {
+            mPaymentPresenter.loadOrderState((List<OrderState>) intent.getSerializableExtra("orderStates"));
+        } else {
+            mPaymentPresenter.loadOrderState();
+        }
+
         // Listener
         mPayment.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,17 +106,19 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
     }
 
     public void submitCard() {
-        mCard = mCardInputWidget.getCard();
-        if (mCard == null) {
+        Card card = mCardInputWidget.getCard();
+        if (card == null) {
             mErrorDialogHandler.showError("Invalid Card Data");
             return;
         } else {
-            mStripe = new Stripe(PaymentActivity.this, "pk_test_CeyyXLIDl0bfY9IiYwTIYZAU");
-            mStripe.createToken(
-                    mCard,
+            showProgressDialog();
+            Stripe stripe = new Stripe(getApplicationContext(), Constant.PUBLISHABLE_KEY);
+            stripe.createToken(
+                    card,
                     new TokenCallback() {
                         @Override
                         public void onError(Exception error) {
+                            hideProgressDialog();
                             Toast.makeText(getApplicationContext(),
                                     error.getLocalizedMessage(),
                                     Toast.LENGTH_LONG).show();
@@ -114,12 +126,8 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
 
                         @Override
                         public void onSuccess(Token token) {
-                            mToken = token;
-                            if (!mToken.getUsed()) {
-                                Log.i("Token id: ", mToken.getId());
-                                Toast.makeText(getApplicationContext(), "Token: " + mToken.getId(), Toast.LENGTH_SHORT).show();
-                                mPaymentPresenter.chectOut(mToken);
-                            }
+                            Log.i("Token id: ", token.getId());
+                            mPaymentPresenter.chectOut(token);
                         }
                     }
             );
@@ -137,7 +145,7 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
         mCustomerPhone = (TextView) findViewById(R.id.tv_customer_phone);
         mCustomerAddress = (TextView) findViewById(R.id.tv_customer_address);
         mCardInputWidget = (CardMultilineWidget) findViewById(R.id.card_stripe);
-        mPayment = (Button) findViewById(R.id.btn_payment);
+        mPayment = (LinearLayout) findViewById(R.id.lnr_payment);
         mConfirmOrder = (Button) findViewById(R.id.btn_confirm_order);
     }
 
@@ -173,7 +181,7 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
 
     @Override
     public void setLayoutPayemnt(String payemntMethod) {
-        if (payemntMethod.equals("Thanh toán khi nhận hàng")){
+        if (payemntMethod.equals("Thanh toán khi nhận hàng")) {
             findViewById(R.id.lnr_payment_cod).setVisibility(View.VISIBLE);
         } else {
             findViewById(R.id.lnr_payment_online).setVisibility(View.VISIBLE);
@@ -207,7 +215,6 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
 
     @Override
     public void setTotalPriceUSD(String totalPriceUSD) {
-        findViewById(R.id.lnr_total_price_usd).setVisibility(View.VISIBLE);
         mTotalPriceUSD.setText(totalPriceUSD);
     }
 
@@ -216,5 +223,39 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
         mCustomerName.setText(deliveryAddress.getPresentation());
         mCustomerPhone.setText(deliveryAddress.getPhone());
         mCustomerAddress.setText(deliveryAddress.getAddress());
+    }
+
+    @Override
+    public void moveToHome() {
+        if (Constant.purchaseList.size() > 0) Constant.purchaseList.clear();
+        startActivity(new Intent(PaymentActivity.this, HomeActivity.class));
+        finish();
+    }
+
+    @Override
+    public void setPaymentResult(boolean b) {
+        Toast.makeText(this, b ? "Thanh toán thành công!" : "Thanh toán thất bại!", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void updateOrderStateResult(boolean b) {
+        Toast.makeText(this, b ? "Cập nhật đơn hàng thành công!" : "Cập nhật đơn hàng thất bại!", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void showProgressDialog() {
+        if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(this);
+            mProgressDialog.setMessage("Đang thanh toán..");
+            mProgressDialog.setIndeterminate(true);
+        }
+        mProgressDialog.show();
+    }
+
+    @Override
+    public void hideProgressDialog() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.hide();
+        }
     }
 }

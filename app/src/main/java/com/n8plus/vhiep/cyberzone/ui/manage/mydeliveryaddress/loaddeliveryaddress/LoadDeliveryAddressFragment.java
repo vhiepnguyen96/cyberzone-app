@@ -34,12 +34,13 @@ import com.n8plus.vhiep.cyberzone.util.Constant;
 import java.io.Serializable;
 import java.util.List;
 
-public class LoadDeliveryAddressFragment extends Fragment implements LoadDeliveryAddressContract.View {
+public class LoadDeliveryAddressFragment extends Fragment implements LoadDeliveryAddressContract.View, View.OnClickListener {
     private ListView mListDeliveryAddress;
     private Button mAddAddress;
     private ImageButton mBackCheckOrder;
     private DeliveryAddressAdapter mDeliveryAddressAdapter;
     private LoadDeliveryAddressPresenter mLoadDeliveryAddressPresenter;
+    private FragmentTransaction mFragmentTransaction;
 
     @Nullable
     @Override
@@ -57,26 +58,23 @@ public class LoadDeliveryAddressFragment extends Fragment implements LoadDeliver
         // Presenter
         mLoadDeliveryAddressPresenter.loadAllDeliveryAddress(Constant.customer.getId());
         Bundle bundle = getArguments();
-        if (bundle != null && bundle.getSerializable("provinceList") != null){
+        if (bundle != null && bundle.getSerializable("provinceList") != null) {
             mLoadDeliveryAddressPresenter.loadProvinceList((List<Province>) bundle.getSerializable("provinceList"));
         } else {
             mLoadDeliveryAddressPresenter.loadProvince();
         }
 
+        mFragmentTransaction = getFragmentManager().beginTransaction();
+
         // Listener
-        mAddAddress.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mLoadDeliveryAddressPresenter.prepareDataAddAddress();
-            }
-        });
+        mAddAddress.setOnClickListener(this);
 
         mListDeliveryAddress.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 ActionBar actionbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
                 String title = (String) actionbar.getTitle();
-                if (title.equals("Chọn địa chỉ giao hàng")){
+                if (title.equals("Chọn địa chỉ giao hàng")) {
                     mLoadDeliveryAddressPresenter.prepareDataChooseAddress(position);
                 }
             }
@@ -94,33 +92,40 @@ public class LoadDeliveryAddressFragment extends Fragment implements LoadDeliver
 
     @Override
     public void moveToAddDeliveryAddress(List<Province> provinceList) {
+        String currentTitle = ((AppCompatActivity) getActivity()).getSupportActionBar().getTitle().toString();
+        // Create fragment
         AddDeliveryAddressFragment fragment = new AddDeliveryAddressFragment();
         Bundle bundle = new Bundle();
         bundle.putSerializable("provinceList", (Serializable) provinceList);
-        bundle.putString("title", (String) ((AppCompatActivity) getActivity()).getSupportActionBar().getTitle());
+        bundle.putString("title", currentTitle);
         fragment.setArguments(bundle);
-        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.frm_delivery_address, fragment);
-        fragmentTransaction.commit();
-        // Custom action bar
-        ActionBar actionbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        actionbar.setTitle("Thêm địa chỉ giao hàng");
+
+        mFragmentTransaction.replace(R.id.frm_delivery_address, fragment);
+        mFragmentTransaction.commit();
+
+        changeActionBarTitle("Thêm địa chỉ giao hàng");
     }
 
     @Override
     public void moveToEditDeliveryAddress(List<Province> provinceList, Address address) {
+        String currentTitle = ((AppCompatActivity) getActivity()).getSupportActionBar().getTitle().toString();
+        // Create fragment
         EditDeliveryAddressFragment fragment = new EditDeliveryAddressFragment();
         Bundle bundle = new Bundle();
         bundle.putSerializable("provinceList", (Serializable) provinceList);
         bundle.putSerializable("address", (Serializable) address);
-        bundle.putString("title", (String) ((AppCompatActivity) getActivity()).getSupportActionBar().getTitle());
+        bundle.putString("title", currentTitle);
         fragment.setArguments(bundle);
-        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.frm_delivery_address, fragment);
-        fragmentTransaction.commit();
-        // Custom action bar
+
+        mFragmentTransaction.replace(R.id.frm_delivery_address, fragment);
+        mFragmentTransaction.commit();
+        changeActionBarTitle("Chỉnh sửa địa chỉ giao hàng");
+
+    }
+
+    private void changeActionBarTitle(String title) {
         ActionBar actionbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        actionbar.setTitle("Chỉnh sửa địa chỉ giao hàng");
+        actionbar.setTitle(title);
     }
 
     @Override
@@ -142,11 +147,11 @@ public class LoadDeliveryAddressFragment extends Fragment implements LoadDeliver
         getActivity().finish();
     }
 
-    public void editDeliveryAddress(int position){
+    public void editDeliveryAddress(int position) {
         mLoadDeliveryAddressPresenter.prepareDataEditAddress(position);
     }
 
-    public void deleteDeliveryAddress(final int position){
+    public void deleteDeliveryAddress(final int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
         builder.setTitle("Xác nhận");
         builder.setMessage("Bạn muốn xóa địa chỉ này?");
@@ -165,5 +170,14 @@ public class LoadDeliveryAddressFragment extends Fragment implements LoadDeliver
         });
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.btn_add_address:
+                mLoadDeliveryAddressPresenter.prepareDataAddAddress();
+                break;
+        }
     }
 }

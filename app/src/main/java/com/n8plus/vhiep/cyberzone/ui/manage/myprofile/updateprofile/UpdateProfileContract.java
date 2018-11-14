@@ -12,6 +12,8 @@ public interface UpdateProfileContract {
         void setBirthdayCustomer(Date birthdayCustomer);
         void setPhoneNumberCustomer(String phoneNumberCustomer);
         void setEmailCustomer(String emailCustomer);
+        void updateCustomerResult(boolean b);
+        void actionBackProfile();
     }
     interface Presenter extends BasePresenter<View> {
         void setCustomerProfile(Customer customer);

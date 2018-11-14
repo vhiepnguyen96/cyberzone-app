@@ -172,19 +172,18 @@ public class SigninFragment extends Fragment implements SigninContract.View, Vie
                             @Override
                             public void onCompleted(JSONObject object, GraphResponse response) {
                                 Log.d(TAG, response.getJSONObject().toString());
+                                Profile profile = Profile.getCurrentProfile();
+                                if (profile != null) {
+                                    onSigninFacebookSuccess(profile);
+                                } else {
+                                    onSigninFacebookFailed();
+                                }
                             }
                         });
                 Bundle parameters = new Bundle();
                 parameters.putString("fields", "id,name,email,gender,birthday");
                 request.setParameters(parameters);
                 request.executeAsync();
-
-                Profile profile = Profile.getCurrentProfile();
-                if (profile != null) {
-                    onSigninFacebookSuccess(profile);
-                } else {
-                    onSigninFacebookFailed();
-                }
             }
 
             @Override
@@ -210,9 +209,6 @@ public class SigninFragment extends Fragment implements SigninContract.View, Vie
         mUsernameText = (EditText) view.findViewById(R.id.edt_username);
         mPasswordText = (EditText) view.findViewById(R.id.edt_password);
         mSignupLayout = (LinearLayout) view.findViewById(R.id.lnr_signup_now);
-
-        // Custom view
-        mProgressDialog = new ProgressDialog(this.getActivity(), R.style.AppTheme_Dark_Dialog);
 
         gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()

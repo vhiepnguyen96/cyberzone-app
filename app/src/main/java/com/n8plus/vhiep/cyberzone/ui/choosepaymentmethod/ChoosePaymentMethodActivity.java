@@ -15,6 +15,7 @@ import android.widget.ListView;
 
 import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.data.model.Order;
+import com.n8plus.vhiep.cyberzone.data.model.OrderState;
 import com.n8plus.vhiep.cyberzone.data.model.PaymentMethod;
 import com.n8plus.vhiep.cyberzone.ui.cart.CartActivity;
 import com.n8plus.vhiep.cyberzone.ui.checkorder.CheckOrderActivity;
@@ -22,6 +23,7 @@ import com.n8plus.vhiep.cyberzone.ui.choosedeliveryaddress.ChooseDeliveryAddress
 import com.n8plus.vhiep.cyberzone.ui.choosepaymentmethod.adapter.PaymentMethodAdapter;
 import com.n8plus.vhiep.cyberzone.ui.payment.PaymentActivity;
 
+import java.io.Serializable;
 import java.util.List;
 
 public class ChoosePaymentMethodActivity extends AppCompatActivity implements ChoosePaymentMethodContract.View {
@@ -96,9 +98,10 @@ public class ChoosePaymentMethodActivity extends AppCompatActivity implements Ch
     }
 
     @Override
-    public void moveToPayment(Order order) {
+    public void moveToPayment(Order order, List<OrderState> orderStates) {
         Intent intent = new Intent(this, PaymentActivity.class);
         intent.putExtra("order", order);
+        intent.putExtra("orderStates", (Serializable) orderStates);
         startActivity(intent);
     }
 }

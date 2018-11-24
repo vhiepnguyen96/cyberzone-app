@@ -1,6 +1,7 @@
 package com.n8plus.vhiep.cyberzone.ui.home.navigation.producttype;
 
 import android.annotation.SuppressLint;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -61,7 +62,9 @@ public class ProductTypePresenter implements ProductTypeContract.Presenter {
 
     @Override
     public void prepareDataProductType(int position) {
-        mProductTypeView.moveToProductActivity(productTypes.get(position).getId());
+        Bundle data = new Bundle();
+        data.putString("productType", productTypes.get(position).getId());
+        mProductTypeView.moveToProductActivity(data);
         Log.d("ProductTypePresenter", "productTypeID: "+productTypes.get(position).getId());
     }
 

@@ -189,8 +189,10 @@ public class AddDeliveryAddressFragment extends Fragment implements AddDeliveryA
         mSaveDeliveryAddress.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String address = mEditTextAddress.getText().toString() + ", " + ((Ward) mChooseWard.getSelectedItem()).getName() + ", " + ((District) mChooseDistrict.getSelectedItem()).getName() + ", " + ((Province) mChooseProvince.getSelectedItem()).getName();
-                mAddDeliveryAddressPresenter.addDeliveryAddress(Constant.customer.getId(), new Address(mEditTextName.getText().toString(), mEditTextPhone.getText().toString(), address));
+                if (validateInput()) {
+                    String address = mEditTextAddress.getText().toString() + ", " + ((Ward) mChooseWard.getSelectedItem()).getName() + ", " + ((District) mChooseDistrict.getSelectedItem()).getName() + ", " + ((Province) mChooseProvince.getSelectedItem()).getName();
+                    mAddDeliveryAddressPresenter.addDeliveryAddress(Constant.customer.getId(), new Address(mEditTextName.getText().toString(), mEditTextPhone.getText().toString(), address));
+                }
             }
         });
 
@@ -225,6 +227,24 @@ public class AddDeliveryAddressFragment extends Fragment implements AddDeliveryA
         mWardAdapter = new SpinnerWardAdapter(mChooseWard.getContext(), R.layout.row_spinner_custom, wardList);
         mChooseWard.setAdapter(mWardAdapter);
         mChooseWard.setSelected(true);
+    }
+
+    @Override
+    public boolean validateInput() {
+        boolean isValid = true;
+        if (mEditTextName.getText().toString().isEmpty()) {
+            isValid = false;
+            mInputName.setError("Không để trống trường này!");
+        }
+        if (mEditTextPhone.getText().toString().isEmpty()) {
+            isValid = false;
+            mInputPhone.setError("Không để trống trường này!");
+        }
+        if (mEditTextAddress.getText().toString().isEmpty()) {
+            isValid = false;
+            mInputAddress.setError("Không để trống trường này!");
+        }
+        return isValid;
     }
 
     @Override

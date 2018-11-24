@@ -12,6 +12,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.data.model.Order;
@@ -22,6 +23,7 @@ import com.n8plus.vhiep.cyberzone.ui.checkorder.CheckOrderActivity;
 import com.n8plus.vhiep.cyberzone.ui.choosedeliveryaddress.ChooseDeliveryAddressActivity;
 import com.n8plus.vhiep.cyberzone.ui.choosepaymentmethod.adapter.PaymentMethodAdapter;
 import com.n8plus.vhiep.cyberzone.ui.payment.PaymentActivity;
+import com.n8plus.vhiep.cyberzone.util.Constant;
 
 import java.io.Serializable;
 import java.util.List;
@@ -103,5 +105,13 @@ public class ChoosePaymentMethodActivity extends AppCompatActivity implements Ch
         intent.putExtra("order", order);
         intent.putExtra("orderStates", (Serializable) orderStates);
         startActivity(intent);
+    }
+
+    @Override
+    public void saveOrderResult(boolean b) {
+        Toast.makeText(this, b ? "Lưu đơn hàng!" : "Lỗi khi lưu đơn hàng!", Toast.LENGTH_SHORT).show();
+//        if (b) {
+//            if (Constant.purchaseList.size() > 0) Constant.purchaseList.clear();
+//        }
     }
 }

@@ -84,7 +84,7 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     private int GRID_LAYOUT = 1, LINEAR_LAYOUT = 2;
     private final int BEST_SELLER_ADAPTER = 1, ON_SALE_ADAPTER = 2, SUGGESTION_ADAPTER = 3;
     private RecyclerView mRecyclerSuggestion, mRecyclerOnSales, mRecyclerBestSeller, mRecyclerPopularCategory;
-    private RecyclerProductAdapter mOnSaleAdapter, mBestSellerAdapter;
+    private RecyclerProductAdapter mOnSaleAdapter, mBestSellerAdapter, mSuggestionAdapter;
     private LoadMoreProductAdapter mLoadMoreSuggestionAdapter;
     private RecyclerView.LayoutManager mLayoutOnSale, mLayoutBestSeller, mLayoutPopularCategory;
     private GridLayoutManager mLayoutSuggestion;
@@ -200,27 +200,6 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
                 return false;
             }
         });
-
-//        mNestedScrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
-//            @Override
-//            public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-//                if (v.getChildAt(v.getChildCount() - 1) != null) {
-//                    if ((scrollY >= (v.getChildAt(v.getChildCount() - 1).getMeasuredHeight() - v.getMeasuredHeight())) && scrollY > oldScrollY) {
-//                        if (!isLoading) {
-//                            currentItems = mLayoutSuggestion.getChildCount();
-//                            totalItems = mLayoutSuggestion.getItemCount();
-//                            scrollOutItems = mLayoutSuggestion.findFirstVisibleItemPosition();
-//                            if ((currentItems + scrollOutItems) >= totalItems) {
-//                                Log.d(TAG, "LoadMore");
-//                                setVisibilityProgressBar(true);
-//                                isLoading = true;
-//                                mHomePresenter.loadMoreSuggestion();
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        });
 
         mSearchHome.setOnQueryTextListener(new SearchView.OnQueryTextListener()
 
@@ -405,19 +384,37 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     public void setAdapterSuggestion(List<Product> productList) {
         mLayoutSuggestion = new GridLayoutManager(mRecyclerSuggestion.getContext(), 2);
         mRecyclerSuggestion.setLayoutManager(mLayoutSuggestion);
-        mLoadMoreSuggestionAdapter = new LoadMoreProductAdapter(this, this, this, GRID_LAYOUT);
-        mLoadMoreSuggestionAdapter.set(productList);
-        mRecyclerSuggestion.setAdapter(mLoadMoreSuggestionAdapter);
+//        mLoadMoreSuggestionAdapter = new LoadMoreProductAdapter(this, this, this, GRID_LAYOUT);
+//        mLoadMoreSuggestionAdapter.set(productList);
+//        mRecyclerSuggestion.setAdapter(mLoadMoreSuggestionAdapter);
+        mSuggestionAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, productList, GRID_LAYOUT);
+        mRecyclerSuggestion.setAdapter(mSuggestionAdapter);
         mRecyclerSuggestion.setNestedScrollingEnabled(false);
 
-        EndlessRecyclerViewScrollListener endlessScrollListener = new EndlessRecyclerViewScrollListener(mLayoutSuggestion) {
+
+        mRecyclerSuggestion.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onLoadMore(int page) {
-                Log.d(TAG, "LoadPage: " + page);
-                mHomePresenter.loadMoreSuggestion(page);
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
             }
-        };
-        mRecyclerSuggestion.addOnScrollListener(endlessScrollListener);
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (recyclerView.getChildAt(recyclerView.getChildCount() - 1) != null) {
+
+                    currentItems = mLayoutSuggestion.getChildCount();
+                    totalItems = mLayoutSuggestion.getItemCount();
+                    scrollOutItems = mLayoutSuggestion.findFirstVisibleItemPosition();
+
+                    Log.d("EndlessRecyclerView", currentItems + " | " + scrollOutItems + " | " + totalItems);
+
+                    if ((currentItems + scrollOutItems) >= totalItems) {
+                        mHomePresenter.loadMoreSuggestion();
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -473,7 +470,8 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
                 mOnSaleAdapter.notifyDataSetChanged();
                 break;
             case SUGGESTION_ADAPTER:
-                mLoadMoreSuggestionAdapter.notifyDataSetChanged();
+//                mLoadMoreSuggestionAdapter.notifyDataSetChanged();
+                mSuggestionAdapter.notifyDataSetChanged();
                 break;
         }
     }
@@ -488,7 +486,8 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
                 mOnSaleAdapter.notifyItemChanged(position);
                 break;
             case SUGGESTION_ADAPTER:
-                mLoadMoreSuggestionAdapter.notifyItemChanged(position);
+//                mLoadMoreSuggestionAdapter.notifyItemChanged(position);
+                mSuggestionAdapter.notifyItemChanged(position);
                 break;
         }
     }

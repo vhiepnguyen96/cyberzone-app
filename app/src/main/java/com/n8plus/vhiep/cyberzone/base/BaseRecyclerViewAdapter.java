@@ -42,6 +42,10 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Re
         return mDataList;
     }
 
+    public List<T> getDataListCopy() {
+        return mDataListCopy;
+    }
+
     public void clear() {
         mDataList.clear();
         notifyDataSetChanged();

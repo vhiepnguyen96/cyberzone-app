@@ -15,6 +15,7 @@ public class Constant {
 //    public static String IP = "http://192.168.10.29";
 //    public static String IP = "http://192.168.10.56";
     public static String IP = "http://172.16.198.84";
+    //    public static String IP = "http://172.20.10.4";
 //    public static String IP = "http://192.168.43.188";
     public static String URL_HOST = IP + ":3000/";
     public static String URL_TIME = "http://api.geonames.org/timezoneJSON?formatted=true&lat=10.041791&lng=105.747099&username=cyberzone&style=full";
@@ -28,6 +29,16 @@ public class Constant {
         int count = 0;
         for (PurchaseItem item : Constant.purchaseList) {
             count = count + item.getQuantity();
+        }
+        return count;
+    }
+
+    public static int countProductQuantity(Product product) {
+        int count = 0;
+        for (PurchaseItem item : Constant.purchaseList) {
+            if (item.getProduct().getProductId().equals(product.getProductId())) {
+                count = item.getQuantity();
+            }
         }
         return count;
     }

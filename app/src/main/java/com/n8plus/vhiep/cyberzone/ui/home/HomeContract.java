@@ -39,7 +39,8 @@ public interface HomeContract {
         void loadProductBestSeller();
         void loadProductOnSale();
         void loadProductSuggestion();
-        void loadMoreSuggestion(int page);
+//        void loadMoreSuggestion(int page);
+        void loadMoreSuggestion();
         void refreshPopularCategory();
         void prepareDataKeyword(String keyword);
         void prepareDataSuggestion();

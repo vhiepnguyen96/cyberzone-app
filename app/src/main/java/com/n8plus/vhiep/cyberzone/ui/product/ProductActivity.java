@@ -361,7 +361,10 @@ public class ProductActivity extends AppCompatActivity implements ProductContrac
     @Override
     public void setNotifyItemRemoved(int position) {
         mLoadMoreProductAdapter.getDataList().remove(position);
-        mLoadMoreProductAdapter.notifyItemRemoved(position);
+        mLoadMoreProductAdapter.getDataListCopy().remove(position);
+        mLoadMoreProductAdapter.notifyDataSetChanged();
+        Log.d(TAG, "DataListSize: "+mLoadMoreProductAdapter.getDataList().size());
+        Log.d(TAG, "DataListCopySize: "+mLoadMoreProductAdapter.getDataList().size());
     }
 
     @Override

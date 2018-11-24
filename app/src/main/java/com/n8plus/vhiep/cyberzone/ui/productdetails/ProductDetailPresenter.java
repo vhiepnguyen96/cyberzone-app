@@ -37,6 +37,7 @@ import java.util.Date;
 import java.util.List;
 
 public class ProductDetailPresenter implements ProductDetailContract.Presenter {
+    private static final String TAG = "ProductDetailPresenter";
     private ProductDetailContract.View mProductDetailView;
     private List<Policy> mPolicyList;
     private Product mProduct;
@@ -45,17 +46,22 @@ public class ProductDetailPresenter implements ProductDetailContract.Presenter {
     private final String URL_REVIEW = Constant.URL_HOST + "reviewProducts";
     private final String URL_WISHLIST = Constant.URL_HOST + "wishList";
     private Gson gson;
+    private int mCurrentQuantity = 0;
 
     public ProductDetailPresenter(ProductDetailContract.View mProductDetailView) {
         this.mProductDetailView = mProductDetailView;
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.setDateFormat("M/d/yy hh:mm a");
+        gson = gsonBuilder.create();
     }
 
     @Override
     public void loadProductDetail(Product product) {
         mProduct = product;
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.setDateFormat("M/d/yy hh:mm a");
-        gson = gsonBuilder.create();
+        // Set current quantity in cart
+        mCurrentQuantity = Constant.countProductQuantity(product);
+        Log.d(TAG, "mCurrentQuantity: "+mCurrentQuantity);
+
         DecimalFormat df = new DecimalFormat("#.000");
 
         fakeDataPolicies();
@@ -67,6 +73,9 @@ public class ProductDetailPresenter implements ProductDetailContract.Presenter {
 
         mProductDetailView.setImageList(product.getImageList() != null ? product.getImageList() : new ArrayList<ProductImage>());
         mProductDetailView.setProductName(product.getProductName());
+
+        mProductDetailView.setLayoutAddToCart(product.getQuantity());
+
         if (product.getSaleOff() != null) {
             if (product.getSaleOff().getDiscount() > 0) {
                 int basicPrice = Integer.valueOf(product.getPrice());
@@ -85,6 +94,7 @@ public class ProductDetailPresenter implements ProductDetailContract.Presenter {
             mProductDetailView.setProductPriceSale(Integer.valueOf(product.getPrice()) > 1000 ? df.format(Product.convertToPrice(product.getPrice())).replace(",", ".") : product.getPrice());
             mProductDetailView.setLayoutPriceSale(false);
         }
+
         mProductDetailView.setProductSpecification(product.getSpecifications() != null ? product.getSpecifications() : new ArrayList<Specification>());
         mProductDetailView.setProductOverviews(product.getOverviews() != null ? product.getOverviews() : new ArrayList<Overview>());
         mProductDetailView.setProductPolicies(mPolicyList);
@@ -111,6 +121,11 @@ public class ProductDetailPresenter implements ProductDetailContract.Presenter {
                     }
                 });
         MySingleton.getInstance(((Activity) mProductDetailView).getApplicationContext()).addToRequestQueue(wishListRequest);
+    }
+
+    @Override
+    public int getCurrentQuantity() {
+        return mProduct.getQuantity();
     }
 
     @Override
@@ -164,31 +179,40 @@ public class ProductDetailPresenter implements ProductDetailContract.Presenter {
     public void buyNow() {
         Constant.purchaseList.clear();
         Constant.purchaseList.add(new PurchaseItem(mProduct, 1));
+        mCurrentQuantity = 1;
         mProductDetailView.moveToCart();
     }
 
     @Override
     public void addToCart() {
-        int sizeOld = Constant.countProductInCart();
-        int sizePurchaseList = Constant.purchaseList.size();
-        if (sizePurchaseList > 0) {
-            int unduplicated = 0;
-            for (int i = 0; i < sizePurchaseList; i++) {
-                if (mProduct.getProductId().equals(Constant.purchaseList.get(i).getProduct().getProductId())) {
-                    Constant.purchaseList.get(i).setQuantity(Constant.purchaseList.get(i).getQuantity() + 1);
-                } else {
-                    unduplicated++;
-                }
-            }
-            if (unduplicated == sizePurchaseList) {
-                Constant.purchaseList.add(new PurchaseItem(mProduct, 1));
-            }
+        // Kiểm tra số lượng còn lại của sản phẩm
+        if (mCurrentQuantity >= mProduct.getQuantity()) {
+            mProductDetailView.setAlert("Bạn đã thêm tối đa sản phẩm!");
         } else {
-            Constant.purchaseList.add(new PurchaseItem(mProduct, 1));
-        }
+            int sizeOld = Constant.countProductInCart();
+            int sizePurchaseList = Constant.purchaseList.size();
+            if (sizePurchaseList > 0) {
+                int unduplicated = 0;
+                for (int i = 0; i < sizePurchaseList; i++) {
+                    if (mProduct.getProductId().equals(Constant.purchaseList.get(i).getProduct().getProductId())) {
+                        Constant.purchaseList.get(i).setQuantity(Constant.purchaseList.get(i).getQuantity() + 1);
+                        mCurrentQuantity++;
+                    } else {
+                        unduplicated++;
+                    }
+                }
+                if (unduplicated == sizePurchaseList) {
+                    Constant.purchaseList.add(new PurchaseItem(mProduct, 1));
+                    mCurrentQuantity++;
+                }
+            } else {
+                Constant.purchaseList.add(new PurchaseItem(mProduct, 1));
+                mCurrentQuantity++;
+            }
+            mProductDetailView.addToCartAlert(Constant.countProductInCart() > sizeOld ? true : false);
 
-        mProductDetailView.addToCartAlert(Constant.countProductInCart() > sizeOld ? true : false);
-        mProductDetailView.setCartMenuItem();
+            mProductDetailView.setCartMenuItem();
+        }
     }
 
     @Override

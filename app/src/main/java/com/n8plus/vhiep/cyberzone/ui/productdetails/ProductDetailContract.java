@@ -31,6 +31,7 @@ public interface ProductDetailContract {
         void setRating3star(int max, int count);
         void setRating2star(int max, int count);
         void setRating1star(int max, int count);
+        void setLayoutAddToCart(int quantity);
         void setReviewNone(boolean b);
         void setLayoutRatingProduct(boolean b);
         void moveToStore(Store store);
@@ -40,10 +41,12 @@ public interface ProductDetailContract {
         void setWishListResult(boolean b);
         void addToWishListResult(boolean b);
         void removeFromWishListResult(boolean b);
+        void setAlert(String message);
     }
     interface Presenter extends BasePresenter<View> {
         void loadProductDetail(Product product);
         void loadWishList();
+        int getCurrentQuantity();
         void addToWishList();
         void removeFromWishList();
         void buyNow();

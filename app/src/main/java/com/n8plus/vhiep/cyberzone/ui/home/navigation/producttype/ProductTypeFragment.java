@@ -16,11 +16,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.n8plus.vhiep.cyberzone.data.model.Category;
+import com.n8plus.vhiep.cyberzone.ui.home.HomeActivity;
 import com.n8plus.vhiep.cyberzone.ui.home.adapter.ProductTypeAdapter;
 import com.n8plus.vhiep.cyberzone.ui.home.navigation.category.CategoryFragment;
 import com.n8plus.vhiep.cyberzone.data.model.ProductType;
 import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.ui.product.ProductActivity;
+import com.n8plus.vhiep.cyberzone.util.TypeLoad;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,9 +86,10 @@ public class ProductTypeFragment extends Fragment implements ProductTypeContract
     }
 
     @Override
-    public void moveToProductActivity(String productTypeId) {
+    public void moveToProductActivity(Bundle data) {
         Intent intent = new Intent(this.getContext(), ProductActivity.class);
-        intent.putExtra("productTypeId", productTypeId);
+        intent.putExtra("TypeLoad", TypeLoad.PRODUCT_TYPE);
+        intent.putExtra("Data", data);
         startActivity(intent);
     }
 }

@@ -362,6 +362,7 @@ public class ProductPresenter implements ProductContract.Presenter {
                         Log.i(TAG, "GET: " + mProductList.size() + " products");
                         if (mProductList.size() > 0) {
                             mProductView.showLinearLoading(false);
+                            mProductView.showLinearNotFound(false);
                             mProductView.setAdapterProduct(mProductList, GRID_LAYOUT);
 
                             for (int i = 0; i < mProductList.size(); i++) {

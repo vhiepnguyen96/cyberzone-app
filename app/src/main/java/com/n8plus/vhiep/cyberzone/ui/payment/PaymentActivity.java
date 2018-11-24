@@ -169,10 +169,7 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                Intent intent = new Intent(PaymentActivity.this, CheckOrderActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
+                moveToHome();
                 break;
 
         }

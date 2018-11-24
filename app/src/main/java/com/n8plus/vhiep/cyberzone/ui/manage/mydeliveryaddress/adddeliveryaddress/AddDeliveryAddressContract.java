@@ -13,6 +13,7 @@ public interface AddDeliveryAddressContract {
         void setProvince(List<Province> provinceList);
         void setDistrict(List<District> districtList);
         void setWard(List<Ward> wardList);
+        boolean validateInput();
         void clearAllData();
         void backLoadDeliveryAddress(List<Province> provinceList);
     }

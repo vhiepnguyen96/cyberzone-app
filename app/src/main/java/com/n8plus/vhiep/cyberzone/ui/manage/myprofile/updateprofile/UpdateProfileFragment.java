@@ -127,7 +127,16 @@ public class UpdateProfileFragment extends Fragment implements UpdateProfileCont
     @Override
     public void setGenderCustomer(String genderCustomer) {
         if (genderCustomer != null) {
-            mRadioButtonBoy.setChecked(genderCustomer.contains("Nam") ? true : false);
+            switch (genderCustomer){
+                case "Nam":
+                    mRadioButtonBoy.setChecked(true);
+                    mRadioButtonGirl.setChecked(false);
+                    break;
+                case "Nữ":
+                    mRadioButtonBoy.setChecked(false);
+                    mRadioButtonGirl.setChecked(true);
+                    break;
+            }
         }
     }
 
@@ -181,6 +190,6 @@ public class UpdateProfileFragment extends Fragment implements UpdateProfileCont
     }
 
     private void actionUpdateCustomer() {
-        mUpdateProfilePresenter.updateCustomer(mEditName.getText().toString(), mRadioButtonBoy.isChecked() ? "Nam" : "Nữ", calendar.getTime(), mEditPhoneNumber.getText().toString(), mEditEmail.getText().toString());
+        mUpdateProfilePresenter.updateCustomer(mEditName.getText().toString(), mRadioButtonBoy.isChecked() ? "Nam" : "Nữ", calendar != null ? calendar.getTime() : null, mEditPhoneNumber.getText().toString(), mEditEmail.getText().toString());
     }
 }

@@ -13,6 +13,7 @@ public interface SignupContract {
     interface Presenter extends BasePresenter<View> {
         void loadData();
         void loadRoleAccount();
+        boolean checkAccountAlready(String accountId);
         void createCustomerDefault(Account account, Customer customer);
         void createCustomer(Customer customer);
     }

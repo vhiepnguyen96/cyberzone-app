@@ -249,12 +249,63 @@ public class HomePresenter implements HomeContract.Presenter {
         MySingleton.getInstance(((Activity) mHomeView).getApplicationContext()).addToRequestQueue(fetchSuggestion);
     }
 
-    @Override
-    public void loadMoreSuggestion(int page) {
-        mCurrentPage = page;
-        if (mCurrentPage <= mPages) {
-            mHomeView.startLoadMore();
+//    @Override
+//    public void loadMoreSuggestion(int page) {
+//        mCurrentPage = page;
+//        if (mCurrentPage <= mPages) {
+//            mHomeView.startLoadMore();
+//
+//            mProductListTemp = new ArrayList<>();
+//            final int sizeOld = productsSuggestion.size();
+//            String URL_LOAD_MORE = URL_PRODUCT + "/page/" + mCurrentPage;
+//
+//            JsonObjectRequest fetchMoreProduct = new JsonObjectRequest(Request.Method.GET, URL_LOAD_MORE, null,
+//                    new Response.Listener<JSONObject>() {
+//                        @Override
+//                        public void onResponse(JSONObject response) {
+//                            Log.d(TAG, response.toString());
+//                            try {
+//                                mProductListTemp = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("products")), Product[].class));
+//
+//                                if (mProductListTemp.size() > 0) {
+//                                    productsSuggestion.addAll(mProductListTemp);
+//                                    mHomeView.addDataListAdapter(mProductListTemp);
+//                                    Log.d(TAG, "SizeOld: " + sizeOld + ", SizeNew: " + productsSuggestion.size());
+//
+//                                    if (productsSuggestion.size() > sizeOld) {
+//                                        for (int i = sizeOld; i < productsSuggestion.size(); i++) {
+//                                            if (!checkOnSale(productsSuggestion.get(i))) {
+//                                                productsSuggestion.get(i).getSaleOff().setDiscount(0);
+//                                            }
+//                                            loadProductReview(LIST_SUGGESTION, i);
+//                                            loadProductImage(LIST_SUGGESTION, i);
+//                                        }
+//                                    }
+//                                }
+//
+//                            } catch (JSONException e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    },
+//                    new Response.ErrorListener() {
+//                        @Override
+//                        public void onErrorResponse(VolleyError error) {
+//                            Log.e(TAG, error.toString());
+//                            mHomeView.onLoadMoreFailed();
+//                        }
+//                    });
+//            MySingleton.getInstance(((Activity) mHomeView).getApplicationContext()).addToRequestQueue(fetchMoreProduct);
+//        } else {
+//            Log.d(TAG, "OnReachEnd");
+//            mHomeView.onReachEnd();
+//        }
+//    }
 
+    @Override
+    public void loadMoreSuggestion() {
+        mCurrentPage++;
+        if (mCurrentPage <= mPages) {
             mProductListTemp = new ArrayList<>();
             final int sizeOld = productsSuggestion.size();
             String URL_LOAD_MORE = URL_PRODUCT + "/page/" + mCurrentPage;
@@ -269,7 +320,7 @@ public class HomePresenter implements HomeContract.Presenter {
 
                                 if (mProductListTemp.size() > 0) {
                                     productsSuggestion.addAll(mProductListTemp);
-                                    mHomeView.addDataListAdapter(mProductListTemp);
+                                    mHomeView.setAdapterSuggestion(productsSuggestion);
                                     Log.d(TAG, "SizeOld: " + sizeOld + ", SizeNew: " + productsSuggestion.size());
 
                                     if (productsSuggestion.size() > sizeOld) {
@@ -292,15 +343,14 @@ public class HomePresenter implements HomeContract.Presenter {
                         @Override
                         public void onErrorResponse(VolleyError error) {
                             Log.e(TAG, error.toString());
-                            mHomeView.onLoadMoreFailed();
                         }
                     });
             MySingleton.getInstance(((Activity) mHomeView).getApplicationContext()).addToRequestQueue(fetchMoreProduct);
         } else {
             Log.d(TAG, "OnReachEnd");
-            mHomeView.onReachEnd();
         }
     }
+
 
     @Override
     public void loadAllProductType() {

@@ -80,7 +80,7 @@ public class ProductDetailActivity extends AppCompatActivity implements ProductD
     private RelativeLayout mRelativeCart;
     private RatingBar mRatingOverview, mRatingProduct;
     private ProgressBar mProgress5star, mProgress4star, mProgress3star, mProgress2star, mProgress1star;
-    private LinearLayout mLinearBgCart, mLinearPriceOnSale;
+    private LinearLayout mLinearBgCart, mLinearPriceOnSale, mLinearActionCart;
     private FrameLayout mFrameProductCount;
     private SpecificationAdapter mSpecificationLiteAdapter;
     private PolicyAdapter mPolicyAdapter;
@@ -213,6 +213,7 @@ public class ProductDetailActivity extends AppCompatActivity implements ProductD
         mScrollViewProductDetail = (NestedScrollView) findViewById(R.id.scv_product_detail);
         mAppbarProductDetail = (AppBarLayout) findViewById(R.id.appbar_productDetail);
         mLinearPriceOnSale = (LinearLayout) findViewById(R.id.lnr_price_on_sales);
+        mLinearActionCart = (LinearLayout) findViewById(R.id.lnr_action_cart);
         mRatingProduct = (RatingBar) findViewById(R.id.rbr_rate_product);
         mRatingOverview = (RatingBar) findViewById(R.id.rbr_rate_average);
         mProgress5star = (ProgressBar) findViewById(R.id.pb_rate_5star);
@@ -496,6 +497,11 @@ public class ProductDetailActivity extends AppCompatActivity implements ProductD
     }
 
     @Override
+    public void setLayoutAddToCart(int quantity) {
+        mLinearActionCart.setVisibility(quantity > 0 ? View.VISIBLE : View.INVISIBLE);
+    }
+
+    @Override
     public void setReviewNone(boolean b) {
         findViewById(R.id.lnr_review_none).setVisibility(b ? View.VISIBLE : View.INVISIBLE);
     }
@@ -544,6 +550,11 @@ public class ProductDetailActivity extends AppCompatActivity implements ProductD
     public void removeFromWishListResult(boolean b) {
         Toast.makeText(this, b ? "Đã xóa khỏi danh sách yêu thích!" : "Vui lòng thử lại!", Toast.LENGTH_SHORT).show();
         mImageFavorite.setImageResource(b ? R.drawable.ic_favorite_border_black_24dp : R.drawable.ic_favorite_red_24dp);
+    }
+
+    @Override
+    public void setAlert(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
 

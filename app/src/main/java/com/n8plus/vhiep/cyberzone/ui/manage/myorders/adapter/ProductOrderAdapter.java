@@ -93,8 +93,10 @@ public class ProductOrderAdapter extends BaseAdapter {
         DecimalFormat df = new DecimalFormat("#.000");
 
         if (resource == R.layout.row_product_order) {
-            if (product.getImageDefault() != null) {
+            if (product.getImageDefault() != null){
                 Picasso.get().load(product.getImageDefault()).into(holder.img_order_product);
+            } else if (product.getImageList() != null && product.getImageList().size() > 0) {
+                Picasso.get().load(product.getImageList().get(0).getImageURL()).into(holder.img_order_product);
             }
 
             holder.txt_order_productName.setText(product.getProductName());

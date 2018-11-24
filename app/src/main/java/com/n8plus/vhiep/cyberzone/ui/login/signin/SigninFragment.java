@@ -160,7 +160,7 @@ public class SigninFragment extends Fragment implements SigninContract.View, Vie
 
         mSigninFacebook = (LoginButton) view.findViewById(R.id.login_button);
 
-        mSigninFacebook.setReadPermissions(Arrays.asList("public_profile", "email", "user_birthday"));
+        mSigninFacebook.setReadPermissions(Arrays.asList("public_profile", "email"));
         mSigninFacebook.setFragment(this);
 
         mSigninFacebook.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
@@ -181,7 +181,7 @@ public class SigninFragment extends Fragment implements SigninContract.View, Vie
                             }
                         });
                 Bundle parameters = new Bundle();
-                parameters.putString("fields", "id,name,email,gender,birthday");
+                parameters.putString("fields", "id, name, email, gender, birthday");
                 request.setParameters(parameters);
                 request.executeAsync();
             }
@@ -381,11 +381,9 @@ public class SigninFragment extends Fragment implements SigninContract.View, Vie
 
     @Override
     public void onSigninGoogleFailed() {
-        mProgressDialog.dismiss();
         Toast.makeText(this.getContext(), "Đăng nhập thất bại!", Toast.LENGTH_SHORT).show();
         mSessionManager.setLogin(false);
         mSessionManager.setAccountLogin(null);
-
     }
 
     @Override

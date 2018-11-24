@@ -2,12 +2,14 @@ package com.n8plus.vhiep.cyberzone.ui.login.signup;
 
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,6 +33,7 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.Profile;
 import com.facebook.ProfileTracker;
+import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -42,6 +45,8 @@ import com.google.android.gms.tasks.Task;
 import com.n8plus.vhiep.cyberzone.R;
 import com.n8plus.vhiep.cyberzone.data.model.Account;
 import com.n8plus.vhiep.cyberzone.data.model.Customer;
+import com.n8plus.vhiep.cyberzone.ui.cart.CartActivity;
+import com.n8plus.vhiep.cyberzone.ui.login.LoginActivity;
 import com.n8plus.vhiep.cyberzone.ui.login.signin.SigninFragment;
 import com.n8plus.vhiep.cyberzone.ui.login.signup.confirmsignup.ConfirmSignupFragment;
 
@@ -116,7 +121,7 @@ public class SignupFragment extends Fragment implements SignupContract.View, Vie
         mDatePicker.setOnClickListener(this);
         mGroupGender.setOnCheckedChangeListener(this);
 
-        mLoginButton.setReadPermissions(Arrays.asList("public_profile", "email", "user_birthday"));
+        mLoginButton.setReadPermissions(Arrays.asList("public_profile", "email"));
         mLoginButton.setFragment(this);
 
         mLoginButton.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
@@ -134,23 +139,26 @@ public class SignupFragment extends Fragment implements SignupContract.View, Vie
                                     String name = object.getString("name");
                                     String email = object.getString("email");
                                     SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-                                    Date birthday = sdf.parse(object.getString("birthday"));
+//                                    Date birthday = sdf.parse(object.getString("birthday"));
 
-                                    if (id != null) customer.setAccount(new Account(id));
-                                    if (name != null) customer.setName(name);
-                                    if (email != null) customer.setEmail(email);
-                                    if (birthday != null) customer.setBirthday(birthday);
+                                    if (!mSignupPresenter.checkAccountAlready(id)) {
+                                        if (id != null) customer.setAccount(new Account(id));
+                                        if (name != null) customer.setName(name);
+                                        if (email != null) customer.setEmail(email);
+//                                        if (birthday != null) customer.setBirthday(birthday);
 
-                                    mSignupPresenter.createCustomer(customer);
+                                        mSignupPresenter.createCustomer(customer);
+                                    } else {
+                                        showAlertAccountAlready();
+                                    }
+
                                 } catch (JSONException e) {
-                                    e.printStackTrace();
-                                } catch (ParseException e) {
                                     e.printStackTrace();
                                 }
                             }
                         });
                 Bundle parameters = new Bundle();
-                parameters.putString("fields", "id, name, email, gender, birthday");
+                parameters.putString("fields", "id,name,email,gender, birthday");
                 request.setParameters(parameters);
                 request.executeAsync();
             }
@@ -291,6 +299,32 @@ public class SignupFragment extends Fragment implements SignupContract.View, Vie
         Toast.makeText(this.getContext(), s, Toast.LENGTH_SHORT).show();
     }
 
+    public void showAlertAccountAlready() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
+        builder.setTitle("Thông báo");
+        builder.setMessage("Tài khoản đã có trong hệ thống !");
+        builder.setCancelable(false);
+        builder.setPositiveButton("Đăng nhập ngay", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                LoginManager.getInstance().logOut();
+                mGoogleSignInClient.signOut();
+                moveToSignin();
+                dialogInterface.dismiss();
+            }
+        });
+        builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                LoginManager.getInstance().logOut();
+                mGoogleSignInClient.signOut();
+                dialogInterface.dismiss();
+            }
+        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
     private void signUpGoogle() {
         gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -316,11 +350,16 @@ public class SignupFragment extends Fragment implements SignupContract.View, Vie
         try {
             GoogleSignInAccount account = task.getResult(ApiException.class);
             if (account != null) {
-                Customer customer = new Customer();
-                customer.setAccount(new Account(account.getId()));
-                customer.setName(account.getDisplayName());
-                customer.setEmail(account.getEmail());
-                mSignupPresenter.createCustomer(customer);
+                Log.d(TAG, "GGID: "+account.getId());
+                if (!mSignupPresenter.checkAccountAlready(account.getId()) ) {
+                    Customer customer = new Customer();
+                    customer.setAccount(new Account(account.getId()));
+                    customer.setName(account.getDisplayName());
+                    customer.setEmail(account.getEmail());
+                    mSignupPresenter.createCustomer(customer);
+                } else {
+                    showAlertAccountAlready();
+                }
             }
         } catch (ApiException e) {
             e.printStackTrace();
@@ -335,6 +374,9 @@ public class SignupFragment extends Fragment implements SignupContract.View, Vie
 
     @Override
     public void moveToConfirmSignup(Customer customer) {
+        LoginManager.getInstance().logOut();
+        mGoogleSignInClient.signOut();
+
         Bundle signupBundle = new Bundle();
         signupBundle.putSerializable("customer", customer);
         ConfirmSignupFragment confirmSignupFragment = new ConfirmSignupFragment();

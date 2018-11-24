@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 public class SignupPresenter implements SignupContract.Presenter {
+    private static final String TAG = "SignupPresenter";
     private SignupContract.View mSignupView;
     private String URL_CUSTOMER = Constant.URL_HOST + "customers";
     private String URL_ROLE = Constant.URL_HOST + "roles";
@@ -35,6 +36,7 @@ public class SignupPresenter implements SignupContract.Presenter {
     private Gson gson;
     private List<Role> roleList;
     private Role roleCustomer;
+    private boolean isExists = false;
 
     public SignupPresenter(SignupContract.View mSignupView) {
         this.mSignupView = mSignupView;
@@ -58,7 +60,7 @@ public class SignupPresenter implements SignupContract.Presenter {
                         Log.d("SignupPresenter", response.toString());
                         try {
                             roleList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("roles")), Role[].class));
-                            Log.d("SignupPresenter", "roleList: "+roleList.size());
+                            Log.d("SignupPresenter", "roleList: " + roleList.size());
                             for (int i = 0; i < roleList.size(); i++) {
                                 if (roleList.get(i).getRoleName().equals("Khách hàng")) {
                                     roleCustomer = roleList.get(i);
@@ -80,6 +82,34 @@ public class SignupPresenter implements SignupContract.Presenter {
     }
 
     @Override
+    public boolean checkAccountAlready(String accountId) {
+        JsonObjectRequest checkAccountRequest = new JsonObjectRequest(Request.Method.GET, URL_CUSTOMER + "/account/" + accountId, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d(TAG, response.toString());
+                        try {
+                            Customer customer = gson.fromJson(String.valueOf(response.getJSONObject("customer")), Customer.class);
+                            isExists = customer != null ? true : false;
+                            Log.d(TAG, "Customer: " + customer.getName() + " | " + isExists);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("SignupPresenter", error.toString());
+                        isExists = false;
+                    }
+                });
+
+        MySingleton.getInstance(((Fragment) mSignupView).getContext().getApplicationContext()).addToRequestQueue(checkAccountRequest);
+        return isExists;
+    }
+
+    @Override
     public void createCustomerDefault(final Account account, final Customer customer) {
         account.setRole(roleCustomer);
         JSONObject accountObj = new JSONObject();
@@ -90,7 +120,7 @@ public class SignupPresenter implements SignupContract.Presenter {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.d("SignupPresenter", "account: "+accountObj.toString());
+        Log.d("SignupPresenter", "account: " + accountObj.toString());
         JsonObjectRequest accountRequest = new JsonObjectRequest(Request.Method.POST, URL_ACCOUNT, accountObj,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -99,7 +129,7 @@ public class SignupPresenter implements SignupContract.Presenter {
                             Log.d("SignupPresenter", response.toString());
                             if (response.getJSONObject("createdAccount") != null) {
                                 String accountId = response.getJSONObject("createdAccount").getString("_id");
-                                Log.d("SignupPresenter", "accountId: "+accountId);
+                                Log.d("SignupPresenter", "accountId: " + accountId);
                                 if (accountId != null) {
                                     account.setId(accountId);
                                     customer.setAccount(account);
@@ -146,6 +176,7 @@ public class SignupPresenter implements SignupContract.Presenter {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
         Log.e("SignupPresenter", "customerObj: " + customerObj.toString());
         JsonObjectRequest updateRequest = new JsonObjectRequest(Request.Method.POST, URL_CUSTOMER, customerObj,
                 new Response.Listener<JSONObject>() {
@@ -156,7 +187,7 @@ public class SignupPresenter implements SignupContract.Presenter {
                             if (response.getJSONObject("createdCustomer") != null) {
                                 customer.setId(response.getJSONObject("createdCustomer").getString("_id"));
                                 mSignupView.createCustomerResult(true);
-                                if (customer.getAccount().getRole() == null){
+                                if (customer.getAccount().getRole() == null) {
                                     mSignupView.moveToConfirmSignup(customer);
                                 } else {
                                     mSignupView.moveToSignin();

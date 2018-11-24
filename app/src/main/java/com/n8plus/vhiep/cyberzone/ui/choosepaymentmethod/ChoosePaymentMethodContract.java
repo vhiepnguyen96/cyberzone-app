@@ -11,6 +11,7 @@ public interface ChoosePaymentMethodContract {
     interface View {
         void setAdapterPaymentMethod(List<PaymentMethod> paymentMethods);
         void moveToPayment(Order order, List<OrderState> orderStates);
+        void saveOrderResult(boolean b);
     }
     interface Presenter extends BasePresenter<View> {
         void loadPaymentMethod();

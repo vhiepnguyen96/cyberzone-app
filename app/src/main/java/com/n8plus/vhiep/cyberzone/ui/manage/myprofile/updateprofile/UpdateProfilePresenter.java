@@ -65,22 +65,33 @@ public class UpdateProfilePresenter implements UpdateProfileContract.Presenter {
         final JSONObject phoneObject = new JSONObject();
         final JSONObject emailObject = new JSONObject();
         try {
-            nameObject.put("propName", "name");
-            nameObject.put("value", mCustomer.getName());
+            if (mCustomer.getName() != null) {
+                nameObject.put("propName", "name");
+                nameObject.put("value", mCustomer.getName());
+            }
 
-            genderObject.put("propName", "gender");
-            genderObject.put("value", mCustomer.getGender());
+            if (mCustomer.getGender() != null) {
+                genderObject.put("propName", "gender");
+                genderObject.put("value", mCustomer.getGender());
+            }
 
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-            birthdayObject.put("propName", "birthday");
-            birthdayObject.put("value", sdf.format(mCustomer.getBirthday()));
+            if (mCustomer.getBirthday() != null) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+                birthdayObject.put("propName", "birthday");
+                birthdayObject.put("value", sdf.format(mCustomer.getBirthday()));
+            }
 
-            phoneObject.put("propName", "phoneNumber");
-            phoneObject.put("value", mCustomer.getPhoneNumber());
+            if (mCustomer.getPhoneNumber() != null) {
+                phoneObject.put("propName", "phoneNumber");
+                phoneObject.put("value", mCustomer.getPhoneNumber());
+            }
 
-            emailObject.put("propName", "email");
-            emailObject.put("value", mCustomer.getEmail());
+            if (mCustomer.getEmail() != null) {
+                emailObject.put("propName", "email");
+                emailObject.put("value", mCustomer.getEmail());
+            }
+
         } catch (JSONException e) {
             Log.e("Error", e.toString());
         }

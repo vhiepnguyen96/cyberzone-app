@@ -206,6 +206,7 @@ public class PaymentPresenter implements PaymentContract.Presenter {
                             Log.i(TAG, "Response: " + response.toString());
                             // Update order item state
                             for (PurchaseItem orderItem : order.getPurchaseList()) {
+                                Log.d(TAG, "orderItemId: " + orderItem.getId());
                                 JSONArray updateObj = new JSONArray();
                                 try {
                                     JSONObject stateObj = new JSONObject();
@@ -224,7 +225,6 @@ public class PaymentPresenter implements PaymentContract.Presenter {
                                                 updateSuccess++;
                                                 if (updateSuccess == mOrder.getPurchaseList().size()) {
                                                     mPaymentView.updateOrderStateResult(true);
-                                                    mPaymentView.moveToHome();
                                                 }
                                                 Log.i(TAG, "updateSuccess: " + updateSuccess);
                                             }

@@ -33,7 +33,7 @@
     </style>
 
     <style name="ErrorText" parent="TextAppearance.Design.Error">
-        <item name="android:textSize">14sp</item>
+        <item name="android:textSize">12sp</item>
         <item name="android:textColor">@color/redColor</item>
     </style>
 

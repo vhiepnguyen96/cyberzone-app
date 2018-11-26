@@ -168,9 +168,8 @@ public class LoadMoreProductAdapter extends LoadMoreRecyclerViewAdapter<Product>
         int count = 0;
         if (filters.size() == 0) {
             mDataList.addAll(mDataListCopy);
-            notifyDataSetChanged();
             Log.d(TAG, "mDataListSize: " + mDataList.size());
-
+            notifyDataSetChanged();
         } else {
             List<Product> filterPriceProduct = new ArrayList<>();
             for (int i = 0; i < filters.size(); i++) {

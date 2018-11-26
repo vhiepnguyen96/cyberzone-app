@@ -30,7 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ChoosePaymentMethodPresenter implements ChoosePaymentMethodContract.Presenter {
-
+    private static final String TAG = "PaymentMethodPresenter";
     private ChoosePaymentMethodContract.View mChoosePayemntMethodView;
     private List<PaymentMethod> paymentMethods;
     private List<OrderState> orderStates;
@@ -172,7 +172,7 @@ public class ChoosePaymentMethodPresenter implements ChoosePaymentMethodContract
     @Override
     public void saveOrderItems(String orderId) {
         for (final PurchaseItem item : mOrder.getPurchaseList()) {
-            JSONObject orderItem = new JSONObject();
+            final JSONObject orderItem = new JSONObject();
             try {
                 JSONObject store = new JSONObject();
                 store.put("_id", item.getProduct().getStore().getStoreId());
@@ -181,7 +181,16 @@ public class ChoosePaymentMethodPresenter implements ChoosePaymentMethodContract
                 JSONObject product = new JSONObject();
                 product.put("_id", item.getProduct().getProductId());
                 product.put("productName", item.getProduct().getProductName());
-                product.put("price", Integer.valueOf(item.getProduct().getPrice()));
+
+                // Get price
+                if (item.getProduct().getSaleOff() != null && item.getProduct().getSaleOff().getDiscount() > 0) {
+                    int basicPrice = Integer.valueOf(item.getProduct().getPrice());
+                    int discount = item.getProduct().getSaleOff().getDiscount();
+                    int salePrice = basicPrice - (basicPrice * discount / 100);
+                    product.put("price", salePrice);
+                } else {
+                    product.put("price", Integer.valueOf(item.getProduct().getPrice()));
+                }
                 product.put("imageURL", item.getProduct().getImageList().get(0).getImageURL());
                 product.put("store", store);
 
@@ -196,9 +205,21 @@ public class ChoosePaymentMethodPresenter implements ChoosePaymentMethodContract
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
-                            // Update quantity product
-                            int quantity = item.getProduct().getQuantity() - item.getQuantity();
-                            updateQuantityProduct(item.getProduct().getProductId(), quantity);
+                            try {
+                                if (response.getJSONObject("createdOrderItem") != null) {
+                                    // update orderItemId
+                                    int index = mOrder.getPurchaseList().indexOf(item);
+                                    String orderItemId = response.getJSONObject("createdOrderItem").getString("_id");
+                                    Log.d(TAG, "createdOrderItemID: " + orderItemId);
+                                    mOrder.getPurchaseList().get(index).setId(orderItemId);
+
+                                    // Update quantity product
+                                    int quantity = item.getProduct().getQuantity() - item.getQuantity();
+                                    updateQuantityProduct(item.getProduct().getProductId(), quantity);
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         }
                     },
                     new Response.ErrorListener() {

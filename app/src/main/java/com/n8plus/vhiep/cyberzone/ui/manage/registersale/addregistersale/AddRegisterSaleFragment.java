@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -25,9 +26,8 @@ import java.util.List;
 public class AddRegisterSaleFragment extends Fragment implements AddRegisterSaleContract.View {
     private AddRegisterSalePresenter mAddRegisterSalePresenter;
     private Spinner mChooseProvince;
-    private TextView mTextNameCustomer;
     private SpinnerProvinceAdapter mProvinceAdapter;
-    private EditText mEditNameStore, mEditEmail, mEditPhone, mEditStoreAccount, mEditPassword, mEditConfirmPassword;
+    private EditText mEditNameStore, mEditNameCustomer, mEditEmail, mEditPhone, mEditStoreAccount, mEditPassword, mEditConfirmPassword;
     private Button mButtonSendRegister;
 
     @Nullable
@@ -41,13 +41,16 @@ public class AddRegisterSaleFragment extends Fragment implements AddRegisterSale
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mChooseProvince = (Spinner) view.findViewById(R.id.spn_register_address);
         mEditNameStore = (EditText) view.findViewById(R.id.edt_register_name_store);
-        mTextNameCustomer = (TextView) view.findViewById(R.id.tv_register_name_customer);
+        mEditNameCustomer = (EditText) view.findViewById(R.id.edt_register_name_customer);
         mEditEmail = (EditText) view.findViewById(R.id.edt_register_email);
         mEditPhone = (EditText) view.findViewById(R.id.edt_register_phone);
         mEditStoreAccount = (EditText) view.findViewById(R.id.edt_register_store_account);
         mEditPassword = (EditText) view.findViewById(R.id.edt_register_password);
         mEditConfirmPassword = (EditText) view.findViewById(R.id.edt_register_confirm_password);
         mButtonSendRegister = (Button) view.findViewById(R.id.btn_send_register_sale);
+
+        // Custom
+        this.getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 
         // Presenter
         mAddRegisterSalePresenter.loadData();
@@ -59,7 +62,7 @@ public class AddRegisterSaleFragment extends Fragment implements AddRegisterSale
                 if (checkIsValid()) {
                     String nameStore = mEditNameStore.getText().toString();
                     String locationStore = ((Province) mChooseProvince.getSelectedItem()).getName();
-                    String nameCustomer = mTextNameCustomer.getText().toString();
+                    String nameCustomer = mEditNameCustomer.getText().toString();
                     String phone = mEditPhone.getText().toString();
                     String email = mEditEmail.getText().toString();
                     String username = mEditStoreAccount.getText().toString();
@@ -80,7 +83,7 @@ public class AddRegisterSaleFragment extends Fragment implements AddRegisterSale
 
     @Override
     public void setNameCustomer(String nameCustomer) {
-        mTextNameCustomer.setText(nameCustomer);
+        mEditNameCustomer.setText(nameCustomer);
     }
 
     @Override
@@ -92,7 +95,7 @@ public class AddRegisterSaleFragment extends Fragment implements AddRegisterSale
         } else if (((Province) mChooseProvince.getSelectedItem()).getName().isEmpty()) {
             showAlert("Vui lòng chọn địa chỉ kho!");
             isValid = false;
-        } else if (mTextNameCustomer.getText().toString().isEmpty()) {
+        } else if (mEditNameCustomer.getText().toString().isEmpty()) {
             showAlert("Vui lòng nhập tên người đại diện!");
             isValid = false;
         } else if (mEditPhone.getText().toString().isEmpty()) {

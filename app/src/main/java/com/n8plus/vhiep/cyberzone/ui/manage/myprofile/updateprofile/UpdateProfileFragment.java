@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TextInputEditText;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -36,8 +38,10 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class UpdateProfileFragment extends Fragment implements UpdateProfileContract.View, View.OnClickListener {
-    private TextView mBirthday;
-    private EditText mEditName, mEditPhoneNumber, mEditEmail;
+    private TextView mBirthday, mTextPhone;
+//    private EditText mEditName, mEditPhoneNumber, mEditEmail;
+    private TextInputEditText mEditName, mEditPhoneNumber, mEditEmail;
+    private TextInputLayout mInputName, mInputPhoneNumber, mInputEmail;
     private ImageView mDatePicker;
     private Button mUpdate, mBack;
     private RadioGroup mRadioGroupGender;
@@ -58,13 +62,17 @@ public class UpdateProfileFragment extends Fragment implements UpdateProfileCont
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mToolbarProfile = (Toolbar) view.findViewById(R.id.toolbar_update_profile);
-        mEditName = (EditText) view.findViewById(R.id.edt_customer_name);
-        mEditPhoneNumber = (EditText) view.findViewById(R.id.edt_customer_phone);
-        mEditEmail = (EditText) view.findViewById(R.id.edt_customer_email);
+        mEditName = (TextInputEditText) view.findViewById(R.id.edt_customer_name);
+        mEditPhoneNumber = (TextInputEditText) view.findViewById(R.id.edt_customer_phone);
+        mEditEmail = (TextInputEditText) view.findViewById(R.id.edt_customer_email);
+        mInputName = (TextInputLayout) view.findViewById(R.id.input_layout_name);
+        mInputPhoneNumber = (TextInputLayout) view.findViewById(R.id.input_layout_phone);
+        mInputEmail = (TextInputLayout) view.findViewById(R.id.input_layout_email);
         mRadioGroupGender = (RadioGroup) view.findViewById(R.id.rbg_gender);
         mRadioButtonBoy = (RadioButton) view.findViewById(R.id.rbn_boy);
         mRadioButtonGirl = (RadioButton) view.findViewById(R.id.rbn_girl);
         mBirthday = (TextView) view.findViewById(R.id.tv_customer_birthday);
+        mTextPhone = (TextView) view.findViewById(R.id.tv_phone);
         mDatePicker = (ImageView) view.findViewById(R.id.img_date_picker);
         mUpdate = (Button) view.findViewById(R.id.btn_update);
         mBack = (Button) view.findViewById(R.id.btn_back);

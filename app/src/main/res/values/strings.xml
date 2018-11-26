@@ -20,7 +20,7 @@
     <string name="fb_login_protocol_scheme">fb2193459764274637</string>
 
     <string-array name="sort_array">
-        <item>Sắp xếp theo mức độ phổ biến</item>
+        <item>Sắp xếp theo độ phổ biến</item>
         <item>Giá từ thấp tới cao</item>
         <item>Giá từ cao xuống thấp</item>
     </string-array>

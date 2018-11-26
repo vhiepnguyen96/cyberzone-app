@@ -376,6 +376,7 @@ public class ProductPresenter implements ProductContract.Presenter {
                             new Handler().postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
+                                    mProductView.setAdapterProduct(mProductList, GRID_LAYOUT);
                                     mProductView.showLinearLoading(false);
                                     mProductView.showLinearNotFound(true);
                                 }

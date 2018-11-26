@@ -68,16 +68,27 @@ public class EditDeliveryAddressPresenter implements EditDeliveryAddressContract
         }
         for (int i = 0; i < provinceList.size(); i++) {
             if (addressString.length > 3) {
-                mEditDeliveryAddressView.setAddress(addressString[0]);
-                if (addressString[3].equals(provinceList.get(i).getName())) {
+                int last = addressString.length - 1;
+                int addressWithoutSelection = last - 2;
+                StringBuilder addressCustomer = new StringBuilder();
+                for (int count = 0; count < addressWithoutSelection; count++) {
+                    if (count != addressWithoutSelection - 1) {
+                        addressCustomer.append(addressString[count] + ", ");
+                    } else {
+                        addressCustomer.append(addressString[count]);
+                    }
+                }
+                mEditDeliveryAddressView.setAddress(addressCustomer.toString());
+                // Set selection
+                if (addressString[last].equals(provinceList.get(i).getName())) {
                     selectionProvince = i;
                     loadProvice(provinceList);
                     for (int j = 0; j < mProvinceList.get(selectionProvince).getDistrictList().size(); j++) {
-                        if (addressString[2].equals(mProvinceList.get(selectionProvince).getDistrictList().get(j).getName())) {
+                        if (addressString[last - 1].equals(mProvinceList.get(selectionProvince).getDistrictList().get(j).getName())) {
                             selectionDistrict = j;
                             loadDistrict(selectionProvince);
                             for (int z = 0; z < mProvinceList.get(selectionProvince).getDistrictList().get(selectionDistrict).getWardList().size(); z++) {
-                                if (addressString[1].equals(mProvinceList.get(selectionProvince).getDistrictList().get(selectionDistrict).getWardList().get(z).getName())) {
+                                if (addressString[last - 2].equals(mProvinceList.get(selectionProvince).getDistrictList().get(selectionDistrict).getWardList().get(z).getName())) {
                                     selectionWard = z;
                                     loadWard(selectionProvince, selectionDistrict);
                                 }

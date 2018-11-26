@@ -49,6 +49,7 @@ import com.n8plus.vhiep.cyberzone.ui.cart.CartActivity;
 import com.n8plus.vhiep.cyberzone.ui.login.LoginActivity;
 import com.n8plus.vhiep.cyberzone.ui.login.signin.SigninFragment;
 import com.n8plus.vhiep.cyberzone.ui.login.signup.confirmsignup.ConfirmSignupFragment;
+import com.n8plus.vhiep.cyberzone.util.TypeLogin;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -75,12 +76,10 @@ public class SignupFragment extends Fragment implements SignupContract.View, Vie
     private CallbackManager mCallbackManager;
     private SignupPresenter mSignupPresenter;
     private int RC_SIGN_IN = 9001;
-    private GoogleSignInOptions gso;
     private GoogleSignInClient mGoogleSignInClient;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
-        mCallbackManager = CallbackManager.Factory.create();
         mSignupPresenter = new SignupPresenter(this);
         super.onCreate(savedInstanceState);
     }
@@ -121,13 +120,13 @@ public class SignupFragment extends Fragment implements SignupContract.View, Vie
         mDatePicker.setOnClickListener(this);
         mGroupGender.setOnCheckedChangeListener(this);
 
+        mCallbackManager = CallbackManager.Factory.create();
         mLoginButton.setReadPermissions(Arrays.asList("public_profile", "email"));
         mLoginButton.setFragment(this);
 
         mLoginButton.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-                final Customer customer = new Customer();
                 GraphRequest request = GraphRequest.newMeRequest(
                         loginResult.getAccessToken(),
                         new GraphRequest.GraphJSONObjectCallback() {
@@ -138,19 +137,17 @@ public class SignupFragment extends Fragment implements SignupContract.View, Vie
                                     String id = object.getString("id");
                                     String name = object.getString("name");
                                     String email = object.getString("email");
-                                    SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-//                                    Date birthday = sdf.parse(object.getString("birthday"));
 
-                                    if (!mSignupPresenter.checkAccountAlready(id)) {
-                                        if (id != null) customer.setAccount(new Account(id));
-                                        if (name != null) customer.setName(name);
-                                        if (email != null) customer.setEmail(email);
-//                                        if (birthday != null) customer.setBirthday(birthday);
+                                    Log.d(TAG, "FBID: " + id);
 
-                                        mSignupPresenter.createCustomer(customer);
-                                    } else {
-                                        showAlertAccountAlready();
-                                    }
+                                    // Prepare customer
+                                    Customer customer = new Customer();
+                                    if (id != null) customer.setAccount(new Account(id));
+                                    if (name != null) customer.setName(name);
+                                    if (email != null) customer.setEmail(email);
+
+                                    // Sign up with facebook account
+                                    mSignupPresenter.signUp(customer);
 
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -158,7 +155,7 @@ public class SignupFragment extends Fragment implements SignupContract.View, Vie
                             }
                         });
                 Bundle parameters = new Bundle();
-                parameters.putString("fields", "id,name,email,gender, birthday");
+                parameters.putString("fields", "id, name, email, gender, birthday");
                 request.setParameters(parameters);
                 request.executeAsync();
             }
@@ -299,6 +296,56 @@ public class SignupFragment extends Fragment implements SignupContract.View, Vie
         Toast.makeText(this.getContext(), s, Toast.LENGTH_SHORT).show();
     }
 
+
+    private void signUpGoogle() {
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .requestProfile()
+                .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(this.getContext(), gso);
+        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        mCallbackManager.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            handleSignInResult(task);
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void handleSignInResult(Task<GoogleSignInAccount> task) {
+        try {
+            GoogleSignInAccount account = task.getResult(ApiException.class);
+            if (account != null) {
+                Log.d(TAG, "GGID: " + account.getId());
+
+                // Prepare customer
+                Customer customer = new Customer();
+                customer.setAccount(new Account(account.getId()));
+                customer.setName(account.getDisplayName());
+                customer.setEmail(account.getEmail());
+
+                // Sign up with google account
+                mSignupPresenter.signUp(customer);
+            }
+        } catch (ApiException e) {
+            e.printStackTrace();
+            Log.w(TAG, "signInResult: failed code=" + e.getStatusCode());
+        }
+    }
+
+    @Override
+    public void createCustomerResult(boolean b) {
+        Toast.makeText(this.getContext(), b ? "Đăng ký thành công!" : "Đăng ký thất bại. Vui lòng kiểm tra lại!", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
     public void showAlertAccountAlready() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
         builder.setTitle("Thông báo");
@@ -323,53 +370,6 @@ public class SignupFragment extends Fragment implements SignupContract.View, Vie
         });
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
-    }
-
-    private void signUpGoogle() {
-        gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .requestProfile()
-                .build();
-        mGoogleSignInClient = GoogleSignIn.getClient(this.getContext(), gso);
-        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-        startActivityForResult(signInIntent, RC_SIGN_IN);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        mCallbackManager.onActivityResult(requestCode, resultCode, data);
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == RC_SIGN_IN) {
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            handleSignInResult(task);
-        }
-    }
-
-    private void handleSignInResult(Task<GoogleSignInAccount> task) {
-        try {
-            GoogleSignInAccount account = task.getResult(ApiException.class);
-            if (account != null) {
-                Log.d(TAG, "GGID: "+account.getId());
-                if (!mSignupPresenter.checkAccountAlready(account.getId()) ) {
-                    Customer customer = new Customer();
-                    customer.setAccount(new Account(account.getId()));
-                    customer.setName(account.getDisplayName());
-                    customer.setEmail(account.getEmail());
-                    mSignupPresenter.createCustomer(customer);
-                } else {
-                    showAlertAccountAlready();
-                }
-            }
-        } catch (ApiException e) {
-            e.printStackTrace();
-            Log.w(TAG, "signInResult: failed code=" + e.getStatusCode());
-        }
-    }
-
-    @Override
-    public void createCustomerResult(boolean b) {
-        Toast.makeText(this.getContext(), b ? "Đăng ký thành công!" : "Đăng ký thất bại. Vui lòng kiểm tra lại!", Toast.LENGTH_SHORT).show();
     }
 
     @Override

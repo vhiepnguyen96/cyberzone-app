@@ -224,7 +224,9 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
 
     @Override
     public void moveToHome() {
-        if (Constant.purchaseList.size() > 0) Constant.purchaseList.clear();
+        if (Constant.purchaseList.size() > 0) {
+            Constant.purchaseList.clear();
+        }
         startActivity(new Intent(PaymentActivity.this, HomeActivity.class));
         finish();
     }
@@ -237,6 +239,7 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
     @Override
     public void updateOrderStateResult(boolean b) {
         Toast.makeText(this, b ? "Cập nhật đơn hàng thành công!" : "Cập nhật đơn hàng thất bại!", Toast.LENGTH_SHORT).show();
+        if (b) moveToHome();
     }
 
     @Override

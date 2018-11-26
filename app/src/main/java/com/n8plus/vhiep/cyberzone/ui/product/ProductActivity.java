@@ -222,6 +222,7 @@ public class ProductActivity extends AppCompatActivity implements ProductContrac
                 mFilterChildList = (List<FilterChild>) (Object) mFilterExpandableAdapter.getFilterChildChoose();
                 setCountFilter(mFilterChildList.size());
                 mLoadMoreProductAdapter.filterProduct(mFilterChildList);
+                mRecyclerProduct.setAdapter(mLoadMoreProductAdapter);
                 showLinearNotFound(mLoadMoreProductAdapter.getDataList().size() == 0 ? true : false);
             }
         });

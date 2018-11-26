@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CheckOrderPresenter implements CheckOrderContract.Presenter {
+    private static final String TAG = "CheckOrderPresenter";
     private CheckOrderContract.View mCheckOrderView;
     private List<PurchaseItem> mPurchaseItemList;
     private List<Address> addressList;
@@ -75,6 +76,7 @@ public class CheckOrderPresenter implements CheckOrderContract.Presenter {
     @Override
     public void loadDeliveryAddress(Address address) {
         addressDefault = address;
+        mCheckOrderView.showLayoutAddress(true);
         mCheckOrderView.setNameCustomer(address.getPresentation());
         mCheckOrderView.setPhoneCustomer(address.getPhone());
         mCheckOrderView.setAddressCustomer(address.getAddress());

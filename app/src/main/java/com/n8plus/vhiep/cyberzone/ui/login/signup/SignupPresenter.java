@@ -15,6 +15,8 @@ import com.n8plus.vhiep.cyberzone.data.model.Customer;
 import com.n8plus.vhiep.cyberzone.data.model.Role;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.MySingleton;
+import com.n8plus.vhiep.cyberzone.util.TypeLoad;
+import com.n8plus.vhiep.cyberzone.util.TypeLogin;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,7 +38,6 @@ public class SignupPresenter implements SignupContract.Presenter {
     private Gson gson;
     private List<Role> roleList;
     private Role roleCustomer;
-    private boolean isExists = false;
 
     public SignupPresenter(SignupContract.View mSignupView) {
         this.mSignupView = mSignupView;
@@ -82,16 +83,22 @@ public class SignupPresenter implements SignupContract.Presenter {
     }
 
     @Override
-    public boolean checkAccountAlready(String accountId) {
-        JsonObjectRequest checkAccountRequest = new JsonObjectRequest(Request.Method.GET, URL_CUSTOMER + "/account/" + accountId, null,
+    public void signUp(final Customer customer) {
+        JsonObjectRequest checkAccountRequest = new JsonObjectRequest(Request.Method.GET, URL_CUSTOMER + "/account/" + customer.getAccount().getId(), null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.d(TAG, response.toString());
                         try {
-                            Customer customer = gson.fromJson(String.valueOf(response.getJSONObject("customer")), Customer.class);
-                            isExists = customer != null ? true : false;
-                            Log.d(TAG, "Customer: " + customer.getName() + " | " + isExists);
+                            Log.d(TAG, "checkAccountResponse: " + response.toString());
+                            Customer customerResult = gson.fromJson(String.valueOf(response.getJSONObject("customer")), Customer.class);
+                            boolean isExists = customerResult != null ? true : false;
+
+                            if (!isExists) {
+                                createCustomer(customer);
+                            } else {
+                                mSignupView.showAlertAccountAlready();
+                            }
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -101,12 +108,11 @@ public class SignupPresenter implements SignupContract.Presenter {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.e("SignupPresenter", error.toString());
-                        isExists = false;
+                        createCustomer(customer);
                     }
                 });
 
         MySingleton.getInstance(((Fragment) mSignupView).getContext().getApplicationContext()).addToRequestQueue(checkAccountRequest);
-        return isExists;
     }
 
     @Override
@@ -177,7 +183,7 @@ public class SignupPresenter implements SignupContract.Presenter {
             e.printStackTrace();
         }
 
-        Log.e("SignupPresenter", "customerObj: " + customerObj.toString());
+        Log.d("SignupPresenter", "customerObj: " + customerObj.toString());
         JsonObjectRequest updateRequest = new JsonObjectRequest(Request.Method.POST, URL_CUSTOMER, customerObj,
                 new Response.Listener<JSONObject>() {
                     @Override

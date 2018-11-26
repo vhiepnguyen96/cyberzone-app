@@ -223,7 +223,7 @@
                             android:id="@+id/txt_totalPrice"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="4.255"
+                            android:text="0"
                             android:textColor="@color/redColor"
                             android:textSize="18sp"
                             android:textStyle="bold" />

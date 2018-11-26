@@ -1,6 +1,7 @@
 package com.n8plus.vhiep.cyberzone.ui.login.signin;
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -10,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.util.Base64;
 import android.util.Log;
 import android.util.Patterns;
@@ -80,9 +82,6 @@ public class SigninFragment extends Fragment implements SigninContract.View, Vie
     private LinearLayout mSignupLayout;
     private ProgressDialog mProgressDialog;
 
-    private AccessTokenTracker mAccessTokenTracker;
-    private ProfileTracker mProfileTracker;
-
     private GoogleSignInOptions gso;
     private GoogleSignInClient mGoogleSignInClient;
 
@@ -102,9 +101,9 @@ public class SigninFragment extends Fragment implements SigninContract.View, Vie
                     public void onSuccess(LoginResult loginResult) {
                         Profile profile = Profile.getCurrentProfile();
                         if (profile != null) {
-                            onSigninFacebookSuccess(profile);
+                            mSigninPresenter.signIn(profile.getId());
                         } else {
-                            onSigninFacebookFailed();
+                            onSigninFailed();
                         }
                     }
 
@@ -126,29 +125,6 @@ public class SigninFragment extends Fragment implements SigninContract.View, Vie
             startActivity(intentHome);
         }
 
-        mCallbackManager = CallbackManager.Factory.create();
-
-        mAccessTokenTracker = new AccessTokenTracker() {
-            @Override
-            protected void onCurrentAccessTokenChanged(AccessToken oldToken, AccessToken newToken) {
-
-            }
-        };
-
-        mProfileTracker = new ProfileTracker() {
-            @Override
-            protected void onCurrentProfileChanged(Profile oldProfile, Profile newProfile) {
-                if (newProfile != null) {
-                    onSigninFacebookSuccess(newProfile);
-                } else {
-                    onSigninFacebookSuccess(oldProfile);
-                }
-            }
-        };
-
-        mAccessTokenTracker.startTracking();
-        mProfileTracker.startTracking();
-
         super.onCreate(savedInstanceState);
     }
 
@@ -157,6 +133,8 @@ public class SigninFragment extends Fragment implements SigninContract.View, Vie
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.signin_frag, container, false);
         mSigninPresenter = new SigninPresenter(this);
+        mCallbackManager = CallbackManager.Factory.create();
+        mSessionManager = new SessionManager(this.getActivity().getApplicationContext());
 
         mSigninFacebook = (LoginButton) view.findViewById(R.id.login_button);
 
@@ -174,9 +152,9 @@ public class SigninFragment extends Fragment implements SigninContract.View, Vie
                                 Log.d(TAG, response.getJSONObject().toString());
                                 Profile profile = Profile.getCurrentProfile();
                                 if (profile != null) {
-                                    onSigninFacebookSuccess(profile);
+                                    mSigninPresenter.signIn(profile.getId());
                                 } else {
-                                    onSigninFacebookFailed();
+                                    onSigninFailed();
                                 }
                             }
                         });
@@ -229,8 +207,6 @@ public class SigninFragment extends Fragment implements SigninContract.View, Vie
     @Override
     public void onStop() {
         super.onStop();
-        mAccessTokenTracker.stopTracking();
-        mProfileTracker.stopTracking();
     }
 
     @Override
@@ -238,7 +214,7 @@ public class SigninFragment extends Fragment implements SigninContract.View, Vie
         super.onResume();
         Profile profile = Profile.getCurrentProfile();
         if (profile != null) {
-            onSigninFacebookSuccess(profile);
+            mSigninPresenter.signIn(profile.getId());
         }
     }
 
@@ -280,14 +256,14 @@ public class SigninFragment extends Fragment implements SigninContract.View, Vie
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
             if (account != null) {
-                onSigninGoogleSuccess(account);
+                mSigninPresenter.signIn(account.getId());
             } else {
-                onSigninGoogleFailed();
+                onSigninFailed();
             }
         } catch (ApiException e) {
             e.printStackTrace();
             Log.w(TAG, "signInResult: failed code=" + e.getStatusCode());
-            onSigninGoogleFailed();
+            onSigninFailed();
         }
 
     }
@@ -302,7 +278,7 @@ public class SigninFragment extends Fragment implements SigninContract.View, Vie
         Log.d(TAG, "Login");
 
         if (!validate()) {
-            onSigninGoogleFailed();
+            onSigninDefaultFailed();
             return;
         }
 
@@ -354,6 +330,33 @@ public class SigninFragment extends Fragment implements SigninContract.View, Vie
     }
 
     @Override
+    public void showAlertAccountNotRegister() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
+        builder.setTitle("Thông báo");
+        builder.setMessage("Tài khoản chưa đăng ký trong hệ thống!");
+        builder.setCancelable(false);
+        builder.setPositiveButton("Đăng ký ngay", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                LoginManager.getInstance().logOut();
+                mGoogleSignInClient.signOut();
+                signUp();
+                dialogInterface.dismiss();
+            }
+        });
+        builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                LoginManager.getInstance().logOut();
+                mGoogleSignInClient.signOut();
+                dialogInterface.dismiss();
+            }
+        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    @Override
     public void onSigninDefaultSuccess(Account account) {
         hideProgressDialog();
         Toast.makeText(this.getContext(), "Đăng nhập thành công!", Toast.LENGTH_LONG).show();
@@ -372,30 +375,15 @@ public class SigninFragment extends Fragment implements SigninContract.View, Vie
     }
 
     @Override
-    public void onSigninGoogleSuccess(GoogleSignInAccount googleAccount) {
+    public void onSigninSuccess(String accountId) {
         Toast.makeText(this.getContext(), "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
         mSessionManager.setLogin(true);
-        mSessionManager.setAccountLogin(googleAccount.getId());
+        mSessionManager.setAccountLogin(accountId);
         moveToHome();
     }
 
     @Override
-    public void onSigninGoogleFailed() {
-        Toast.makeText(this.getContext(), "Đăng nhập thất bại!", Toast.LENGTH_SHORT).show();
-        mSessionManager.setLogin(false);
-        mSessionManager.setAccountLogin(null);
-    }
-
-    @Override
-    public void onSigninFacebookSuccess(Profile profile) {
-        Toast.makeText(this.getContext(), "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
-        mSessionManager.setLogin(true);
-        mSessionManager.setAccountLogin(profile.getId());
-        moveToHome();
-    }
-
-    @Override
-    public void onSigninFacebookFailed() {
+    public void onSigninFailed() {
         Toast.makeText(this.getContext(), "Đăng nhập thất bại!", Toast.LENGTH_SHORT).show();
         mSessionManager.setLogin(false);
         mSessionManager.setAccountLogin(null);

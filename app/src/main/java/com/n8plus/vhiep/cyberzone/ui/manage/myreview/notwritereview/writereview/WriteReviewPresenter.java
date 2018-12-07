@@ -1,5 +1,7 @@
 package com.n8plus.vhiep.cyberzone.ui.manage.myreview.notwritereview.writereview;
 
+import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 
@@ -31,6 +33,7 @@ import com.n8plus.vhiep.cyberzone.data.model.Store;
 import com.n8plus.vhiep.cyberzone.ui.manage.myorders.allorder.AllOrderContract;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.MySingleton;
+import com.n8plus.vhiep.cyberzone.util.VolleyUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,20 +47,16 @@ import java.util.List;
 
 public class WriteReviewPresenter implements WriteReviewContract.Presenter {
     private final String TAG = "WriteReviewPresenter";
+    private Context context;
     private WriteReviewContract.View mWriteReviewView;
     private PurchaseItem mOrderItem;
     private Gson gson;
     private List<RatingStar> mRatingStars;
     private List<RatingLevel> mRatingLevels;
-    private final String URL_RATING_STAR = Constant.URL_HOST + "ratingStars";
-    private final String URL_RATING_LEVEL = Constant.URL_HOST + "ratingLevels";
-    private final String URL_REVIEW_PRODUCT = Constant.URL_HOST + "reviewProducts";
-    private final String URL_REVIEW_STORE = Constant.URL_HOST + "reviewStores";
-    private final String URL_ORDER_ITEM = Constant.URL_HOST + "orderItems";
-    private final String URL_PRODUCT = Constant.URL_HOST + "products";
     private int success = 0;
 
-    public WriteReviewPresenter(WriteReviewContract.View mWriteReviewView) {
+    public WriteReviewPresenter(@NonNull final Context context, @NonNull final WriteReviewContract.View mWriteReviewView) {
+        this.context = context;
         this.mWriteReviewView = mWriteReviewView;
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setDateFormat("M/d/yy hh:mm a");
@@ -78,54 +77,75 @@ public class WriteReviewPresenter implements WriteReviewContract.Presenter {
     @Override
     public void loadRatingStar() {
         mRatingStars = new ArrayList<>();
-        JsonObjectRequest ratingStarRequest = new JsonObjectRequest(Request.Method.GET, URL_RATING_STAR, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            mRatingStars = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("ratingStars")), RatingStar[].class));
-                            Log.d("WriteReviewPresenter", "GET: " + mRatingStars.size() + " ratingStars");
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+        VolleyUtil.GET(context, Constant.URL_RATING_STAR,
+                response -> {
+                    try {
+                        mRatingStars = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("ratingStars")), RatingStar[].class));
+                        Log.d(TAG, "GET: " + mRatingStars.size() + " ratingStars");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("WriteReviewPresenter", error.toString());
-                    }
-                });
-        MySingleton.getInstance(((Fragment) mWriteReviewView).getContext().getApplicationContext()).addToRequestQueue(ratingStarRequest);
+                error -> Log.e(TAG, error.toString()));
+//        JsonObjectRequest ratingStarRequest = new JsonObjectRequest(Request.Method.GET, Constant.URL_RATING_STAR, null,
+//                new Response.Listener<JSONObject>() {
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        try {
+//                            mRatingStars = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("ratingStars")), RatingStar[].class));
+//                            Log.d("WriteReviewPresenter", "GET: " + mRatingStars.size() + " ratingStars");
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                },
+//                new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//                        Log.e("WriteReviewPresenter", error.toString());
+//                    }
+//                });
+//        MySingleton.getInstance(((Fragment) mWriteReviewView).getContext().getApplicationContext()).addToRequestQueue(ratingStarRequest);
     }
 
     @Override
     public void loadRatingLevel() {
         mRatingLevels = new ArrayList<>();
-        JsonObjectRequest ratingLevelRequest = new JsonObjectRequest(Request.Method.GET, URL_RATING_LEVEL, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            mRatingLevels = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("ratingLevels")), RatingLevel[].class));
-                            Log.d("WriteReviewPresenter", "GET: " + mRatingLevels.size() + " ratingLevels");
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+        VolleyUtil.GET(context, Constant.URL_RATING_LEVEL,
+                response -> {
+                    try {
+                        mRatingLevels = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("ratingLevels")), RatingLevel[].class));
+                        Log.d(TAG, "GET: " + mRatingLevels.size() + " ratingLevels");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("WriteReviewPresenter", error.toString());
-                    }
-                });
-        MySingleton.getInstance(((Fragment) mWriteReviewView).getContext().getApplicationContext()).addToRequestQueue(ratingLevelRequest);
+                error -> Log.e(TAG, error.toString()));
+//        JsonObjectRequest ratingLevelRequest = new JsonObjectRequest(Request.Method.GET, Constant.URL_RATING_LEVEL, null,
+//                new Response.Listener<JSONObject>() {
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        try {
+//                            mRatingLevels = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("ratingLevels")), RatingLevel[].class));
+//                            Log.d("WriteReviewPresenter", "GET: " + mRatingLevels.size() + " ratingLevels");
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                },
+//                new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//                        Log.e("WriteReviewPresenter", error.toString());
+//                    }
+//                });
+//        MySingleton.getInstance(((Fragment) mWriteReviewView).getContext().getApplicationContext()).addToRequestQueue(ratingLevelRequest);
     }
 
     @Override
     public void sendReview(String reviewProduct, int rateProductStar, String reviewStore, int rateStoreLevel) {
-        Log.d("WriteReviewPresenter", "rateProductStar: " + rateProductStar);
+        // Send review product
+        Log.d(TAG, "rateProductStar: " + rateProductStar);
         JSONObject reviewProductObj = new JSONObject();
         try {
             reviewProductObj.put("customerId", Constant.customer.getId());
@@ -143,27 +163,22 @@ public class WriteReviewPresenter implements WriteReviewContract.Presenter {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.d("WriteReviewPresenter", "reviewProduct: " + reviewProductObj.toString());
-        JsonObjectRequest reviewProductRequest = new JsonObjectRequest(Request.Method.POST, URL_REVIEW_PRODUCT, reviewProductObj,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        success++;
-                        if (success == 2) {
-                            updateIsReviewOrderItem(mOrderItem.getId());
-                        }
+        Log.d(TAG, "reviewProduct: " + reviewProductObj.toString());
+
+        VolleyUtil.POST(context, Constant.URL_REVIEW_PRODUCT, reviewProductObj,
+                response -> {
+                    success++;
+                    if (success == 2) {
+                        updateIsReviewOrderItem(mOrderItem.getId());
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        mWriteReviewView.sendReviewResult(false);
-                        Log.e("WriteReviewPresenter", error.toString());
-                    }
+                error -> {
+                    mWriteReviewView.sendReviewResult(false);
+                    Log.e(TAG, error.toString());
                 });
-        MySingleton.getInstance(((Fragment) mWriteReviewView).getContext().getApplicationContext()).addToRequestQueue(reviewProductRequest);
 
-        Log.d("WriteReviewPresenter", "rateStoreLevel: " + rateStoreLevel);
+        // Send review store
+        Log.d(TAG, "rateStoreLevel: " + rateStoreLevel);
         JSONObject reviewStoreObj = new JSONObject();
         try {
             reviewStoreObj.put("customerId", Constant.customer.getId());
@@ -175,25 +190,19 @@ public class WriteReviewPresenter implements WriteReviewContract.Presenter {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.d("WriteReviewPresenter", "reviewStore: " + reviewStoreObj.toString());
-        JsonObjectRequest reviewStoreRequest = new JsonObjectRequest(Request.Method.POST, URL_REVIEW_STORE, reviewStoreObj,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        success++;
-                        if (success == 2) {
-                            updateIsReviewOrderItem(mOrderItem.getId());
-                        }
+        Log.d(TAG, "reviewStore: " + reviewStoreObj.toString());
+
+        VolleyUtil.POST(context, Constant.URL_REVIEW_STORE, reviewStoreObj,
+                response -> {
+                    success++;
+                    if (success == 2) {
+                        updateIsReviewOrderItem(mOrderItem.getId());
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        mWriteReviewView.sendReviewResult(false);
-                        Log.e("WriteReviewPresenter", error.toString());
-                    }
+                error -> {
+                    mWriteReviewView.sendReviewResult(false);
+                    Log.e(TAG, error.toString());
                 });
-        MySingleton.getInstance(((Fragment) mWriteReviewView).getContext().getApplicationContext()).addToRequestQueue(reviewStoreRequest);
     }
 
     @Override
@@ -231,19 +240,14 @@ public class WriteReviewPresenter implements WriteReviewContract.Presenter {
             e.printStackTrace();
         }
         updateArr.put(isReviewObj);
-        JsonArrayRequest request = new JsonArrayRequest(Request.Method.PATCH, URL_ORDER_ITEM + "/" + orderItemId, updateArr,
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        mWriteReviewView.sendReviewResult(true);
-                    }
+
+        VolleyUtil.PATCH(context, Constant.URL_ORDER_ITEM + "/" + orderItemId, updateArr,
+                response -> {
+                    mWriteReviewView.sendReviewResult(true);
+                    mWriteReviewView.backAllPurchase();
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        mWriteReviewView.sendReviewResult(false);
-                    }
+                error -> {
+                    mWriteReviewView.sendReviewResult(false);
                 });
-        MySingleton.getInstance(((Fragment) mWriteReviewView).getContext().getApplicationContext()).addToRequestQueue(request);
     }
 }

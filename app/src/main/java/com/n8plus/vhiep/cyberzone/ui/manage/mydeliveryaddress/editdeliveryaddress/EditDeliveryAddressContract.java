@@ -17,6 +17,7 @@ public interface EditDeliveryAddressContract {
         void setPhoneNumber(String phoneNumber);
         void setAddress(String address);
         void backLoadDeliveryAddress(List<Province> provinceList);
+        void updateDeliveryAddressResult(boolean b);
     }
     interface Presenter extends BasePresenter<View>{
         void loadProvice(List<Province> provinceList);

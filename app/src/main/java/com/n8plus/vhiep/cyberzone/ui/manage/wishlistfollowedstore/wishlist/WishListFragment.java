@@ -24,13 +24,13 @@ public class WishListFragment extends Fragment implements WishListContract.View 
     private ListView mWishlist;
     private WishListAdapter mWishListAdapter;
     private WishListPresenter mWishListPresenter;
-    private LinearLayout mLinearNone;
+    private LinearLayout mLinearNone, mLinearLoading;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.wishlist_frag, container, false);
-        mWishListPresenter = new WishListPresenter(this);
+        mWishListPresenter = new WishListPresenter(getContext(),this);
         return view;
     }
 
@@ -38,6 +38,7 @@ public class WishListFragment extends Fragment implements WishListContract.View 
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mWishlist = (ListView) view.findViewById(R.id.lv_wishlist);
         mLinearNone = (LinearLayout) view.findViewById(R.id.lnr_none);
+        mLinearLoading = (LinearLayout) view.findViewById(R.id.lnr_loading);
 
         // Presenter
         mWishListPresenter.loadData();
@@ -48,6 +49,11 @@ public class WishListFragment extends Fragment implements WishListContract.View 
     @Override
     public void setLayoutNone(boolean b) {
         mLinearNone.setVisibility(b ? View.VISIBLE : View.GONE);
+    }
+
+    @Override
+    public void setLayoutLoading(boolean b) {
+        mLinearLoading.setVisibility(b ? View.VISIBLE : View.GONE);
     }
 
     @Override

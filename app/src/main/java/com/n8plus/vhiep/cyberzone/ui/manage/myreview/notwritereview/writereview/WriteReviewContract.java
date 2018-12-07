@@ -20,6 +20,8 @@ public interface WriteReviewContract {
         boolean checkIsValidReview();
 
         void setAlert(String message);
+
+        void backAllPurchase();
     }
 
     interface Presenter extends BasePresenter<View> {

@@ -63,7 +63,7 @@ public class PopularCategoryAdapter extends RecyclerView.Adapter<PopularCategory
                 .inflate(R.layout.row_popular_category, parent, false);
 
         ViewGroup.LayoutParams layoutParams = itemView.getLayoutParams();
-        layoutParams.width = (int) (parent.getWidth() * 0.33) - 8;
+        layoutParams.width = (int) (parent.getWidth() * 1 / 3) - 8;
         itemView.setLayoutParams(layoutParams);
 
         return new MyViewHolder(itemView);

@@ -57,24 +57,15 @@ public class ProductTypeFragment extends Fragment implements ProductTypeContract
             mCategoryName.setText(mCategory.getName());
         }
 
-        mBackCategory.setOnClickListener(new View.OnClickListener() {
-            @SuppressLint("ResourceType")
-            @Override
-            public void onClick(View v) {
-                fragmentManager = getFragmentManager();
-                fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right );
-                fragmentTransaction.replace(R.id.frameLayout, new CategoryFragment());
-                fragmentTransaction.commit();
-            }
+        mBackCategory.setOnClickListener(v -> {
+            fragmentManager = getFragmentManager();
+            fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right );
+            fragmentTransaction.replace(R.id.frameLayout, new CategoryFragment());
+            fragmentTransaction.commit();
         });
 
-        mListViewCategoryItem.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                mProductTypePreseter.prepareDataProductType(position);
-            }
-        });
+        mListViewCategoryItem.setOnItemClickListener((parent, view1, position, id) -> mProductTypePreseter.prepareDataProductType(position));
 
         super.onViewCreated(view, savedInstanceState);
     }

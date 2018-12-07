@@ -13,16 +13,70 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@+id/btn_add_address"
-            android:background="@color/whiteColor"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+            android:background="@color/whiteColor">
 
-            <ListView
-                android:id="@+id/lsv_delivery_address"
+            <RelativeLayout
+                android:background="@color/whiteColor"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:dividerHeight="0.1dp">
+                android:layout_height="match_parent">
 
-            </ListView>
+                <ListView
+                    android:id="@+id/lsv_delivery_address"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:dividerHeight="0.1dp">
+
+                </ListView>
+
+                <LinearLayout
+                    android:id="@+id/lnr_none"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/white"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:visibility="visible">
+
+                    <ImageView
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:src="@drawable/review_none" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Hiện chưa có địa chỉ giao hàng." />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/lnr_loading"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/white"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:visibility="visible">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <ProgressBar
+                            android:layout_width="50dp"
+                            android:layout_height="50dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="8dp"
+                            android:text="Đang tải.."
+                            android:textSize="16sp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </RelativeLayout>
         </LinearLayout>
 
         <Button

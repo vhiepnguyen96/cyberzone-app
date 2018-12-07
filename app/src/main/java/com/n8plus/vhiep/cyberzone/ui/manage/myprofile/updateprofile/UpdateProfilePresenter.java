@@ -1,5 +1,7 @@
 package com.n8plus.vhiep.cyberzone.ui.manage.myprofile.updateprofile;
 
+import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.widget.Toast;
@@ -16,6 +18,7 @@ import com.n8plus.vhiep.cyberzone.data.model.Customer;
 import com.n8plus.vhiep.cyberzone.data.model.ProductImage;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.MySingleton;
+import com.n8plus.vhiep.cyberzone.util.VolleyUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,11 +32,13 @@ import java.util.Map;
 import java.util.TimeZone;
 
 public class UpdateProfilePresenter implements UpdateProfileContract.Presenter {
+    private static final String TAG = "UpdateProfilePresenter";
     private Customer mCustomer;
+    private Context context;
     private UpdateProfileContract.View mUpdateProfileView;
-    private String URL_CUSTOMER = Constant.URL_HOST + "customers";
 
-    public UpdateProfilePresenter(UpdateProfileContract.View updateProfileView) {
+    public UpdateProfilePresenter(@NonNull final Context context, @NonNull final UpdateProfileContract.View updateProfileView) {
+        this.context = context;
         mUpdateProfileView = updateProfileView;
     }
 
@@ -103,22 +108,32 @@ public class UpdateProfilePresenter implements UpdateProfileContract.Presenter {
         updateOps.put(phoneObject);
         updateOps.put(emailObject);
 
-        JsonArrayRequest updateRequest = new JsonArrayRequest(Request.Method.PATCH, URL_CUSTOMER + "/" + Constant.customer.getId(), updateOps,
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        mUpdateProfileView.updateCustomerResult(true);
-                        mUpdateProfileView.actionBackProfile();
-                    }
+        VolleyUtil.PATCH(context, Constant.URL_CUSTOMER + "/" + Constant.customer.getId(), updateOps,
+                response -> {
+                    mUpdateProfileView.updateCustomerResult(true);
+                    mUpdateProfileView.actionBackProfile();
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("UpdateProfilePresenter", error.toString());
-                        mUpdateProfileView.updateCustomerResult(false);
-                    }
+                error -> {
+                    Log.e(TAG, error.toString());
+                    mUpdateProfileView.updateCustomerResult(false);
                 });
 
-        MySingleton.getInstance(((Fragment) mUpdateProfileView).getContext().getApplicationContext()).addToRequestQueue(updateRequest);
+//        JsonArrayRequest updateRequest = new JsonArrayRequest(Request.Method.PATCH, Constant.URL_CUSTOMER + "/" + Constant.customer.getId(), updateOps,
+//                new Response.Listener<JSONArray>() {
+//                    @Override
+//                    public void onResponse(JSONArray response) {
+//                        mUpdateProfileView.updateCustomerResult(true);
+//                        mUpdateProfileView.actionBackProfile();
+//                    }
+//                },
+//                new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//                        Log.e("UpdateProfilePresenter", error.toString());
+//                        mUpdateProfileView.updateCustomerResult(false);
+//                    }
+//                });
+//
+//        MySingleton.getInstance(((Fragment) mUpdateProfileView).getContext().getApplicationContext()).addToRequestQueue(updateRequest);
     }
 }

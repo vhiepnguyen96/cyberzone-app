@@ -47,7 +47,7 @@ public class StoreActivity extends AppCompatActivity implements StoreContract.Vi
         mFollow = (TextView) findViewById(R.id.tv_follow_store);
         mFollowCounter = (TextView) findViewById(R.id.tv_follow_counter);
 
-        mStorePresenter = new StorePresenter(this);
+        mStorePresenter = new StorePresenter(getApplicationContext(),this);
         mSessionManager = new SessionManager(this);
 
         // Custom tab
@@ -73,19 +73,16 @@ public class StoreActivity extends AppCompatActivity implements StoreContract.Vi
         mTabLayout.setupWithViewPager(mViewPager);
 
         // Listener
-        mFollow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mSessionManager.isLoggedIn()) {
-                    follow++;
-                    if (follow % 2 == 1) {
-                        mStorePresenter.followStore();
-                    } else {
-                        mStorePresenter.unfollowStore();
-                    }
+        mFollow.setOnClickListener(v -> {
+            if (mSessionManager.isLoggedIn()) {
+                follow++;
+                if (follow % 2 == 1) {
+                    mStorePresenter.followStore();
                 } else {
-                    showRequireLogin();
+                    mStorePresenter.unfollowStore();
                 }
+            } else {
+                showRequireLogin();
             }
         });
     }
@@ -95,20 +92,12 @@ public class StoreActivity extends AppCompatActivity implements StoreContract.Vi
         builder.setTitle("Thông báo");
         builder.setMessage("Bạn chưa đăng nhập!");
         builder.setCancelable(false);
-        builder.setPositiveButton("Đăng nhập ngay", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                startActivity(new Intent(StoreActivity.this, LoginActivity.class));
-                dialogInterface.dismiss();
-                finish();
-            }
+        builder.setPositiveButton("Đăng nhập ngay", (dialogInterface, i) -> {
+            startActivity(new Intent(StoreActivity.this, LoginActivity.class));
+            dialogInterface.dismiss();
+            finish();
         });
-        builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        });
+        builder.setNegativeButton("Hủy", (dialogInterface, i) -> dialogInterface.dismiss());
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }

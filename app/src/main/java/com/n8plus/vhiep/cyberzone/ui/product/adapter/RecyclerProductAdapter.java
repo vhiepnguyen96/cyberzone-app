@@ -100,7 +100,7 @@ public class RecyclerProductAdapter extends RecyclerView.Adapter<RecyclerProduct
 
         if (layout == GRID_LAYOUT) {
             ViewGroup.LayoutParams layoutParams = itemView.getLayoutParams();
-            layoutParams.width = (int) (parent.getWidth() * 0.5) - 16;
+            layoutParams.width = (int) (parent.getWidth() * 0.5);
             itemView.setLayoutParams(layoutParams);
         }
 

@@ -43,19 +43,40 @@ public class MyReviewFragment extends Fragment implements MyReviewContract.View 
         mViewPager = (ViewPager) view.findViewById(R.id.pager_review);
         mTabReview = (TabLayout) view.findViewById(R.id.tabs_review);
         setHasOptionsMenu(true);
+        customToolbar();
 
         // Custom tab
         mSectionsPageAdapter = new SectionsPageAdapter(getActivity().getSupportFragmentManager());
         setupViewPager(mViewPager);
         mTabReview.setupWithViewPager(mViewPager);
 
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                mViewPager.getAdapter().notifyDataSetChanged();
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
+
+        super.onViewCreated(view, savedInstanceState);
+    }
+
+    private void customToolbar(){
         ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
         ActionBar actionbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_black_24dp);
         actionbar.setTitle("Đánh giá của tôi");
-
-        super.onViewCreated(view, savedInstanceState);
     }
 
     private void setupViewPager(ViewPager viewPager){

@@ -76,7 +76,9 @@
         <item name="android:minWidth">200dp</item>
     </style>
 
-    <style name="RatingBar" parent="Theme.AppCompat">
+    <style name="RatingBar" parent="@android:style/Widget.RatingBar">
+        <item name="android:minHeight">15dp</item>
+        <item name="android:maxHeight">15dp</item>
         <item name="colorControlNormal">#c1c1c1</item>
         <item name="colorControlActivated">@color/rate_star</item>
     </style>

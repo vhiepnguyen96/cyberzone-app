@@ -76,7 +76,7 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
         mErrorDialogHandler = new ErrorDialogHandler(getSupportFragmentManager());
 
         // Presenter
-        mPaymentPresenter = new PaymentPresenter(this);
+        mPaymentPresenter = new PaymentPresenter(getApplicationContext(),this);
 
         Intent intent = getIntent();
         if (intent != null && intent.getSerializableExtra("order") != null) {
@@ -90,19 +90,9 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
         }
 
         // Listener
-        mPayment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                submitCard();
-            }
-        });
+        mPayment.setOnClickListener(v -> submitCard());
 
-        mConfirmOrder.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPaymentPresenter.confirmOrder();
-            }
-        });
+        mConfirmOrder.setOnClickListener(v -> mPaymentPresenter.confirmOrder());
     }
 
     public void submitCard() {

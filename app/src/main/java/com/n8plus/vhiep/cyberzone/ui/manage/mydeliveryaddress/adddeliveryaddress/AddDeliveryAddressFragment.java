@@ -55,7 +55,7 @@ public class AddDeliveryAddressFragment extends Fragment implements AddDeliveryA
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.add_new_delivery_frag, container, false);
-        mAddDeliveryAddressPresenter = new AddDeliveryAddressPresenter(this);
+        mAddDeliveryAddressPresenter = new AddDeliveryAddressPresenter(getContext(), this);
         return view;
     }
 
@@ -81,7 +81,7 @@ public class AddDeliveryAddressFragment extends Fragment implements AddDeliveryA
         // Presenter
         Bundle bundle = getArguments();
         if (bundle != null && bundle.getSerializable("provinceList") != null) {
-            mAddDeliveryAddressPresenter.loadProvice((List<Province>) bundle.getSerializable("provinceList"));
+            mAddDeliveryAddressPresenter.loadProvince((List<Province>) bundle.getSerializable("provinceList"));
         }
         if (bundle != null && bundle.getString("title") != null) {
             parentTitle = bundle.getString("title");
@@ -258,6 +258,11 @@ public class AddDeliveryAddressFragment extends Fragment implements AddDeliveryA
         mEditTextAddress.setText("");
         mInputAddress.setError(null);
         mEditTextAddress.clearFocus();
+    }
+
+    @Override
+    public void addDeliveryAddressResult(boolean b) {
+        Toast.makeText(getContext(), b ? "Thêm thành công!" : "Thêm thất bại!", Toast.LENGTH_SHORT).show();
     }
 
     @Override

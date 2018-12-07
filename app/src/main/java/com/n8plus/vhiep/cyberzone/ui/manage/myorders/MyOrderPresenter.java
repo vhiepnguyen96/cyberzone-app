@@ -1,5 +1,7 @@
 package com.n8plus.vhiep.cyberzone.ui.manage.myorders;
 
+import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 
@@ -24,13 +26,13 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MyOrderPresenter implements MyOrderContract.Presenter {
+    private Context context;
     private MyOrderContract.View mMyOrderView;
     private List<Order> orderList;
-    private final String URL_ORDER = Constant.URL_HOST + "orders";
-    private final String URL_ORDER_ITEM = Constant.URL_HOST + "orderItems";
     private Gson gson;
 
-    public MyOrderPresenter(MyOrderContract.View mMyOrderView) {
+    public MyOrderPresenter(@NonNull final Context context, @NonNull final MyOrderContract.View mMyOrderView) {
+        this.context = context;
         this.mMyOrderView = mMyOrderView;
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setDateFormat("M/d/yy hh:mm a");

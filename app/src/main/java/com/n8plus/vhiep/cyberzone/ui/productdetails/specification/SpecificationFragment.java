@@ -39,19 +39,13 @@ public class SpecificationFragment extends BottomSheetDialogFragment implements 
         mRecyclerSpecifications = (RecyclerView) view.findViewById(R.id.rcv_specifications);
         mCloseBottomSheet = (ImageView) view.findViewById(R.id.img_closeBottomSheet);
 
-//        mSpecificationPresenter.loadData();
         Bundle bundle = getArguments();
         if (bundle != null){
             List<Specification> specifications = (List<Specification>) bundle.get("arrSpecifications");
             mSpecificationPresenter.loadSpecification(specifications);
         }
 
-        mCloseBottomSheet.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getDialog().dismiss();
-            }
-        });
+        mCloseBottomSheet.setOnClickListener(v -> getDialog().dismiss());
 
         super.onViewCreated(view, savedInstanceState);
     }

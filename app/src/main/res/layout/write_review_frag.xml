@@ -29,8 +29,8 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/border_bottom"
                     android:orientation="horizontal"
-                    android:paddingTop="8dp"
                     android:paddingBottom="8dp"
+                    android:paddingTop="8dp"
                     android:weightSum="10">
 
                     <LinearLayout
@@ -41,9 +41,9 @@
                         android:orientation="horizontal">
 
                         <LinearLayout
-                            android:paddingLeft="8dp"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
+                            android:layout_height="wrap_content"
+                            android:paddingLeft="8dp">
 
                             <TextView
                                 android:id="@+id/tv_product_name_purchase"
@@ -61,11 +61,10 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
+                        android:gravity="left"
                         android:layout_weight="5.2">
 
                         <RatingBar
-                            android:scaleX="0.8"
-                            android:scaleY="0.8"
                             android:id="@+id/rbr_rate_average"
                             style="?android:attr/ratingBarStyleIndicator"
                             android:layout_width="wrap_content"
@@ -73,6 +72,8 @@
                             android:isIndicator="false"
                             android:numStars="5"
                             android:rating="0"
+                            android:scaleX=".8"
+                            android:scaleY=".8"
                             android:stepSize="1"
                             android:theme="@style/RatingBar" />
                     </LinearLayout>
@@ -217,16 +218,15 @@
             android:weightSum="10">
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="8"
                 android:paddingLeft="8dp"
                 android:paddingRight="8dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Nhận xét của"
+                    android:text="Nhận xét với tên"
                     android:textColor="@android:color/black"
                     android:textSize="15sp" />
 
@@ -238,18 +238,8 @@
                     android:enabled="false"
                     android:padding="4dp"
                     android:text="vhiepnguyen96"
-                    android:textColor="@android:color/black" />
+                    android:textColor="@android:color/holo_orange_dark" />
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/tv_change_name_review"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:text="Thay đổi"
-                android:textAlignment="center"
-                android:textColor="@android:color/holo_orange_dark"
-                android:textStyle="bold" />
         </LinearLayout>
 
         <LinearLayout

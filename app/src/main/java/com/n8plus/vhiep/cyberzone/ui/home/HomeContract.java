@@ -27,9 +27,12 @@ public interface HomeContract {
         void setCartMenuItem();
         void setNotifyDataSetChanged(int adapter);
         void setNotifyItemChanged(int adapter, int position);
+        void setNotifyItemRemoved(int adapter, int position);
         void popularCategoryItemSelected(String productTypeId);
         void moveToProductActivity(TypeLoad type, Bundle data);
         void moveToProductDetail(Product product);
+        void showConfirmLogout();
+        void setRefreshing(boolean b);
     }
     interface Presenter extends BasePresenter<View> {
         void loadData();
@@ -39,8 +42,8 @@ public interface HomeContract {
         void loadProductBestSeller();
         void loadProductOnSale();
         void loadProductSuggestion();
-//        void loadMoreSuggestion(int page);
         void loadMoreSuggestion();
+        void refreshData();
         void refreshPopularCategory();
         void prepareDataKeyword(String keyword);
         void prepareDataSuggestion();

@@ -11,6 +11,7 @@ import java.util.List;
 public interface HistoryReviewContract {
     interface View {
         void setLayoutReviewNone(boolean b);
+        void setLayoutLoading(boolean b);
         void setAdapterHistoryReview(List<HistoryReview> historyReviewList);
         void setNotifyDataSetChanged();
     }

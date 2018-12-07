@@ -48,7 +48,7 @@ public class HomePageFragment extends Fragment implements HomePageContract.View 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.home_page_frag, container, false);
-        mHomePagePresenter = new HomePagePresenter(this);
+        mHomePagePresenter = new HomePagePresenter(getContext(), this);
         return view;
     }
 
@@ -73,18 +73,15 @@ public class HomePageFragment extends Fragment implements HomePageContract.View 
         }
 
         // Listener
-        mLayoutRecycler.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                layout++;
-                if (layout % 2 == 1) {
-                    mImageLayout.setImageResource(R.drawable.grid);
-                    mHomePagePresenter.changeProductLinearLayout();
+        mLayoutRecycler.setOnClickListener(v -> {
+            layout++;
+            if (layout % 2 == 1) {
+                mImageLayout.setImageResource(R.drawable.grid);
+                mHomePagePresenter.changeProductLinearLayout();
 
-                } else {
-                    mImageLayout.setImageResource(R.drawable.linear);
-                    mHomePagePresenter.changeProductGridLayout();
-                }
+            } else {
+                mImageLayout.setImageResource(R.drawable.linear);
+                mHomePagePresenter.changeProductGridLayout();
             }
         });
 
@@ -93,29 +90,14 @@ public class HomePageFragment extends Fragment implements HomePageContract.View 
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (position == 0) {
                     if (mRecyclerProductAdapter != null) {
-                        Collections.sort(mRecyclerProductAdapter.getProductList(), new Comparator<Product>() {
-                            @Override
-                            public int compare(Product o1, Product o2) {
-                                return Float.valueOf(o2.getAverageReview()).compareTo(Float.valueOf(o1.getAverageReview()));
-                            }
-                        });
+                        Collections.sort(mRecyclerProductAdapter.getProductList(), (o1, o2) -> Float.valueOf(o2.getAverageReview()).compareTo(Float.valueOf(o1.getAverageReview())));
                         mRecyclerAllProduct.setAdapter(mRecyclerProductAdapter);
                     }
                 } else if (position == 1) {
-                    Collections.sort(mRecyclerProductAdapter.getProductList(), new Comparator<Product>() {
-                        @Override
-                        public int compare(Product o1, Product o2) {
-                            return Float.valueOf(o1.getPrice()).compareTo(Float.valueOf(o2.getPrice()));
-                        }
-                    });
+                    Collections.sort(mRecyclerProductAdapter.getProductList(), (o1, o2) -> Float.valueOf(o1.getPrice()).compareTo(Float.valueOf(o2.getPrice())));
                     mRecyclerAllProduct.setAdapter(mRecyclerProductAdapter);
                 } else if (position == 2) {
-                    Collections.sort(mRecyclerProductAdapter.getProductList(), new Comparator<Product>() {
-                        @Override
-                        public int compare(Product o1, Product o2) {
-                            return Float.valueOf(o2.getPrice()).compareTo(Float.valueOf(o1.getPrice()));
-                        }
-                    });
+                    Collections.sort(mRecyclerProductAdapter.getProductList(), (o1, o2) -> Float.valueOf(o2.getPrice()).compareTo(Float.valueOf(o1.getPrice())));
                     mRecyclerAllProduct.setAdapter(mRecyclerProductAdapter);
                 }
                 mRecyclerAllProduct.setAdapter(mRecyclerProductAdapter);

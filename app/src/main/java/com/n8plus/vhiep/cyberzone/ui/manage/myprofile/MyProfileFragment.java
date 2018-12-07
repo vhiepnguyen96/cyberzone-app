@@ -41,7 +41,7 @@ public class MyProfileFragment extends Fragment implements MyProfileContract.Vie
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.my_profile_frag, container, false);
-        myProfilePresenter = new MyProfilePresenter(this);
+        myProfilePresenter = new MyProfilePresenter(getContext(), this);
         return view;
     }
 

@@ -1,6 +1,8 @@
 package com.n8plus.vhiep.cyberzone.ui.manage.wishlistfollowedstore.wishlist;
 
 import android.app.Activity;
+import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 
@@ -24,6 +26,7 @@ import com.n8plus.vhiep.cyberzone.data.model.WishList;
 import com.n8plus.vhiep.cyberzone.ui.manage.myorders.MyOrderContract;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.MySingleton;
+import com.n8plus.vhiep.cyberzone.util.VolleyUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,16 +39,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import static com.n8plus.vhiep.cyberzone.util.Constant.URL_WISHLIST;
+
 public class WishListPresenter implements WishListContract.Presenter {
+    private static final String TAG = "WishListPresenter";
+    private Context context;
     private WishListContract.View mWishListView;
     private List<WishList> mWishList;
     private Gson gson;
-    private final String URL_WISHLIST = Constant.URL_HOST + "wishList";
-    private final String URL_IMAGE = Constant.URL_HOST + "productImages";
-    private final String URL_PRODUCT = Constant.URL_HOST + "products";
     private Date mCurentTime;
 
-    public WishListPresenter(WishListContract.View mWishListView) {
+    public WishListPresenter(@NonNull final Context context, @NonNull final WishListContract.View mWishListView) {
+        this.context = context;
         this.mWishListView = mWishListView;
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setDateFormat("M/d/yy hh:mm a");
@@ -59,88 +64,70 @@ public class WishListPresenter implements WishListContract.Presenter {
 
     @Override
     public void loadWishList(String customerId) {
-        mWishList = new ArrayList<>();
-        JsonObjectRequest wishListRequest = new JsonObjectRequest(Request.Method.GET, URL_WISHLIST + "/customer/" + customerId, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            mWishList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("wishList")), WishList[].class));
-                            Log.d("WishListPresenter", "wishList: " + mWishList.size());
-                            if (mWishList.size() > 0) {
-                                mWishListView.setLayoutNone(false);
-                                mWishListView.setAdapterWishList(mWishList);
-                                fetchCurrentTime();
-                                for (int i = 0; i < mWishList.size(); i++) {
-                                    if (mWishList.get(i).getProduct() != null) {
-                                        loadProduct(i);
-                                    }
+        mWishListView.setLayoutLoading(true);
+        VolleyUtil.GET(context, Constant.URL_WISHLIST + "/customer/" + customerId,
+                response -> {
+                    try {
+                        mWishList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("wishList")), WishList[].class));
+                        Log.d(TAG, "wishList: " + mWishList.size());
+                        mWishListView.setLayoutLoading(false);
+
+                        if (mWishList.size() > 0) {
+                            mWishListView.setLayoutNone(false);
+                            mWishListView.setAdapterWishList(mWishList);
+                            fetchCurrentTime();
+                            for (int i = 0; i < mWishList.size(); i++) {
+                                if (mWishList.get(i).getProduct() != null) {
+                                    loadProduct(i);
                                 }
-                            } else {
-                                mWishListView.setLayoutNone(true);
                             }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                        } else {
+                            mWishListView.setLayoutNone(true);
                         }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        mWishListView.setLayoutNone(true);
-                    }
+                error -> {
+                    mWishListView.setLayoutNone(true);
+                    mWishListView.setLayoutLoading(false);
                 });
-        MySingleton.getInstance(((Fragment) mWishListView).getContext().getApplicationContext()).addToRequestQueue(wishListRequest);
     }
 
     @Override
     public void loadProduct(final int position) {
-        JsonObjectRequest productRequest = new JsonObjectRequest(Request.Method.GET, URL_PRODUCT + "/" + mWishList.get(position).getProduct().getProductId(), null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                try {
-                    Product product = gson.fromJson(String.valueOf(response.getJSONObject("product")), Product.class);
-                    if (product != null) {
-                        mWishList.get(position).setProduct(product);
-                        loadImageProduct(position);
+        VolleyUtil.GET(context, Constant.URL_PRODUCT + "/" + mWishList.get(position).getProduct().getProductId(),
+                response -> {
+                    try {
+                        Product product = gson.fromJson(String.valueOf(response.getJSONObject("product")), Product.class);
+                        if (product != null) {
+                            mWishList.get(position).setProduct(product);
+                            loadImageProduct(position);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e("WishListPresenter", error.toString());
-            }
-        });
-        MySingleton.getInstance(((Fragment) mWishListView).getContext().getApplicationContext()).addToRequestQueue(productRequest);
+                },
+                error -> Log.e(TAG, error.toString()));
     }
 
 
     @Override
     public void loadImageProduct(final int position) {
-        JsonObjectRequest requestImage = new JsonObjectRequest(Request.Method.GET, URL_IMAGE + "/product/" + mWishList.get(position).getProduct().getProductId(), null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                try {
-                    List<ProductImage> imageList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("imageList")), ProductImage[].class));
-                    Log.d("WishListPresenter", "Product images: " + imageList.size());
-                    if (imageList.size() > 0) {
-                        mWishList.get(position).getProduct().setImageList(imageList);
-                        mWishListView.setNotifyDataSetChanged();
+        VolleyUtil.GET(context, Constant.URL_IMAGE + "/product/" + mWishList.get(position).getProduct().getProductId(),
+                response -> {
+                    try {
+                        List<ProductImage> imageList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("imageList")), ProductImage[].class));
+                        Log.d(TAG, "Product images: " + imageList.size());
+                        if (imageList.size() > 0) {
+                            mWishList.get(position).getProduct().setImageList(imageList);
+                            mWishListView.setNotifyDataSetChanged();
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e("WishListPresenter", error.toString());
-            }
-        });
-        MySingleton.getInstance(((Fragment) mWishListView).getContext().getApplicationContext()).addToRequestQueue(requestImage);
+                },
+                error -> Log.e(TAG, error.toString()));
     }
 
     @Override
@@ -149,39 +136,31 @@ public class WishListPresenter implements WishListContract.Presenter {
     }
 
     public void fetchCurrentTime() {
-        JsonObjectRequest timeRequest = new JsonObjectRequest(Request.Method.GET, Constant.URL_TIME, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-                            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
-                            mCurentTime = sdf.parse(response.getString("time"));
-                            Log.d("ProductPresenter", "Current time: " + sdf.format(mCurentTime).toString());
-                            for (int i = 0; i < mWishList.size(); i++) {
-                                if (mWishList.get(i).getProduct().getSaleOff() != null) {
-                                    if (mWishList.get(i).getProduct().getSaleOff().getDateStart().getTime() > mCurentTime.getTime() || mWishList.get(i).getProduct().getSaleOff().getDateEnd().getTime() < mCurentTime.getTime()) {
-                                        mWishList.get(i).getProduct().getSaleOff().setDiscount(0);
-                                    }
+        VolleyUtil.GET(context, Constant.URL_TIME,
+                response -> {
+                    try {
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+                        mCurentTime = sdf.parse(response.getString("time"));
+                        Log.d(TAG, "Current time: " + sdf.format(mCurentTime).toString());
+                        for (int i = 0; i < mWishList.size(); i++) {
+                            if (mWishList.get(i).getProduct().getSaleOff() != null) {
+                                if (mWishList.get(i).getProduct().getSaleOff().getDateStart().getTime() > mCurentTime.getTime() || mWishList.get(i).getProduct().getSaleOff().getDateEnd().getTime() < mCurentTime.getTime()) {
+                                    mWishList.get(i).getProduct().getSaleOff().setDiscount(0);
                                 }
                             }
-                            mWishListView.setNotifyDataSetChanged();
-                        } catch (ParseException | JSONException e) {
-                            e.printStackTrace();
                         }
+                        mWishListView.setNotifyDataSetChanged();
+                    } catch (ParseException | JSONException e) {
+                        e.printStackTrace();
                     }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.w("ProductPresenter", "onErrorResponse: " + error.getMessage());
-            }
-        });
-        MySingleton.getInstance(((Fragment) mWishListView).getContext().getApplicationContext()).addToRequestQueue(timeRequest);
+                },
+                error -> Log.e(TAG, error.toString()));
     }
 
     @Override
     public void addToCart(int position) {
-        Log.i("ProductDetailPresenter", "productId: " + mWishList.get(position).getProduct().getProductId());
+        Log.i(TAG, "productId: " + mWishList.get(position).getProduct().getProductId());
         int sizeOld = Constant.countProductInCart();
         int sizePurchaseList = Constant.purchaseList.size();
         if (sizePurchaseList > 0) {
@@ -199,28 +178,21 @@ public class WishListPresenter implements WishListContract.Presenter {
         } else {
             Constant.purchaseList.add(new PurchaseItem(mWishList.get(position).getProduct(), 1));
         }
-        Log.i("ProductDetailPresenter", "purchaseList: " + Constant.purchaseList.get(0).getProduct().getProductId() + " | " + Constant.purchaseList.get(0).getQuantity());
+        Log.i(TAG, "purchaseList: " + Constant.purchaseList.get(0).getProduct().getProductId() + " | " + Constant.purchaseList.get(0).getQuantity());
         mWishListView.addToCartAlert(Constant.countProductInCart() > sizeOld ? true : false);
     }
 
     @Override
     public void removeFromWishList(int position) {
-        JsonObjectRequest wishListRequest = new JsonObjectRequest(Request.Method.DELETE, URL_WISHLIST + "/" + Constant.customer.getId() + "/" + mWishList.get(position).getProduct().getProductId(), null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.i("ProductDetailPresenter", response.toString());
-                        loadWishList(Constant.customer.getId());
-                        mWishListView.removeFromWishListAlert(true);
-                    }
+        VolleyUtil.DELETE(context, Constant.URL_WISHLIST + "/" + Constant.customer.getId() + "/" + mWishList.get(position).getProduct().getProductId(),
+                response -> {
+                    Log.i(TAG, response.toString());
+                    loadWishList(Constant.customer.getId());
+                    mWishListView.removeFromWishListAlert(true);
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("ProductDetailPresenter", error.toString());
-                        mWishListView.removeFromWishListAlert(false);
-                    }
+                error -> {
+                    Log.e(TAG, error.toString());
+                    mWishListView.removeFromWishListAlert(false);
                 });
-        MySingleton.getInstance(((Fragment) mWishListView).getContext().getApplicationContext()).addToRequestQueue(wishListRequest);
     }
 }

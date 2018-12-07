@@ -41,7 +41,7 @@ public class MyOrderFragment extends Fragment implements MyOrderContract.View {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.my_order_frag, container, false);
-        mMyOrderPresenter = new MyOrderPresenter(this);
+        mMyOrderPresenter = new MyOrderPresenter(getContext(),this);
         return view;
     }
 
@@ -51,19 +51,40 @@ public class MyOrderFragment extends Fragment implements MyOrderContract.View {
         mViewPager = (ViewPager) view.findViewById(R.id.pager_order);
         mTabOrder = (TabLayout) view.findViewById(R.id.tabs_order);
         setHasOptionsMenu(true);
+        customToolbar();
 
         // Custom tab
         mSectionsPageAdapter = new SectionsPageAdapter(getActivity().getSupportFragmentManager());
         setupViewPager(mViewPager);
         mTabOrder.setupWithViewPager(mViewPager);
 
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                mViewPager.getAdapter().notifyDataSetChanged();
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
+        super.onViewCreated(view, savedInstanceState);
+    }
+
+    private void customToolbar(){
         ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
         ActionBar actionbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_black_24dp);
         actionbar.setTitle("Quản lý đơn hàng");
 
-        super.onViewCreated(view, savedInstanceState);
     }
 
     private void setupViewPager(ViewPager viewPager){

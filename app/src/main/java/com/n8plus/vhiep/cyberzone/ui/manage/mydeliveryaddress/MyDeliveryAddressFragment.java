@@ -37,7 +37,7 @@ public class MyDeliveryAddressFragment extends Fragment implements MyDeliveryAdd
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.my_delivery_address_frag, container, false);
-        myDeliveryAddressPresenter = new MyDeliveryAddressPresenter(this);
+        myDeliveryAddressPresenter = new MyDeliveryAddressPresenter(getContext(),this);
         return view;
     }
 

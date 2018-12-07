@@ -53,7 +53,7 @@ public class EditDeliveryAddressFragment extends Fragment implements EditDeliver
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.edit_delivery_frag, container, false);
-        mEditDeliveryAddressPresenter = new EditDeliveryAddressPresenter(this);
+        mEditDeliveryAddressPresenter = new EditDeliveryAddressPresenter(getContext(),this);
         return view;
     }
 
@@ -181,12 +181,9 @@ public class EditDeliveryAddressFragment extends Fragment implements EditDeliver
             }
         });
 
-        mEditAddress.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String address = mEditTextAddress.getText().toString() + ", " + ((Ward) mChooseWard.getSelectedItem()).getName() + ", " + ((District) mChooseDistrict.getSelectedItem()).getName() + ", " + ((Province) mChooseProvince.getSelectedItem()).getName();
-                mEditDeliveryAddressPresenter.updateDeliveryAddress(mEditTextName.getText().toString(), mEditTextPhone.getText().toString(), address);
-            }
+        mEditAddress.setOnClickListener(v -> {
+            String address = mEditTextAddress.getText().toString() + ", " + ((Ward) mChooseWard.getSelectedItem()).getName() + ", " + ((District) mChooseDistrict.getSelectedItem()).getName() + ", " + ((Province) mChooseProvince.getSelectedItem()).getName();
+            mEditDeliveryAddressPresenter.updateDeliveryAddress(mEditTextName.getText().toString(), mEditTextPhone.getText().toString(), address);
         });
 
         super.onViewCreated(view, savedInstanceState);
@@ -250,6 +247,11 @@ public class EditDeliveryAddressFragment extends Fragment implements EditDeliver
 
         ActionBar actionbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         actionbar.setTitle(parentTitle.equals("Chọn địa chỉ giao hàng") ? "Chọn địa chỉ giao hàng" : "Quản lý địa chỉ giao hàng");
+    }
+
+    @Override
+    public void updateDeliveryAddressResult(boolean b) {
+        Toast.makeText(getContext(), b ? "Cập nhật thành công" : "Cập nhật thất bại", Toast.LENGTH_SHORT).show();
     }
 
 }

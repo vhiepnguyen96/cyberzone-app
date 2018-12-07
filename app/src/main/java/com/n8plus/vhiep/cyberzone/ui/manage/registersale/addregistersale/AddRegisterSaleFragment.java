@@ -33,7 +33,7 @@ public class AddRegisterSaleFragment extends Fragment implements AddRegisterSale
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        mAddRegisterSalePresenter = new AddRegisterSalePresenter(this);
+        mAddRegisterSalePresenter = new AddRegisterSalePresenter(getContext(),this);
         return inflater.inflate(R.layout.add_register_sale_frag, container, false);
     }
 
@@ -56,19 +56,16 @@ public class AddRegisterSaleFragment extends Fragment implements AddRegisterSale
         mAddRegisterSalePresenter.loadData();
 
         // Listener
-        mButtonSendRegister.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (checkIsValid()) {
-                    String nameStore = mEditNameStore.getText().toString();
-                    String locationStore = ((Province) mChooseProvince.getSelectedItem()).getName();
-                    String nameCustomer = mEditNameCustomer.getText().toString();
-                    String phone = mEditPhone.getText().toString();
-                    String email = mEditEmail.getText().toString();
-                    String username = mEditStoreAccount.getText().toString();
-                    String password = mEditPassword.getText().toString();
-                    mAddRegisterSalePresenter.sendRegisterSale(nameStore, locationStore, nameCustomer, phone, email, username, password);
-                }
+        mButtonSendRegister.setOnClickListener(v -> {
+            if (checkIsValid()) {
+                String nameStore = mEditNameStore.getText().toString();
+                String locationStore = ((Province) mChooseProvince.getSelectedItem()).getName();
+                String nameCustomer = mEditNameCustomer.getText().toString();
+                String phone = mEditPhone.getText().toString();
+                String email = mEditEmail.getText().toString();
+                String username = mEditStoreAccount.getText().toString();
+                String password = mEditPassword.getText().toString();
+                mAddRegisterSalePresenter.sendRegisterSale(nameStore, locationStore, nameCustomer, phone, email, username, password);
             }
         });
 

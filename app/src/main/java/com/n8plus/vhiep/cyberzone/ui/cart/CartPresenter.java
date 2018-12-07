@@ -1,7 +1,9 @@
 package com.n8plus.vhiep.cyberzone.ui.cart;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.android.volley.Request;
@@ -20,8 +22,10 @@ import com.n8plus.vhiep.cyberzone.data.model.PurchaseItem;
 import com.n8plus.vhiep.cyberzone.data.model.SaleOff;
 import com.n8plus.vhiep.cyberzone.data.model.Specification;
 import com.n8plus.vhiep.cyberzone.data.model.Store;
+import com.n8plus.vhiep.cyberzone.ui.login.signup.SignupContract;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.MySingleton;
+import com.n8plus.vhiep.cyberzone.util.VolleyUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,14 +36,16 @@ import java.util.Arrays;
 import java.util.List;
 
 public class CartPresenter implements CartContract.Presenter {
+    private static final String TAG = "CartPresenter";
+    private Context context;
     private CartContract.View mCartView;
     private List<DeliveryPrice> deliveryPrices;
     private DeliveryPrice mDeliveryPrice;
-    private final String URL_DELIVERY_PRICE = Constant.URL_HOST + "deliveryPrices";
     private Gson gson;
     DecimalFormat df;
 
-    public CartPresenter(CartContract.View mCartView) {
+    public CartPresenter(@NonNull final Context context, @NonNull final CartContract.View mCartView) {
+        this.context = context;
         this.mCartView = mCartView;
     }
 
@@ -80,47 +86,82 @@ public class CartPresenter implements CartContract.Presenter {
 
     public void fetchDeliveryPrice() {
         deliveryPrices = new ArrayList<>();
-        JsonObjectRequest deliveryPriceRequest = new JsonObjectRequest(Request.Method.GET, URL_DELIVERY_PRICE, null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                try {
-                    deliveryPrices = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("deliveryPrices")), DeliveryPrice[].class));
-                    Log.i("CartPresenter", "Delivery price: " + deliveryPrices.size());
-                    for (int i = 0; i < deliveryPrices.size(); i++) {
-                        Log.i("CartPresenter", "Delivery price " + i + ":" + deliveryPrices.get(i).getTotalPriceMin() + " | " + deliveryPrices.get(i).getTotalPriceMax() + " | " + deliveryPrices.get(i).getTransportFee());
-                        if (getTempPrice() == 0) {
-                            mCartView.setDeliveryPrice("0");
-                        } else if (getTempPrice() > deliveryPrices.get(i).getTotalPriceMin() && deliveryPrices.get(i).getTotalPriceMax() == 0) {
-                            if (Integer.valueOf(deliveryPrices.get(i).getTransportFee()) >= 1000) {
-                                mCartView.setDeliveryPrice(df.format(Product.convertToPrice(deliveryPrices.get(i).getTransportFee())));
-                            } else {
-                                mCartView.setDeliveryPrice(deliveryPrices.get(i).getTransportFee());
-                            }
-                            mDeliveryPrice = deliveryPrices.get(i);
+        VolleyUtil.GET(context,  Constant.URL_DELIVERY_PRICE,
+                response -> {
+                    try {
+                        deliveryPrices = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("deliveryPrices")), DeliveryPrice[].class));
+                        Log.i("CartPresenter", "Delivery price: " + deliveryPrices.size());
+                        for (int i = 0; i < deliveryPrices.size(); i++) {
+                            Log.i("CartPresenter", "Delivery price " + i + ":" + deliveryPrices.get(i).getTotalPriceMin() + " | " + deliveryPrices.get(i).getTotalPriceMax() + " | " + deliveryPrices.get(i).getTransportFee());
+                            if (getTempPrice() == 0) {
+                                mCartView.setDeliveryPrice("0");
+                            } else if (getTempPrice() > deliveryPrices.get(i).getTotalPriceMin() && deliveryPrices.get(i).getTotalPriceMax() == 0) {
+                                if (Integer.valueOf(deliveryPrices.get(i).getTransportFee()) >= 1000) {
+                                    mCartView.setDeliveryPrice(df.format(Product.convertToPrice(deliveryPrices.get(i).getTransportFee())));
+                                } else {
+                                    mCartView.setDeliveryPrice(deliveryPrices.get(i).getTransportFee());
+                                }
+                                mDeliveryPrice = deliveryPrices.get(i);
 
-                        } else if (getTempPrice() > deliveryPrices.get(i).getTotalPriceMin() && getTempPrice() < deliveryPrices.get(i).getTotalPriceMax()) {
-                            if (Integer.valueOf(deliveryPrices.get(i).getTransportFee()) >= 1000) {
-                                mCartView.setDeliveryPrice(df.format(Product.convertToPrice(deliveryPrices.get(i).getTransportFee())));
-                            } else {
-                                mCartView.setDeliveryPrice(deliveryPrices.get(i).getTransportFee());
+                            } else if (getTempPrice() > deliveryPrices.get(i).getTotalPriceMin() && getTempPrice() < deliveryPrices.get(i).getTotalPriceMax()) {
+                                if (Integer.valueOf(deliveryPrices.get(i).getTransportFee()) >= 1000) {
+                                    mCartView.setDeliveryPrice(df.format(Product.convertToPrice(deliveryPrices.get(i).getTransportFee())));
+                                } else {
+                                    mCartView.setDeliveryPrice(deliveryPrices.get(i).getTransportFee());
+                                }
+                                mDeliveryPrice = deliveryPrices.get(i);
                             }
-                            mDeliveryPrice = deliveryPrices.get(i);
                         }
+                        if (mDeliveryPrice != null){
+                            float totalPrice = getTempPrice() + Integer.valueOf(mDeliveryPrice.getTransportFee());
+                            mCartView.setTotalPrice(totalPrice >= 1000 ? df.format(Product.convertToPrice(String.valueOf(totalPrice))).replace(",", ".") : String.valueOf(Math.round(totalPrice)));
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                    if (mDeliveryPrice != null){
-                        float totalPrice = getTempPrice() + Integer.valueOf(mDeliveryPrice.getTransportFee());
-                        mCartView.setTotalPrice(totalPrice >= 1000 ? df.format(Product.convertToPrice(String.valueOf(totalPrice))).replace(",", ".") : String.valueOf(Math.round(totalPrice)));
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e("ProductPresenter", error.toString());
-            }
-        });
-        MySingleton.getInstance(((Activity) mCartView).getApplicationContext()).addToRequestQueue(deliveryPriceRequest);
+                },
+                error -> Log.e(TAG, error.toString()));
+//        JsonObjectRequest deliveryPriceRequest = new JsonObjectRequest(Request.Method.GET, Constant.URL_DELIVERY_PRICE, null, new Response.Listener<JSONObject>() {
+//            @Override
+//            public void onResponse(JSONObject response) {
+//                try {
+//                    deliveryPrices = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("deliveryPrices")), DeliveryPrice[].class));
+//                    Log.i("CartPresenter", "Delivery price: " + deliveryPrices.size());
+//                    for (int i = 0; i < deliveryPrices.size(); i++) {
+//                        Log.i("CartPresenter", "Delivery price " + i + ":" + deliveryPrices.get(i).getTotalPriceMin() + " | " + deliveryPrices.get(i).getTotalPriceMax() + " | " + deliveryPrices.get(i).getTransportFee());
+//                        if (getTempPrice() == 0) {
+//                            mCartView.setDeliveryPrice("0");
+//                        } else if (getTempPrice() > deliveryPrices.get(i).getTotalPriceMin() && deliveryPrices.get(i).getTotalPriceMax() == 0) {
+//                            if (Integer.valueOf(deliveryPrices.get(i).getTransportFee()) >= 1000) {
+//                                mCartView.setDeliveryPrice(df.format(Product.convertToPrice(deliveryPrices.get(i).getTransportFee())));
+//                            } else {
+//                                mCartView.setDeliveryPrice(deliveryPrices.get(i).getTransportFee());
+//                            }
+//                            mDeliveryPrice = deliveryPrices.get(i);
+//
+//                        } else if (getTempPrice() > deliveryPrices.get(i).getTotalPriceMin() && getTempPrice() < deliveryPrices.get(i).getTotalPriceMax()) {
+//                            if (Integer.valueOf(deliveryPrices.get(i).getTransportFee()) >= 1000) {
+//                                mCartView.setDeliveryPrice(df.format(Product.convertToPrice(deliveryPrices.get(i).getTransportFee())));
+//                            } else {
+//                                mCartView.setDeliveryPrice(deliveryPrices.get(i).getTransportFee());
+//                            }
+//                            mDeliveryPrice = deliveryPrices.get(i);
+//                        }
+//                    }
+//                    if (mDeliveryPrice != null){
+//                        float totalPrice = getTempPrice() + Integer.valueOf(mDeliveryPrice.getTransportFee());
+//                        mCartView.setTotalPrice(totalPrice >= 1000 ? df.format(Product.convertToPrice(String.valueOf(totalPrice))).replace(",", ".") : String.valueOf(Math.round(totalPrice)));
+//                    }
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }, new Response.ErrorListener() {
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//                Log.e("ProductPresenter", error.toString());
+//            }
+//        });
+//        MySingleton.getInstance(((Activity) mCartView).getApplicationContext()).addToRequestQueue(deliveryPriceRequest);
     }
 }

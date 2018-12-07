@@ -80,7 +80,7 @@ public class SignupFragment extends Fragment implements SignupContract.View, Vie
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
-        mSignupPresenter = new SignupPresenter(this);
+        mSignupPresenter = new SignupPresenter(getContext(), this);
         super.onCreate(savedInstanceState);
     }
 
@@ -129,29 +129,26 @@ public class SignupFragment extends Fragment implements SignupContract.View, Vie
             public void onSuccess(LoginResult loginResult) {
                 GraphRequest request = GraphRequest.newMeRequest(
                         loginResult.getAccessToken(),
-                        new GraphRequest.GraphJSONObjectCallback() {
-                            @Override
-                            public void onCompleted(JSONObject object, GraphResponse response) {
-                                Log.d(TAG, response.toString());
-                                try {
-                                    String id = object.getString("id");
-                                    String name = object.getString("name");
-                                    String email = object.getString("email");
+                        (object, response) -> {
+                            Log.d(TAG, response.toString());
+                            try {
+                                String id = object.getString("id");
+                                String name = object.getString("name");
+                                String email = object.getString("email");
 
-                                    Log.d(TAG, "FBID: " + id);
+                                Log.d(TAG, "FBID: " + id);
 
-                                    // Prepare customer
-                                    Customer customer = new Customer();
-                                    if (id != null) customer.setAccount(new Account(id));
-                                    if (name != null) customer.setName(name);
-                                    if (email != null) customer.setEmail(email);
+                                // Prepare customer
+                                Customer customer = new Customer();
+                                if (id != null) customer.setAccount(new Account(id));
+                                if (name != null) customer.setName(name);
+                                if (email != null) customer.setEmail(email);
 
-                                    // Sign up with facebook account
-                                    mSignupPresenter.signUp(customer);
+                                // Sign up with facebook account
+                                mSignupPresenter.signUp(customer);
 
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
                         });
                 Bundle parameters = new Bundle();
@@ -210,16 +207,13 @@ public class SignupFragment extends Fragment implements SignupContract.View, Vie
 
     private void customDatePickerDialog() {
         mDatePickerDialog = new DatePickerDialog(
-                this.getContext(), new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                calendar = Calendar.getInstance();
-                calendar.set(year, month, dayOfMonth);
-                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-                mTextBirthday.setText(sdf.format(calendar.getTime()));
-                mDatePickerDialog.dismiss();
-            }
-        }, Calendar.getInstance().get(Calendar.YEAR), Calendar.getInstance().get(Calendar.MONTH), Calendar.getInstance().get(Calendar.DATE));
+                this.getContext(), (view, year, month, dayOfMonth) -> {
+                    calendar = Calendar.getInstance();
+                    calendar.set(year, month, dayOfMonth);
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                    mTextBirthday.setText(sdf.format(calendar.getTime()));
+                    mDatePickerDialog.dismiss();
+                }, Calendar.getInstance().get(Calendar.YEAR), Calendar.getInstance().get(Calendar.MONTH), Calendar.getInstance().get(Calendar.DATE));
     }
 
     private void signUpDefault() {
@@ -351,22 +345,16 @@ public class SignupFragment extends Fragment implements SignupContract.View, Vie
         builder.setTitle("Thông báo");
         builder.setMessage("Tài khoản đã có trong hệ thống !");
         builder.setCancelable(false);
-        builder.setPositiveButton("Đăng nhập ngay", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                LoginManager.getInstance().logOut();
-                mGoogleSignInClient.signOut();
-                moveToSignin();
-                dialogInterface.dismiss();
-            }
+        builder.setPositiveButton("Đăng nhập ngay", (dialogInterface, i) -> {
+            LoginManager.getInstance().logOut();
+            mGoogleSignInClient.signOut();
+            moveToSignin();
+            dialogInterface.dismiss();
         });
-        builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                LoginManager.getInstance().logOut();
-                mGoogleSignInClient.signOut();
-                dialogInterface.dismiss();
-            }
+        builder.setNegativeButton("Hủy", (dialogInterface, i) -> {
+            LoginManager.getInstance().logOut();
+            mGoogleSignInClient.signOut();
+            dialogInterface.dismiss();
         });
         AlertDialog alertDialog = builder.create();
         alertDialog.show();

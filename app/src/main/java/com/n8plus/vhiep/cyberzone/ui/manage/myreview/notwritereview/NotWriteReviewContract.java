@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface NotWriteReviewContract {
     interface View {
-//        void setAdapterAllOrder(List<Order> orderList);
+
     }
     interface Presenter extends BasePresenter<View> {
         void loadData();

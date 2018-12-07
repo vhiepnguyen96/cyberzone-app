@@ -40,11 +40,10 @@ public class ChoosePaymentMethodActivity extends AppCompatActivity implements Ch
         initView();
 
         // Custom
-//        setBackgroundStatusBar();
         customToolbar();
 
         // Presenter
-        mChoosePaymentMethodPresenter = new ChoosePaymentMethodPresenter(this);
+        mChoosePaymentMethodPresenter = new ChoosePaymentMethodPresenter(getApplicationContext(), this);
         mChoosePaymentMethodPresenter.loadPaymentMethod();
         mChoosePaymentMethodPresenter.loadOrderState();
 
@@ -54,12 +53,7 @@ public class ChoosePaymentMethodActivity extends AppCompatActivity implements Ch
         }
 
         // Listener
-        mListPaymentMethod.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                mChoosePaymentMethodPresenter.choosePaymentMethod(position);
-            }
-        });
+        mListPaymentMethod.setOnItemClickListener((parent, view, position, id) -> mChoosePaymentMethodPresenter.choosePaymentMethod(position));
     }
 
     private void initView(){
@@ -110,8 +104,5 @@ public class ChoosePaymentMethodActivity extends AppCompatActivity implements Ch
     @Override
     public void saveOrderResult(boolean b) {
         Toast.makeText(this, b ? "Lưu đơn hàng!" : "Lỗi khi lưu đơn hàng!", Toast.LENGTH_SHORT).show();
-//        if (b) {
-//            if (Constant.purchaseList.size() > 0) Constant.purchaseList.clear();
-//        }
     }
 }

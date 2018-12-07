@@ -23,7 +23,7 @@ import com.n8plus.vhiep.cyberzone.data.model.PurchaseItem;
 import com.n8plus.vhiep.cyberzone.ui.manage.myreview.notwritereview.allpurchase.AllPurchaseFragment;
 
 public class WriteReviewFragment extends Fragment implements WriteReviewContract.View {
-    private TextView mChangeName, mBackAllPurchase, mSendReview, mProductName, mStoreName;
+    private TextView mBackAllPurchase, mSendReview, mProductName, mStoreName;
     private EditText mReviewProduct, mReviewStore, mNameReview;
     private RatingBar mRatingBar;
     private RadioGroup mRadioGroup;
@@ -34,7 +34,7 @@ public class WriteReviewFragment extends Fragment implements WriteReviewContract
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.write_review_frag, container, false);
-        mWriteReviewPresenter = new WriteReviewPresenter(this);
+        mWriteReviewPresenter = new WriteReviewPresenter(getContext(),this);
         return view;
     }
 
@@ -44,7 +44,6 @@ public class WriteReviewFragment extends Fragment implements WriteReviewContract
         mSendReview = (TextView) view.findViewById(R.id.tv_send_review);
         mProductName = (TextView) view.findViewById(R.id.tv_product_name_purchase);
         mStoreName = (TextView) view.findViewById(R.id.tv_store_name);
-        mChangeName = (TextView) view.findViewById(R.id.tv_change_name_review);
         mNameReview = (EditText) view.findViewById(R.id.edt_name_review);
         mRatingBar = (RatingBar) view.findViewById(R.id.rbr_rate_average);
         mRadioGroup = (RadioGroup) view.findViewById(R.id.rbg_store_review);
@@ -60,59 +59,33 @@ public class WriteReviewFragment extends Fragment implements WriteReviewContract
             mWriteReviewPresenter.loadDataReview((PurchaseItem) bundle.getSerializable("orderItem"));
         }
 
-        mChangeName.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mChangeName.getText().equals("Thay đổi")) {
-                    mNameReview.setEnabled(true);
-                    mNameReview.setBackgroundResource(R.drawable.border_bottom_no_padding);
-                    mChangeName.setText("Chấp nhận");
-                } else {
-                    mNameReview.setEnabled(false);
-                    mNameReview.setBackgroundColor(Color.TRANSPARENT);
-                    mChangeName.setText("Thay đổi");
-                }
+        mRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            switch (checkedId) {
+                case R.id.rbn_good:
+                    mRadioButtonGood.setChecked(true);
+                    mRadioButtonNormal.setChecked(false);
+                    mRadioButtonNotGood.setChecked(false);
+                    break;
+                case R.id.rbn_normal:
+                    mRadioButtonNormal.setChecked(true);
+                    mRadioButtonGood.setChecked(false);
+                    mRadioButtonNotGood.setChecked(false);
+                    break;
+                case R.id.rbn_notgood:
+                    mRadioButtonNotGood.setChecked(true);
+                    mRadioButtonNormal.setChecked(false);
+                    mRadioButtonGood.setChecked(false);
+                    break;
             }
         });
 
-        mRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                switch (checkedId) {
-                    case R.id.rbn_good:
-                        mRadioButtonGood.setChecked(true);
-                        mRadioButtonNormal.setChecked(false);
-                        mRadioButtonNotGood.setChecked(false);
-                        break;
-                    case R.id.rbn_normal:
-                        mRadioButtonNormal.setChecked(true);
-                        mRadioButtonGood.setChecked(false);
-                        mRadioButtonNotGood.setChecked(false);
-                        break;
-                    case R.id.rbn_notgood:
-                        mRadioButtonNotGood.setChecked(true);
-                        mRadioButtonNormal.setChecked(false);
-                        mRadioButtonGood.setChecked(false);
-                        break;
-                }
-            }
+        mBackAllPurchase.setOnClickListener(v -> {
+            backAllPurchase();
         });
 
-        mBackAllPurchase.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.frm_not_write_review, new AllPurchaseFragment());
-                fragmentTransaction.commit();
-            }
-        });
-
-        mSendReview.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (checkIsValidReview()){
-                    mWriteReviewPresenter.sendReview(mReviewProduct.getText().toString(), (int) mRatingBar.getRating(), mReviewStore.getText().toString(), getLevelRadioGroup(mRadioGroup.getCheckedRadioButtonId()));
-                }
+        mSendReview.setOnClickListener(v -> {
+            if (checkIsValidReview()){
+                mWriteReviewPresenter.sendReview(mReviewProduct.getText().toString(), (int) mRatingBar.getRating(), mReviewStore.getText().toString(), getLevelRadioGroup(mRadioGroup.getCheckedRadioButtonId()));
             }
         });
 
@@ -175,5 +148,12 @@ public class WriteReviewFragment extends Fragment implements WriteReviewContract
     @Override
     public void setAlert(String message) {
         Toast.makeText(this.getContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void backAllPurchase() {
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.frm_not_write_review, new AllPurchaseFragment());
+        fragmentTransaction.commit();
     }
 }

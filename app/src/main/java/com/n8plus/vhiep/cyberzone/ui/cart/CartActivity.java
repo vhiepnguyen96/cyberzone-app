@@ -49,20 +49,14 @@ public class CartActivity extends AppCompatActivity implements CartContract.View
         initView();
 
         // Custom
-//        setBackgroundStatusBar();
         customToolbar();
 
         // Presenter
-        mCartPresenter = new CartPresenter(this);
+        mCartPresenter = new CartPresenter(getApplicationContext(), this);
         mCartPresenter.loadData();
 
         // Listener
-        mLinearCheckOrder.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCartPresenter.orderNow();
-            }
-        });
+        mLinearCheckOrder.setOnClickListener(v -> mCartPresenter.orderNow());
     }
 
     public void initView() {
@@ -162,20 +156,12 @@ public class CartActivity extends AppCompatActivity implements CartContract.View
         builder.setTitle("Thông báo");
         builder.setMessage("Bạn cần đăng nhập để mua hàng !");
         builder.setCancelable(false);
-        builder.setPositiveButton("Đăng nhập ngay", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                startActivity(new Intent(CartActivity.this, LoginActivity.class));
-                dialogInterface.dismiss();
-                finish();
-            }
+        builder.setPositiveButton("Đăng nhập ngay", (dialogInterface, i) -> {
+            startActivity(new Intent(CartActivity.this, LoginActivity.class));
+            dialogInterface.dismiss();
+            finish();
         });
-        builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        });
+        builder.setNegativeButton("Hủy", (dialogInterface, i) -> dialogInterface.dismiss());
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }

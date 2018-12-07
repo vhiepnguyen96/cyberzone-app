@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface LoadDeliveryAddressContract {
     interface View{
+        void setLayoutNone(boolean b);
+        void setLayoutLoading(boolean b);
         void setAdapterAddress(List<Address> addressList);
         void moveToAddDeliveryAddress(List<Province> provinceList);
         void moveToEditDeliveryAddress(List<Province> provinceList, Address address);

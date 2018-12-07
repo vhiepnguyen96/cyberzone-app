@@ -1,6 +1,8 @@
 package com.n8plus.vhiep.cyberzone.ui.payment;
 
 import android.app.Activity;
+import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -25,6 +27,7 @@ import com.n8plus.vhiep.cyberzone.data.model.Product;
 import com.n8plus.vhiep.cyberzone.data.model.PurchaseItem;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.MySingleton;
+import com.n8plus.vhiep.cyberzone.util.VolleyUtil;
 import com.stripe.android.Stripe;
 import com.stripe.android.model.Card;
 import com.stripe.android.model.Customer;
@@ -45,21 +48,18 @@ import java.util.Map;
 
 public class PaymentPresenter implements PaymentContract.Presenter {
     private final String TAG = "PaymentPresenter";
+    private Context context;
     private PaymentContract.View mPaymentView;
     private Order mOrder;
     private List<OrderState> mOrderStates;
     private int mTotalPriceUSD = 0;
     private float mSubtotalPrice, mShippingFee, mTotalPrice, currentRate;
     private DecimalFormat df = new DecimalFormat("#.000");
-    private String URL_CHARGE = Constant.URL_HOST + "checkouts";
-    private String URL_ORDER = Constant.URL_HOST + "orders";
-    private String URL_ORDER_STATE = Constant.URL_HOST + "orderStates";
-    private String URL_ORDER_ITEM = Constant.URL_HOST + "orderItems";
-    private String URL_CURRENCY_RATE = "https://free.currencyconverterapi.com/api/v5/convert?q=USD_VND&compact=ultra";
     private Gson gson;
     private int updateSuccess = 0;
 
-    public PaymentPresenter(PaymentContract.View mPaymentView) {
+    public PaymentPresenter(@NonNull final Context context, @NonNull final PaymentContract.View mPaymentView) {
+        this.context = context;
         this.mPaymentView = mPaymentView;
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setDateFormat("M/d/yy hh:mm a");
@@ -96,51 +96,33 @@ public class PaymentPresenter implements PaymentContract.Presenter {
     @Override
     public void loadOrderState() {
         mOrderStates = new ArrayList<>();
-        JsonObjectRequest orderStateRequest = new JsonObjectRequest(Request.Method.GET, URL_ORDER_STATE, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            mOrderStates = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("orderStates")), OrderState[].class));
-                            Log.i(TAG, "GET: " + mOrderStates.size() + " orderStates");
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+        VolleyUtil.GET(context, Constant.URL_ORDER_STATE,
+                response -> {
+                    try {
+                        mOrderStates = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("orderStates")), OrderState[].class));
+                        Log.i(TAG, "GET: " + mOrderStates.size() + " orderStates");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e(TAG, error.toString());
-                    }
-                });
-        MySingleton.getInstance(((Activity) mPaymentView).getApplicationContext()).addToRequestQueue(orderStateRequest);
+                error -> Log.e(TAG, error.toString()));
     }
 
 
     public void fetchCurrencyRate() {
-        JsonObjectRequest currencyRateRequest = new JsonObjectRequest(Request.Method.GET, URL_CURRENCY_RATE, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            Log.i("PaymentPresenter", "USD_VND: " + String.format("%.3f", response.getDouble("USD_VND") / 1000));
-                            currentRate = (float) (response.getDouble("USD_VND") / 1000);
-                            Log.i("PaymentPresenter", "CurrentRate: " + currentRate);
-                            mTotalPriceUSD = (int) (mTotalPrice / currentRate);
-                            mPaymentView.setTotalPriceUSD(String.valueOf(mTotalPriceUSD));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+        VolleyUtil.GET(context, Constant.URL_CURRENCY_RATE,
+                response -> {
+                    try {
+                        Log.i(TAG, "USD_VND: " + String.format("%.3f", response.getDouble("USD_VND") / 1000));
+                        currentRate = (float) (response.getDouble("USD_VND") / 1000);
+                        Log.i(TAG, "CurrentRate: " + currentRate);
+                        mTotalPriceUSD = (int) (mTotalPrice / currentRate);
+                        mPaymentView.setTotalPriceUSD(String.valueOf(mTotalPriceUSD));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("PaymentPresenter", error.toString());
-                    }
-                });
-        MySingleton.getInstance(((Activity) mPaymentView).getApplicationContext()).addToRequestQueue(currencyRateRequest);
+                error -> Log.e(TAG, error.toString()));
     }
 
     @Override
@@ -154,30 +136,25 @@ public class PaymentPresenter implements PaymentContract.Presenter {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.i("PaymentPresenter", charge.toString());
-        JsonObjectRequest checkOutRequest = new JsonObjectRequest(Request.Method.POST, URL_CHARGE, charge,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.i(TAG, "Response: " + response.toString());
-                        mPaymentView.hideProgressDialog();
-                        mPaymentView.setPaymentResult(true);
-                        changeOrderState(mOrder);
-                    }
+        Log.i(TAG, charge.toString());
+
+        JsonObjectRequest checkOutRequest = new JsonObjectRequest(Request.Method.POST, Constant.URL_CHARGE, charge,
+                response -> {
+                    Log.i(TAG, "Response: " + response.toString());
+                    mPaymentView.hideProgressDialog();
+                    mPaymentView.setPaymentResult(true);
+                    changeOrderState(mOrder);
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e(TAG, "Error: " + error.getMessage());
-                        mPaymentView.hideProgressDialog();
-                        mPaymentView.setPaymentResult(false);
-                    }
+                error -> {
+                    Log.e(TAG, "Error: " + error.getMessage());
+                    mPaymentView.hideProgressDialog();
+                    mPaymentView.setPaymentResult(false);
                 });
         checkOutRequest.setRetryPolicy(new DefaultRetryPolicy(
                 0,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-        MySingleton.getInstance(((Activity) mPaymentView).getApplicationContext()).addToRequestQueue(checkOutRequest);
+        MySingleton.getInstance(context).addToRequestQueue(checkOutRequest);
     }
 
     @Override
@@ -188,65 +165,48 @@ public class PaymentPresenter implements PaymentContract.Presenter {
     @Override
     public void changeOrderState(final Order order) {
         if (getOrderStateId(mOrderStates, "Đang xử lý") != null) {
-            JSONArray updateObj = new JSONArray();
+            JSONArray updateOrder = new JSONArray();
             try {
                 JSONObject stateObj = new JSONObject();
                 stateObj.put("propName", "orderState");
                 stateObj.put("value", getOrderStateId(mOrderStates, "Đang xử lý"));
 
-                updateObj.put(stateObj);
+                updateOrder.put(stateObj);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
-            JsonArrayRequest orderStateRequest = new JsonArrayRequest(Request.Method.PATCH, URL_ORDER + "/" + order.getOrderId(), updateObj,
-                    new Response.Listener<JSONArray>() {
-                        @Override
-                        public void onResponse(JSONArray response) {
-                            Log.i(TAG, "Response: " + response.toString());
-                            // Update order item state
-                            for (PurchaseItem orderItem : order.getPurchaseList()) {
-                                Log.d(TAG, "orderItemId: " + orderItem.getId());
-                                JSONArray updateObj = new JSONArray();
-                                try {
-                                    JSONObject stateObj = new JSONObject();
-                                    stateObj.put("propName", "orderItemState");
-                                    stateObj.put("value", getOrderStateId(mOrderStates, "Đang xử lý"));
-                                    updateObj.put(stateObj);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-
-                                JsonArrayRequest orderItemStateRequest = new JsonArrayRequest(Request.Method.PATCH, URL_ORDER_ITEM + "/" + orderItem.getId(), updateObj,
-                                        new Response.Listener<JSONArray>() {
-                                            @Override
-                                            public void onResponse(JSONArray response) {
-                                                Log.i(TAG, "Response: " + response.toString());
-                                                updateSuccess++;
-                                                if (updateSuccess == mOrder.getPurchaseList().size()) {
-                                                    mPaymentView.updateOrderStateResult(true);
-                                                }
-                                                Log.i(TAG, "updateSuccess: " + updateSuccess);
-                                            }
-                                        },
-                                        new Response.ErrorListener() {
-                                            @Override
-                                            public void onErrorResponse(VolleyError error) {
-                                                Log.e(TAG, "Error: " + error.toString());
-                                                mPaymentView.updateOrderStateResult(false);
-                                            }
-                                        });
-                                MySingleton.getInstance(((Activity) mPaymentView).getApplicationContext()).addToRequestQueue(orderItemStateRequest);
+            VolleyUtil.PATCH(context, Constant.URL_ORDER + "/" + order.getOrderId(), updateOrder,
+                    response -> {
+                        Log.i(TAG, "Response: " + response.toString());
+                        // Update order item state
+                        for (PurchaseItem orderItem : order.getPurchaseList()) {
+                            Log.d(TAG, "orderItemId: " + orderItem.getId());
+                            JSONArray updateOrderItem = new JSONArray();
+                            try {
+                                JSONObject stateObj = new JSONObject();
+                                stateObj.put("propName", "orderItemState");
+                                stateObj.put("value", getOrderStateId(mOrderStates, "Đang xử lý"));
+                                updateOrderItem.put(stateObj);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
+
+                            VolleyUtil.PATCH(context, Constant.URL_ORDER_ITEM + "/" + orderItem.getId(), updateOrderItem,
+                                    response1 -> {
+                                        updateSuccess++;
+                                        if (updateSuccess == mOrder.getPurchaseList().size()) {
+                                            mPaymentView.updateOrderStateResult(true);
+                                        }
+                                        Log.i(TAG, "updateSuccess: " + updateSuccess);
+                                    },
+                                    error -> {
+                                        Log.e(TAG, "Error: " + error.toString());
+                                        mPaymentView.updateOrderStateResult(false);
+                                    });
                         }
                     },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Log.e(TAG, "Error: " + error.toString());
-                        }
-                    });
-            MySingleton.getInstance(((Activity) mPaymentView).getApplicationContext()).addToRequestQueue(orderStateRequest);
+                    error -> Log.e(TAG, error.toString()));
         } else {
             Toast.makeText(((Activity) mPaymentView).getApplicationContext(), "Get orderStateId fail!", Toast.LENGTH_SHORT).show();
         }

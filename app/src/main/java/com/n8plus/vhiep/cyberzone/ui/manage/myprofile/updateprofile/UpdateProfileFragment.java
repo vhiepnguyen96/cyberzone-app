@@ -55,7 +55,7 @@ public class UpdateProfileFragment extends Fragment implements UpdateProfileCont
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.update_profile_frag, container, false);
-        mUpdateProfilePresenter = new UpdateProfilePresenter(this);
+        mUpdateProfilePresenter = new UpdateProfilePresenter(getContext(), this);
         return view;
     }
 
@@ -105,16 +105,13 @@ public class UpdateProfileFragment extends Fragment implements UpdateProfileCont
 
     private void customDatePickerDialog() {
         mDatePickerDialog = new DatePickerDialog(
-                this.getContext(), new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                calendar = Calendar.getInstance();
-                calendar.set(year, month, dayOfMonth);
-                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-                mBirthday.setText(sdf.format(calendar.getTime()));
-                mDatePickerDialog.dismiss();
-            }
-        }, Calendar.getInstance().get(Calendar.YEAR), Calendar.getInstance().get(Calendar.MONTH), Calendar.getInstance().get(Calendar.DATE));
+                this.getContext(), (view, year, month, dayOfMonth) -> {
+                    calendar = Calendar.getInstance();
+                    calendar.set(year, month, dayOfMonth);
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                    mBirthday.setText(sdf.format(calendar.getTime()));
+                    mDatePickerDialog.dismiss();
+                }, Calendar.getInstance().get(Calendar.YEAR), Calendar.getInstance().get(Calendar.MONTH), Calendar.getInstance().get(Calendar.DATE));
     }
 
     @Override

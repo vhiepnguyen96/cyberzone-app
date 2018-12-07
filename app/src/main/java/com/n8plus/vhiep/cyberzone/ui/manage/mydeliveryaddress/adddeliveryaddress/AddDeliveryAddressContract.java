@@ -15,10 +15,11 @@ public interface AddDeliveryAddressContract {
         void setWard(List<Ward> wardList);
         boolean validateInput();
         void clearAllData();
+        void addDeliveryAddressResult(boolean b);
         void backLoadDeliveryAddress(List<Province> provinceList);
     }
     interface Presenter extends BasePresenter<View>{
-        void loadProvice(List<Province> provinceList);
+        void loadProvince(List<Province> provinceList);
         void loadDistrict(int locationProvince);
         void loadWard(int locationProvince, int locationDistrict);
         void addDeliveryAddress(String customerId, Address address);

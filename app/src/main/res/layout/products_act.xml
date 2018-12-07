@@ -129,6 +129,7 @@
                 app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
                 <LinearLayout
+                    android:padding="4dp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical">
@@ -136,8 +137,7 @@
                     <android.support.v7.widget.RecyclerView
                         android:id="@+id/rcv_product"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:padding="4dp">
+                        android:layout_height="match_parent">
 
                     </android.support.v7.widget.RecyclerView>
                 </LinearLayout>

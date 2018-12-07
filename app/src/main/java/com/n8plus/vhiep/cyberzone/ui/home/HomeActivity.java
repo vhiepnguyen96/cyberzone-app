@@ -17,6 +17,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -121,7 +122,7 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
         initViews();
         setFullScreenNavigationView();
         customDivider();
-        mHomePresenter = new HomePresenter(this);
+        mHomePresenter = new HomePresenter(getApplicationContext(), this);
         mSessionManager = new SessionManager(this);
 
         // Load fragment
@@ -132,7 +133,7 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
         fragmentTransaction.commit();
 
         // Custom SearchView
-        SearchView.SearchAutoComplete serAutoComplete = (SearchView.SearchAutoComplete) mSearchHome.findViewById(android.support.v7.appcompat.R.id.search_src_text);
+        SearchView.SearchAutoComplete serAutoComplete = mSearchHome.findViewById(android.support.v7.appcompat.R.id.search_src_text);
         serAutoComplete.setHintTextColor(Color.parseColor("#c1c1c1"));
         serAutoComplete.setTextColor(Color.parseColor("#000000"));
         mSearchHome.setFocusable(false);
@@ -146,59 +147,25 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
         mHomePresenter.loadDataCustomer(mSessionManager.getAccountLogin());
 
         // Listener
-        mCloseDrawer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mDrawerLayout.closeDrawers();
-            }
+        mCloseDrawer.setOnClickListener(v -> mDrawerLayout.closeDrawers());
+
+        mRefreshLayout.setOnRefreshListener(() -> {
+            mHomePresenter.refreshData();
         });
 
-        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                mRefreshLayout.setRefreshing(true);
-                mHomePresenter.loadData();
-                mHomePresenter.loadAllProductType();
-                mRefreshLayout.setRefreshing(false);
-            }
-        });
+        mMoreBestSeller.setOnClickListener(v -> mHomePresenter.prepareDataBestSeller());
 
-        mMoreBestSeller.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mHomePresenter.prepareDataBestSeller();
-            }
-        });
+        mMoreOnSale.setOnClickListener(v -> mHomePresenter.prepareDataOnSale());
 
-        mMoreOnSale.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mHomePresenter.prepareDataOnSale();
-            }
-        });
+        mMoreSuggestion.setOnClickListener(v -> mHomePresenter.prepareDataSuggestion());
 
-        mMoreSuggestion.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mHomePresenter.prepareDataSuggestion();
-            }
-        });
+        mMorePopularCategory.setOnClickListener(v -> mHomePresenter.refreshPopularCategory());
 
-        mMorePopularCategory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mHomePresenter.refreshPopularCategory();
+        mNestedScrollView.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                hideKeyboard(v);
             }
-        });
-
-        mNestedScrollView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                    hideKeyboard(v);
-                }
-                return false;
-            }
+            return false;
         });
 
         mSearchHome.setOnQueryTextListener(new SearchView.OnQueryTextListener()
@@ -276,8 +243,7 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
         mRecyclerBestSeller.addItemDecoration(mBestSellerItemDecoration);
         mRecyclerOnSales.addItemDecoration(mOnSaleItemDecoration);
 
-        mRecyclerPopularCategory.addItemDecoration(new ItemDecorationColumns(4, 3));
-        mRecyclerSuggestion.addItemDecoration(new ItemDecorationColumns(8, 2));
+        mRecyclerPopularCategory.addItemDecoration(new ItemDecorationColumns(8, 3));
     }
 
     public void hideKeyboard(View view) {
@@ -305,9 +271,7 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
                 startActivity(new Intent(HomeActivity.this, LoginActivity.class));
                 break;
             case R.id.mnu_signout:
-                mSessionManager.signOut();
-                prepareOptionMenu(mSessionManager.isLoggedIn());
-                setNameCustomer("");
+                showConfirmLogout();
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -345,12 +309,7 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
 
         setCartMenuItem();
 
-        mRelativeCart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(HomeActivity.this, CartActivity.class));
-            }
-        });
+        mRelativeCart.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, CartActivity.class)));
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -358,7 +317,7 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     public void setAdapterBestSeller(List<Product> productList) {
         mLayoutBestSeller = new LinearLayoutManager(mRecyclerBestSeller.getContext(), LinearLayoutManager.HORIZONTAL, false);
         mRecyclerBestSeller.setLayoutManager(mLayoutBestSeller);
-        mBestSellerAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, productList, LINEAR_LAYOUT);
+        mBestSellerAdapter = new RecyclerProductAdapter(R.layout.row_product_linear_layout, productList, LINEAR_LAYOUT);
         mRecyclerBestSeller.setAdapter(mBestSellerAdapter);
         mRecyclerBestSeller.setNestedScrollingEnabled(true);
     }
@@ -366,7 +325,7 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     @Override
     public void setAdapterOnSale(List<Product> productList) {
         mLayoutOnSale = new LinearLayoutManager(mRecyclerOnSales.getContext(), LinearLayoutManager.HORIZONTAL, false);
-        mOnSaleAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, productList, LINEAR_LAYOUT);
+        mOnSaleAdapter = new RecyclerProductAdapter(R.layout.row_product_linear_layout, productList, LINEAR_LAYOUT);
         mRecyclerOnSales.setLayoutManager(mLayoutOnSale);
         mRecyclerOnSales.setAdapter(mOnSaleAdapter);
         mRecyclerOnSales.setNestedScrollingEnabled(true);
@@ -384,9 +343,6 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     public void setAdapterSuggestion(List<Product> productList) {
         mLayoutSuggestion = new GridLayoutManager(mRecyclerSuggestion.getContext(), 2);
         mRecyclerSuggestion.setLayoutManager(mLayoutSuggestion);
-//        mLoadMoreSuggestionAdapter = new LoadMoreProductAdapter(this, this, this, GRID_LAYOUT);
-//        mLoadMoreSuggestionAdapter.set(productList);
-//        mRecyclerSuggestion.setAdapter(mLoadMoreSuggestionAdapter);
         mSuggestionAdapter = new RecyclerProductAdapter(R.layout.row_product_grid_layout, productList, GRID_LAYOUT);
         mRecyclerSuggestion.setAdapter(mSuggestionAdapter);
         mRecyclerSuggestion.setNestedScrollingEnabled(false);
@@ -493,6 +449,22 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     }
 
     @Override
+    public void setNotifyItemRemoved(int adapter, int position) {
+        switch (adapter) {
+            case BEST_SELLER_ADAPTER:
+                mBestSellerAdapter.notifyItemRemoved(position);
+                break;
+            case ON_SALE_ADAPTER:
+                mOnSaleAdapter.notifyItemRemoved(position);
+                break;
+            case SUGGESTION_ADAPTER:
+//                mLoadMoreSuggestionAdapter.notifyItemChanged(position);
+                mSuggestionAdapter.notifyItemRemoved(position);
+                break;
+        }
+    }
+
+    @Override
     public void popularCategoryItemSelected(String productTypeId) {
         mHomePresenter.prepareDataProductType(productTypeId);
     }
@@ -510,6 +482,28 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
         Intent intent = new Intent(HomeActivity.this, ProductDetailActivity.class);
         intent.putExtra("product", product);
         startActivity(intent);
+    }
+
+    @Override
+    public void showConfirmLogout() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Thông báo");
+        builder.setMessage("Bạn có muốn đăng xuất ?");
+        builder.setCancelable(false);
+        builder.setPositiveButton("Chấp nhận", (dialogInterface, i) -> {
+            mSessionManager.signOut();
+            prepareOptionMenu(mSessionManager.isLoggedIn());
+            setNameCustomer("");
+            Toast.makeText(getApplicationContext(), "Đăng xuất thành công!", Toast.LENGTH_SHORT).show();
+        });
+        builder.setNegativeButton("Hủy", (dialogInterface, i) -> dialogInterface.dismiss());
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    @Override
+    public void setRefreshing(boolean b) {
+        mRefreshLayout.setRefreshing(b);
     }
 
     @Override

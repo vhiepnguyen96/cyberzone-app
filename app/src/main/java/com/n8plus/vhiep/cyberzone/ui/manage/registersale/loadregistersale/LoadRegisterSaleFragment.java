@@ -32,12 +32,12 @@ public class LoadRegisterSaleFragment extends Fragment implements LoadRegisterSa
     private RegisterSaleAdapter mRegisterSaleAdapter;
     private DividerItemDecoration mDividerItemDecoration;
     private Button mRegisterSale;
-    private LinearLayout mLinearNone;
+    private LinearLayout mLinearNone, mLinearLoading;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        mLoadRegisterSalePresenter = new LoadRegisterSalePresenter(this);
+        mLoadRegisterSalePresenter = new LoadRegisterSalePresenter(getContext(),this);
         return inflater.inflate(R.layout.load_register_sale_frag, container, false);
     }
 
@@ -46,21 +46,19 @@ public class LoadRegisterSaleFragment extends Fragment implements LoadRegisterSa
         mRecyclerRegisterSale = (RecyclerView) view.findViewById(R.id.rcv_all_register_sale);
         mRegisterSale = (Button) view.findViewById(R.id.btn_add_register_sale);
         mLinearNone = (LinearLayout) view.findViewById(R.id.lnr_none);
+        mLinearLoading = (LinearLayout) view.findViewById(R.id.lnr_loading);
         customRecyclerView();
 
         // Presenter
         mLoadRegisterSalePresenter.loadData();
 
         // Listener
-        mRegisterSale.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.frm_register_sale, new AddRegisterSaleFragment());
-                fragmentTransaction.commit();
-                ActionBar actionbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-                actionbar.setTitle("Đăng ký bán hàng");
-            }
+        mRegisterSale.setOnClickListener(v -> {
+            FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.frm_register_sale, new AddRegisterSaleFragment());
+            fragmentTransaction.commit();
+            ActionBar actionbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+            actionbar.setTitle("Đăng ký bán hàng");
         });
 
         super.onViewCreated(view, savedInstanceState);
@@ -70,6 +68,11 @@ public class LoadRegisterSaleFragment extends Fragment implements LoadRegisterSa
     @Override
     public void setLayoutNone(boolean b) {
         mLinearNone.setVisibility(b ? View.VISIBLE : View.GONE);
+    }
+
+    @Override
+    public void setLayoutLoading(boolean b) {
+        mLinearLoading.setVisibility(b ? View.VISIBLE : View.GONE);
     }
 
     @Override

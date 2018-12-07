@@ -1,5 +1,7 @@
 package com.n8plus.vhiep.cyberzone.ui.manage.mydeliveryaddress.editdeliveryaddress;
 
+import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.widget.Toast;
@@ -14,6 +16,7 @@ import com.n8plus.vhiep.cyberzone.data.model.Address;
 import com.n8plus.vhiep.cyberzone.data.model.Province;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.MySingleton;
+import com.n8plus.vhiep.cyberzone.util.VolleyUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,16 +28,18 @@ import java.util.List;
 import java.util.TimeZone;
 
 public class EditDeliveryAddressPresenter implements EditDeliveryAddressContract.Presenter {
+    private static final String TAG = "AddressPresenter";
+    private Context context;
     private EditDeliveryAddressContract.View mEditDeliveryAddressView;
     private List<Province> mProvinceList;
-    private String URL_ADDRESS = Constant.URL_HOST + "deliveryAddresses";
     private Gson gson;
     private Address mAddress;
     private int selectionProvince = 0;
     private int selectionDistrict = 0;
     private int selectionWard = 0;
 
-    public EditDeliveryAddressPresenter(EditDeliveryAddressContract.View mEditDeliveryAddressView) {
+    public EditDeliveryAddressPresenter(@NonNull final Context context, @NonNull final EditDeliveryAddressContract.View mEditDeliveryAddressView) {
+        this.context = context;
         this.mEditDeliveryAddressView = mEditDeliveryAddressView;
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setDateFormat("M/d/yy hh:mm a");
@@ -64,7 +69,7 @@ public class EditDeliveryAddressPresenter implements EditDeliveryAddressContract
         mEditDeliveryAddressView.setPhoneNumber(address.getPhone());
         String[] addressString = address.getAddress().split(", ");
         for (int i = 0; i < addressString.length; i++) {
-            Log.i("Address", i + ": " + addressString[i]);
+            Log.i(TAG, i + ": " + addressString[i]);
         }
         for (int i = 0; i < provinceList.size(); i++) {
             if (addressString.length > 3) {
@@ -115,7 +120,7 @@ public class EditDeliveryAddressPresenter implements EditDeliveryAddressContract
                 }
             }
         }
-        Log.i("Address", selectionProvince + " | " + selectionDistrict + " | " + selectionWard);
+        Log.i(TAG, selectionProvince + " | " + selectionDistrict + " | " + selectionWard);
 
     }
 
@@ -145,24 +150,34 @@ public class EditDeliveryAddressPresenter implements EditDeliveryAddressContract
         updateOps.put(phoneObject);
         updateOps.put(addressObject);
 
-        JsonArrayRequest updateRequest = new JsonArrayRequest(Request.Method.PATCH, URL_ADDRESS + "/" + mAddress.getId(), updateOps,
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        Log.i("UpdateProfilePresenter", response.toString());
-                        Toast.makeText(((Fragment) mEditDeliveryAddressView).getContext(), "Cập nhật thành công", Toast.LENGTH_SHORT).show();
-                        mEditDeliveryAddressView.backLoadDeliveryAddress(mProvinceList);
-                    }
+        VolleyUtil.PATCH(context, Constant.URL_ADDRESS + "/" + mAddress.getId(), updateOps,
+                response -> {
+                    Log.i(TAG, response.toString());
+                    mEditDeliveryAddressView.updateDeliveryAddressResult(true);
+                    mEditDeliveryAddressView.backLoadDeliveryAddress(mProvinceList);
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("UpdateProfilePresenter", error.toString());
-                        Toast.makeText(((Fragment) mEditDeliveryAddressView).getContext(), "Cập nhật thất bại", Toast.LENGTH_SHORT).show();
-                    }
+                error -> {
+                    Log.e(TAG, error.toString());
+                    mEditDeliveryAddressView.updateDeliveryAddressResult(false);
                 });
-
-        MySingleton.getInstance(((Fragment) mEditDeliveryAddressView).getContext().getApplicationContext()).addToRequestQueue(updateRequest);
+//        JsonArrayRequest updateRequest = new JsonArrayRequest(Request.Method.PATCH, URL_ADDRESS + "/" + mAddress.getId(), updateOps,
+//                new Response.Listener<JSONArray>() {
+//                    @Override
+//                    public void onResponse(JSONArray response) {
+//                        Log.i("UpdateProfilePresenter", response.toString());
+//                        Toast.makeText(((Fragment) mEditDeliveryAddressView).getContext(), "Cập nhật thành công", Toast.LENGTH_SHORT).show();
+//                        mEditDeliveryAddressView.backLoadDeliveryAddress(mProvinceList);
+//                    }
+//                },
+//                new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//                        Log.e("UpdateProfilePresenter", error.toString());
+//                        Toast.makeText(((Fragment) mEditDeliveryAddressView).getContext(), "Cập nhật thất bại", Toast.LENGTH_SHORT).show();
+//                    }
+//                });
+//
+//        MySingleton.getInstance(((Fragment) mEditDeliveryAddressView).getContext().getApplicationContext()).addToRequestQueue(updateRequest);
     }
 
     @Override

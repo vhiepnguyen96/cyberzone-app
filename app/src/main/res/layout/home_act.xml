@@ -97,7 +97,7 @@
                                         android:layout_height="wrap_content"
                                         android:layout_weight="5"
                                         android:text="Bán chạy nhất"
-                                        android:textSize="20sp" />
+                                        android:textSize="18sp" />
 
                                     <TextView
                                         android:id="@+id/txt_moreBestSeller"
@@ -155,7 +155,7 @@
                                         android:layout_height="wrap_content"
                                         android:layout_weight="5"
                                         android:text="Đang giảm giá"
-                                        android:textSize="20sp" />
+                                        android:textSize="18sp" />
 
                                     <TextView
                                         android:id="@+id/txt_moreOnSale"
@@ -208,7 +208,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_weight="5"
                                     android:text="Danh mục phổ biến"
-                                    android:textSize="20sp" />
+                                    android:textSize="18sp" />
 
                                 <TextView
                                     android:id="@+id/txt_morePopularCategory"
@@ -224,13 +224,13 @@
 
                             <LinearLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content">
+                                android:layout_height="wrap_content"
+                                android:padding="4dp">
 
                                 <android.support.v7.widget.RecyclerView
                                     android:id="@+id/recycler_popular_category"
                                     android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:padding="4dp">
+                                    android:layout_height="wrap_content">
 
                                 </android.support.v7.widget.RecyclerView>
                             </LinearLayout>
@@ -258,7 +258,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_weight="5"
                                     android:text="Đề xuất cho bạn"
-                                    android:textSize="20sp" />
+                                    android:textSize="18sp" />
 
                                 <TextView
                                     android:id="@+id/txt_moreSuggestion"
@@ -274,13 +274,13 @@
 
                             <LinearLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content">
+                                android:layout_height="wrap_content"
+                                android:padding="2dp">
 
                                 <android.support.v7.widget.RecyclerView
                                     android:id="@+id/recycler_suggestions"
                                     android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:padding="4dp">
+                                    android:layout_height="match_parent">
 
                                 </android.support.v7.widget.RecyclerView>
 

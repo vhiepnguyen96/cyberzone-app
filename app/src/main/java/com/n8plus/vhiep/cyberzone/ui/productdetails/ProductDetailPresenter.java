@@ -1,6 +1,8 @@
 package com.n8plus.vhiep.cyberzone.ui.productdetails;
 
 import android.app.Activity;
+import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.widget.Toast;
@@ -25,6 +27,7 @@ import com.n8plus.vhiep.cyberzone.data.model.Specification;
 import com.n8plus.vhiep.cyberzone.data.model.Store;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.MySingleton;
+import com.n8plus.vhiep.cyberzone.util.VolleyUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -38,17 +41,15 @@ import java.util.List;
 
 public class ProductDetailPresenter implements ProductDetailContract.Presenter {
     private static final String TAG = "ProductDetailPresenter";
+    private Context context;
     private ProductDetailContract.View mProductDetailView;
     private List<Policy> mPolicyList;
     private Product mProduct;
-    private final String URL_PRODUCT = Constant.URL_HOST + "products";
-    private final String URL_IMAGE = Constant.URL_HOST + "productImages";
-    private final String URL_REVIEW = Constant.URL_HOST + "reviewProducts";
-    private final String URL_WISHLIST = Constant.URL_HOST + "wishList";
     private Gson gson;
     private int mCurrentQuantity = 0;
 
-    public ProductDetailPresenter(ProductDetailContract.View mProductDetailView) {
+    public ProductDetailPresenter(@NonNull final Context context, @NonNull final ProductDetailContract.View mProductDetailView) {
+        this.context = context;
         this.mProductDetailView = mProductDetailView;
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setDateFormat("M/d/yy hh:mm a");
@@ -105,22 +106,31 @@ public class ProductDetailPresenter implements ProductDetailContract.Presenter {
 
     @Override
     public void loadWishList() {
-        JsonObjectRequest wishListRequest = new JsonObjectRequest(Request.Method.GET, URL_WISHLIST + "/check/" + Constant.customer.getId() + "/" + mProduct.getProductId(), null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.i("ProductDetailPresenter", response.toString());
-                        mProductDetailView.setWishListResult(true);
-                    }
+        VolleyUtil.GET(context, Constant.URL_WISHLIST + "/check/" + Constant.customer.getId() + "/" + mProduct.getProductId(),
+                response -> {
+                    Log.i(TAG, response.toString());
+                    mProductDetailView.setWishListResult(true);
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("ProductDetailPresenter", error.toString());
-                        mProductDetailView.setWishListResult(false);
-                    }
+                error -> {
+                    Log.e(TAG, error.toString());
+                    mProductDetailView.setWishListResult(false);
                 });
-        MySingleton.getInstance(((Activity) mProductDetailView).getApplicationContext()).addToRequestQueue(wishListRequest);
+//        JsonObjectRequest wishListRequest = new JsonObjectRequest(Request.Method.GET, Constant.URL_WISHLIST + "/check/" + Constant.customer.getId() + "/" + mProduct.getProductId(), null,
+//                new Response.Listener<JSONObject>() {
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        Log.i("ProductDetailPresenter", response.toString());
+//                        mProductDetailView.setWishListResult(true);
+//                    }
+//                },
+//                new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//                        Log.e("ProductDetailPresenter", error.toString());
+//                        mProductDetailView.setWishListResult(false);
+//                    }
+//                });
+//        MySingleton.getInstance(((Activity) mProductDetailView).getApplicationContext()).addToRequestQueue(wishListRequest);
     }
 
     @Override
@@ -137,42 +147,61 @@ public class ProductDetailPresenter implements ProductDetailContract.Presenter {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        JsonObjectRequest wishListRequest = new JsonObjectRequest(Request.Method.POST, URL_WISHLIST, wishList,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.i("ProductDetailPresenter", response.toString());
-                        mProductDetailView.addToWishListResult(true);
-                    }
+
+        VolleyUtil.POST(context,  Constant.URL_WISHLIST, wishList,
+                response -> {
+                    Log.i(TAG, response.toString());
+                    mProductDetailView.addToWishListResult(true);
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("ProductDetailPresenter", error.toString());
-                        mProductDetailView.addToWishListResult(false);
-                    }
+                error -> {
+                    Log.e(TAG, error.toString());
+                    mProductDetailView.addToWishListResult(false);
                 });
-        MySingleton.getInstance(((Activity) mProductDetailView).getApplicationContext()).addToRequestQueue(wishListRequest);
+//        JsonObjectRequest wishListRequest = new JsonObjectRequest(Request.Method.POST, Constant.URL_WISHLIST, wishList,
+//                new Response.Listener<JSONObject>() {
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        Log.i("ProductDetailPresenter", response.toString());
+//                        mProductDetailView.addToWishListResult(true);
+//                    }
+//                },
+//                new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//                        Log.e("ProductDetailPresenter", error.toString());
+//                        mProductDetailView.addToWishListResult(false);
+//                    }
+//                });
+//        MySingleton.getInstance(((Activity) mProductDetailView).getApplicationContext()).addToRequestQueue(wishListRequest);
     }
 
     @Override
     public void removeFromWishList() {
-        JsonObjectRequest wishListRequest = new JsonObjectRequest(Request.Method.DELETE, URL_WISHLIST + "/" + Constant.customer.getId() + "/" + mProduct.getProductId(), null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.i("ProductDetailPresenter", response.toString());
-                        mProductDetailView.removeFromWishListResult(true);
-                    }
+        VolleyUtil.DELETE(context,Constant.URL_WISHLIST + "/" + Constant.customer.getId() + "/" + mProduct.getProductId(),
+                response -> {
+                    Log.i(TAG, response.toString());
+                    mProductDetailView.removeFromWishListResult(true);
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("ProductDetailPresenter", error.toString());
-                        mProductDetailView.removeFromWishListResult(false);
-                    }
+                error -> {
+                    Log.e(TAG, error.toString());
+                    mProductDetailView.removeFromWishListResult(false);
                 });
-        MySingleton.getInstance(((Activity) mProductDetailView).getApplicationContext()).addToRequestQueue(wishListRequest);
+//        JsonObjectRequest wishListRequest = new JsonObjectRequest(Request.Method.DELETE, Constant.URL_WISHLIST + "/" + Constant.customer.getId() + "/" + mProduct.getProductId(), null,
+//                new Response.Listener<JSONObject>() {
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        Log.i("ProductDetailPresenter", response.toString());
+//                        mProductDetailView.removeFromWishListResult(true);
+//                    }
+//                },
+//                new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//                        Log.e("ProductDetailPresenter", error.toString());
+//                        mProductDetailView.removeFromWishListResult(false);
+//                    }
+//                });
+//        MySingleton.getInstance(((Activity) mProductDetailView).getApplicationContext()).addToRequestQueue(wishListRequest);
     }
 
     @Override

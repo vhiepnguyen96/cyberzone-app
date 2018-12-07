@@ -103,7 +103,7 @@ public class ProductDetailActivity extends AppCompatActivity implements ProductD
         customExpandableOverview();
 
         // Presenter
-        mProductDetailPresenter = new ProductDetailPresenter(this);
+        mProductDetailPresenter = new ProductDetailPresenter(getApplicationContext(), this);
         mSessionManager = new SessionManager(this);
 
         Intent intent = getIntent();
@@ -113,74 +113,45 @@ public class ProductDetailActivity extends AppCompatActivity implements ProductD
         }
 
         // Listener
-        mImageBackShop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        mImageBackShop.setOnClickListener(v -> finish());
 
-        mImageFavorite.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mSessionManager.isLoggedIn()) {
-                    wishlist++;
-                    if (wishlist % 2 == 1) {
-                        mProductDetailPresenter.addToWishList();
-                    } else {
-                        mProductDetailPresenter.removeFromWishList();
-                    }
+        mImageFavorite.setOnClickListener(v -> {
+            if (mSessionManager.isLoggedIn()) {
+                wishlist++;
+                if (wishlist % 2 == 1) {
+                    mProductDetailPresenter.addToWishList();
                 } else {
-                    showRequireLogin();
+                    mProductDetailPresenter.removeFromWishList();
                 }
+            } else {
+                showRequireLogin();
+            }
 
+        });
+
+        mMoreSpecification.setOnClickListener(v -> {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("arrSpecifications", (Serializable) mSpecifications);
+            SpecificationFragment specificationFragment = new SpecificationFragment();
+            specificationFragment.setArguments(bundle);
+            specificationFragment.show(getSupportFragmentManager(), specificationFragment.getTag());
+        });
+
+        mExpandOverview.setOnClickListener(v -> {
+            if (mExpandableOverview.isExpanded()) {
+                mExpandableOverview.collapse();
+                mExpandOverview.setText("Mở rộng");
+            } else {
+                mExpandableOverview.expand();
+                mExpandOverview.setText("Thu gọn");
             }
         });
 
-        mMoreSpecification.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("arrSpecifications", (Serializable) mSpecifications);
-                SpecificationFragment specificationFragment = new SpecificationFragment();
-                specificationFragment.setArguments(bundle);
-                specificationFragment.show(getSupportFragmentManager(), specificationFragment.getTag());
-            }
-        });
+        mGoToStore.setOnClickListener(v -> mProductDetailPresenter.prepareDataStore());
 
-        mExpandOverview.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mExpandableOverview.isExpanded()) {
-                    mExpandableOverview.collapse();
-                    mExpandOverview.setText("Mở rộng");
-                } else {
-                    mExpandableOverview.expand();
-                    mExpandOverview.setText("Thu gọn");
-                }
-            }
-        });
+        mBuyNow.setOnClickListener(v -> mProductDetailPresenter.buyNow());
 
-        mGoToStore.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mProductDetailPresenter.prepareDataStore();
-            }
-        });
-
-        mBuyNow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mProductDetailPresenter.buyNow();
-            }
-        });
-
-        mAddToCart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mProductDetailPresenter.addToCart();
-            }
-        });
+        mAddToCart.setOnClickListener(v -> mProductDetailPresenter.addToCart());
 
     }
 
@@ -301,32 +272,24 @@ public class ProductDetailActivity extends AppCompatActivity implements ProductD
 
         setCartMenuItem();
 
-        mRelativeCart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(ProductDetailActivity.this, CartActivity.class));
-            }
-        });
+        mRelativeCart.setOnClickListener(v -> startActivity(new Intent(ProductDetailActivity.this, CartActivity.class)));
 
-        mScrollViewProductDetail.setOnScrollChangeListener(new View.OnScrollChangeListener() {
-            @Override
-            public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-                if (scrollY > mToolbarProductDetails.getHeight()) {
-                    mToolbarProductDetails.setBackgroundColor(Color.parseColor("#ffffff"));
-                    mAppbarProductDetail.setElevation(10.f);
-                    mImageBackShop.setImageResource(R.drawable.ic_arrow_back_primary_24dp);
-                    mImageBackShop.setBackgroundColor(Color.parseColor("#ffffff"));
-                    mLinearBgCart.setBackgroundColor(Color.TRANSPARENT);
-                    mImageCartCustom.setImageResource(R.drawable.cart_primary);
+        mScrollViewProductDetail.setOnScrollChangeListener((View.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            if (scrollY > mToolbarProductDetails.getHeight()) {
+                mToolbarProductDetails.setBackgroundColor(Color.parseColor("#ffffff"));
+                mAppbarProductDetail.setElevation(10.f);
+                mImageBackShop.setImageResource(R.drawable.ic_arrow_back_primary_24dp);
+                mImageBackShop.setBackgroundColor(Color.parseColor("#ffffff"));
+                mLinearBgCart.setBackgroundColor(Color.TRANSPARENT);
+                mImageCartCustom.setImageResource(R.drawable.cart_primary);
 
-                } else {
-                    mToolbarProductDetails.setBackgroundColor(Color.TRANSPARENT);
-                    mImageBackShop.setImageResource(R.drawable.ic_arrow_back_black_24dp);
-                    mImageBackShop.setBackgroundResource(R.drawable.rounded_blue);
-                    mAppbarProductDetail.setElevation(0);
-                    mLinearBgCart.setBackgroundResource(R.drawable.rounded_blue);
-                    mImageCartCustom.setImageResource(R.drawable.cart_white);
-                }
+            } else {
+                mToolbarProductDetails.setBackgroundColor(Color.TRANSPARENT);
+                mImageBackShop.setImageResource(R.drawable.ic_arrow_back_black_24dp);
+                mImageBackShop.setBackgroundResource(R.drawable.rounded_blue);
+                mAppbarProductDetail.setElevation(0);
+                mLinearBgCart.setBackgroundResource(R.drawable.rounded_blue);
+                mImageCartCustom.setImageResource(R.drawable.cart_white);
             }
         });
 
@@ -350,20 +313,12 @@ public class ProductDetailActivity extends AppCompatActivity implements ProductD
         builder.setTitle("Thông báo");
         builder.setMessage("Bạn chưa đăng nhập!");
         builder.setCancelable(false);
-        builder.setPositiveButton("Đăng nhập ngay", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                startActivity(new Intent(ProductDetailActivity.this, LoginActivity.class));
-                dialogInterface.dismiss();
-                finish();
-            }
+        builder.setPositiveButton("Đăng nhập ngay", (dialogInterface, i) -> {
+            startActivity(new Intent(ProductDetailActivity.this, LoginActivity.class));
+            dialogInterface.dismiss();
+            finish();
         });
-        builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        });
+        builder.setNegativeButton("Hủy", (dialogInterface, i) -> dialogInterface.dismiss());
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }

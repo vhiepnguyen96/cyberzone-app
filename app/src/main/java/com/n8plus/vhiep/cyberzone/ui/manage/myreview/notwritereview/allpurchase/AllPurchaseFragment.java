@@ -26,7 +26,7 @@ import java.util.List;
 
 public class AllPurchaseFragment extends Fragment implements AllPurchaseContract.View {
     private ListView mListAllPurchase;
-    private LinearLayout mLinearReviewNone;
+    private LinearLayout mLinearNone, mLinearLoading;
     private ProductPurchaseAdapter mProductPurchaseAdapter;
     private AllPurchasePresenter mAllPurchasePresenter;
 
@@ -34,14 +34,15 @@ public class AllPurchaseFragment extends Fragment implements AllPurchaseContract
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.all_purchase_frag, container, false);
-        mAllPurchasePresenter = new AllPurchasePresenter(this);
+        mAllPurchasePresenter = new AllPurchasePresenter(getContext(), this);
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mListAllPurchase = (ListView) view.findViewById(R.id.lsv_all_purchase);
-        mLinearReviewNone = (LinearLayout) view.findViewById(R.id.lnr_review_none);
+        mLinearNone = (LinearLayout) view.findViewById(R.id.lnr_review_none);
+        mLinearLoading = (LinearLayout) view.findViewById(R.id.lnr_loading);
 
         // Presenter
         mAllPurchasePresenter.loadData();
@@ -50,8 +51,13 @@ public class AllPurchaseFragment extends Fragment implements AllPurchaseContract
     }
 
     @Override
-    public void setLayoutReviewNone(boolean b) {
-        mLinearReviewNone.setVisibility(b ? View.VISIBLE : View.GONE);
+    public void setLayoutNone(boolean b) {
+        mLinearNone.setVisibility(b ? View.VISIBLE : View.GONE);
+    }
+
+    @Override
+    public void setLayoutLoading(boolean b) {
+        mLinearLoading.setVisibility(b ? View.VISIBLE : View.GONE);
     }
 
     @Override

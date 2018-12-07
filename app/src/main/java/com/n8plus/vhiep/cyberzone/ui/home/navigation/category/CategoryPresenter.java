@@ -1,6 +1,7 @@
 package com.n8plus.vhiep.cyberzone.ui.home.navigation.category;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.widget.BaseAdapter;
@@ -22,6 +23,7 @@ import com.n8plus.vhiep.cyberzone.ui.home.adapter.CategoryAdapter;
 import com.n8plus.vhiep.cyberzone.ui.manage.mydeliveryaddress.adddeliveryaddress.AddDeliveryAddressContract;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.MySingleton;
+import com.n8plus.vhiep.cyberzone.util.VolleyUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,12 +35,14 @@ import java.util.Arrays;
 import java.util.List;
 
 public class CategoryPresenter implements CategoryContract.Presenter {
+    private static final String TAG = "CategoryPresenter";
+    private Context context;
     private final CategoryContract.View mCategoryView;
     private List<Category> categories;
-    private final String ENDPOINT = Constant.URL_HOST + "categories";
     private Gson gson;
 
-    public CategoryPresenter(CategoryContract.View mCategoryView) {
+    public CategoryPresenter(@NonNull final Context context, @NonNull final CategoryContract.View mCategoryView) {
+        this.context = context;
         this.mCategoryView = mCategoryView;
         categories = new ArrayList<>();
     }
@@ -51,38 +55,16 @@ public class CategoryPresenter implements CategoryContract.Presenter {
         fetchData();
     }
 
-    public void prepareData() {
-        categories = new ArrayList<>();
-        categories.add(new Category("5b974fb26153321ffc61b828", "Linh kiện máy tính"));
-        categories.add(new Category("5b974fb26153321ffc61b828", "Màn hình máy tính"));
-        categories.add(new Category("5b974fb26153321ffc61b828", "Ổ cứng HDD/SSD"));
-        categories.add(new Category("5b974fb26153321ffc61b828", "Chuột, Bàn phím, Webcam"));
-        categories.add(new Category("5b974fb26153321ffc61b828", "Tai nghe & Loa"));
-    }
-
     private void fetchData() {
-        JsonObjectRequest  request = new JsonObjectRequest (Request.Method.GET, ENDPOINT, null, onPostsLoaded, onPostsError);
-        MySingleton.getInstance(((Fragment) mCategoryView).getActivity().getApplicationContext()).addToRequestQueue(request);
+        VolleyUtil.GET(context, Constant.URL_CATEGORY,
+                response -> {
+                    try {
+                        categories = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("categories")), Category[].class));
+                        mCategoryView.setAdapterCategory(categories);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                },
+                error -> Log.e(TAG, error.toString()));
     }
-
-    private final Response.Listener<JSONObject> onPostsLoaded = new Response.Listener<JSONObject>() {
-        @Override
-        public void onResponse(JSONObject response) {
-            try {
-                Log.d("CategoryPresenter", "Load nè");
-                categories = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("categories")), Category[].class));
-                mCategoryView.setAdapterCategory(categories);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-    };
-
-    private final Response.ErrorListener onPostsError = new Response.ErrorListener() {
-        @Override
-        public void onErrorResponse(VolleyError error) {
-            Log.e("CategoryPresenter", error.toString());
-        }
-    };
-
 }

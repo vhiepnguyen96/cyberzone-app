@@ -43,18 +43,29 @@ public class WishlistFollowedstoreFragment extends Fragment implements WishlistF
         mViewPager = (ViewPager) view.findViewById(R.id.pager_wishlist_followedstore);
         setHasOptionsMenu(true);
         setupViewPager(mViewPager);
+        customToolbar();
 
         // Custom tab
         mSectionsPageAdapter = new SectionsPageAdapter(getActivity().getSupportFragmentManager());
         setupViewPager(mViewPager);
         mTabLayout.setupWithViewPager(mViewPager);
 
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
-        ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
-        ActionBar actionbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        actionbar.setDisplayHomeAsUpEnabled(true);
-        actionbar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_black_24dp);
-        actionbar.setTitle("Sản phẩm & gian hàng");
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                mViewPager.getAdapter().notifyDataSetChanged();
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
 
         super.onViewCreated(view, savedInstanceState);
     }
@@ -64,6 +75,14 @@ public class WishlistFollowedstoreFragment extends Fragment implements WishlistF
         adapter.adđFragment(new WishListFragment(), "Sản phẩm yêu thích");
         adapter.adđFragment(new FollowedStoreFragment(), "Gian hàng theo dõi");
         viewPager.setAdapter(adapter);
+    }
+
+    private void customToolbar(){
+        ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
+        ActionBar actionbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        actionbar.setDisplayHomeAsUpEnabled(true);
+        actionbar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_black_24dp);
+        actionbar.setTitle("Sản phẩm & gian hàng");
     }
 
     @Override

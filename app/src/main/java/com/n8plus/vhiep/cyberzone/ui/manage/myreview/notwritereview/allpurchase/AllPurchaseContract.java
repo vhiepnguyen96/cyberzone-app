@@ -10,7 +10,8 @@ import java.util.List;
 
 public interface AllPurchaseContract {
     interface View {
-        void setLayoutReviewNone(boolean b);
+        void setLayoutNone(boolean b);
+        void setLayoutLoading(boolean b);
         void setAdapterAllPurchase(List<PurchaseItem> purchaseItemList, List<Date> datePurchaseList);
         void setNotifyDataSetChanged();
         void writeReview(int position);

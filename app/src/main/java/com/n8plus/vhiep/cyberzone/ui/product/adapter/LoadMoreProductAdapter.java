@@ -46,7 +46,7 @@ public class LoadMoreProductAdapter extends LoadMoreRecyclerViewAdapter<Product>
             View view = mInflater.inflate(layout == GRID_LAYOUT ? R.layout.row_product_grid_layout : R.layout.row_product_item_vertical, parent, false);
             if (layout == GRID_LAYOUT) {
                 ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
-                layoutParams.width = (int) (parent.getWidth() * 0.5) - 16;
+                layoutParams.width = (int) (parent.getWidth() * 0.5);
                 view.setLayoutParams(layoutParams);
             }
             return new ProductViewHolder(view);

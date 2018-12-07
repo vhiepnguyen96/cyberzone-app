@@ -21,20 +21,21 @@ import java.util.List;
 public class WaitForPaymentFragment extends Fragment implements WaitForPaymentContract.View{
     private ListView mListWaitForPayment;
     private MyOrderAdapter mMyOrderAdapter;
-    private LinearLayout mLinearOrderNone;
+    private LinearLayout mLinearNone, mLinearLoading;
     private WaitForPaymentPresenter mWaitForPaymentPresenter;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.wait_for_payment_frag, container, false);
-        mWaitForPaymentPresenter = new WaitForPaymentPresenter(this);
+        mWaitForPaymentPresenter = new WaitForPaymentPresenter(getContext(),this);
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mListWaitForPayment = (ListView) view.findViewById(R.id.lv_wait_for_payment);
-        mLinearOrderNone = (LinearLayout) view.findViewById(R.id.lnr_order_none);
+        mLinearNone = (LinearLayout) view.findViewById(R.id.lnr_none);
+        mLinearLoading = (LinearLayout) view.findViewById(R.id.lnr_loading);
 
         mWaitForPaymentPresenter.loadOrderWaitToPayment(Constant.customer.getId());
 
@@ -43,7 +44,12 @@ public class WaitForPaymentFragment extends Fragment implements WaitForPaymentCo
 
     @Override
     public void setLayoutOrderNone(boolean b) {
-        mLinearOrderNone.setVisibility(b ? View.VISIBLE : View.GONE);
+        mLinearNone.setVisibility(b ? View.VISIBLE : View.GONE);
+    }
+
+    @Override
+    public void setLayoutLoading(boolean b) {
+        mLinearLoading.setVisibility(b ? View.VISIBLE : View.GONE);
     }
 
     @Override

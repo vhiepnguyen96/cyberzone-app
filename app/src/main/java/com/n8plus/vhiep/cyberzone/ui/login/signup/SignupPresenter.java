@@ -1,5 +1,7 @@
 package com.n8plus.vhiep.cyberzone.ui.login.signup;
 
+import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.widget.Toast;
@@ -17,6 +19,7 @@ import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.MySingleton;
 import com.n8plus.vhiep.cyberzone.util.TypeLoad;
 import com.n8plus.vhiep.cyberzone.util.TypeLogin;
+import com.n8plus.vhiep.cyberzone.util.VolleyUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,15 +34,14 @@ import java.util.TimeZone;
 
 public class SignupPresenter implements SignupContract.Presenter {
     private static final String TAG = "SignupPresenter";
+    private Context context;
     private SignupContract.View mSignupView;
-    private String URL_CUSTOMER = Constant.URL_HOST + "customers";
-    private String URL_ROLE = Constant.URL_HOST + "roles";
-    private String URL_ACCOUNT = Constant.URL_HOST + "accounts";
     private Gson gson;
     private List<Role> roleList;
     private Role roleCustomer;
 
-    public SignupPresenter(SignupContract.View mSignupView) {
+    public SignupPresenter(@NonNull final Context context, @NonNull final SignupContract.View mSignupView) {
+        this.context = context;
         this.mSignupView = mSignupView;
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setDateFormat("M/d/yy hh:mm a");
@@ -54,65 +56,101 @@ public class SignupPresenter implements SignupContract.Presenter {
     @Override
     public void loadRoleAccount() {
         roleList = new ArrayList<>();
-        JsonObjectRequest roleRequest = new JsonObjectRequest(Request.Method.GET, URL_ROLE, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.d("SignupPresenter", response.toString());
-                        try {
-                            roleList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("roles")), Role[].class));
-                            Log.d("SignupPresenter", "roleList: " + roleList.size());
-                            for (int i = 0; i < roleList.size(); i++) {
-                                if (roleList.get(i).getRoleName().equals("Khách hàng")) {
-                                    roleCustomer = roleList.get(i);
-                                }
+        VolleyUtil.GET(context, Constant.URL_ROLE,
+                response -> {
+                    try {
+                        roleList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("roles")), Role[].class));
+                        Log.d("SignupPresenter", "roleList: " + roleList.size());
+                        for (int i = 0; i < roleList.size(); i++) {
+                            if (roleList.get(i).getRoleName().equals("Khách hàng")) {
+                                roleCustomer = roleList.get(i);
                             }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
                         }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("SignupPresenter", error.toString());
-                    }
-                });
-
-        MySingleton.getInstance(((Fragment) mSignupView).getContext().getApplicationContext()).addToRequestQueue(roleRequest);
+                error -> Log.e(TAG, error.toString()));
+//        JsonObjectRequest roleRequest = new JsonObjectRequest(Request.Method.GET, URL_ROLE, null,
+//                new Response.Listener<JSONObject>() {
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        Log.d("SignupPresenter", response.toString());
+//                        try {
+//                            roleList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("roles")), Role[].class));
+//                            Log.d("SignupPresenter", "roleList: " + roleList.size());
+//                            for (int i = 0; i < roleList.size(); i++) {
+//                                if (roleList.get(i).getRoleName().equals("Khách hàng")) {
+//                                    roleCustomer = roleList.get(i);
+//                                }
+//                            }
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                },
+//                new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//                        Log.e("SignupPresenter", error.toString());
+//                    }
+//                });
+//
+//        MySingleton.getInstance(((Fragment) mSignupView).getContext().getApplicationContext()).addToRequestQueue(roleRequest);
     }
 
     @Override
     public void signUp(final Customer customer) {
-        JsonObjectRequest checkAccountRequest = new JsonObjectRequest(Request.Method.GET, URL_CUSTOMER + "/account/" + customer.getAccount().getId(), null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            Log.d(TAG, "checkAccountResponse: " + response.toString());
-                            Customer customerResult = gson.fromJson(String.valueOf(response.getJSONObject("customer")), Customer.class);
-                            boolean isExists = customerResult != null ? true : false;
+        VolleyUtil.GET(context, Constant.URL_CUSTOMER + "/account/" + customer.getAccount().getId(),
+                response -> {
+                    try {
+                        Log.d(TAG, "checkAccountResponse: " + response.toString());
+                        Customer customerResult = gson.fromJson(String.valueOf(response.getJSONObject("customer")), Customer.class);
+                        boolean isExists = customerResult != null ? true : false;
 
-                            if (!isExists) {
-                                createCustomer(customer);
-                            } else {
-                                mSignupView.showAlertAccountAlready();
-                            }
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                        if (!isExists) {
+                            createCustomer(customer);
+                        } else {
+                            mSignupView.showAlertAccountAlready();
                         }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("SignupPresenter", error.toString());
-                        createCustomer(customer);
-                    }
+                error -> {
+                    Log.e(TAG, error.toString());
+                    createCustomer(customer);
                 });
-
-        MySingleton.getInstance(((Fragment) mSignupView).getContext().getApplicationContext()).addToRequestQueue(checkAccountRequest);
+//        JsonObjectRequest checkAccountRequest = new JsonObjectRequest(Request.Method.GET, URL_CUSTOMER + "/account/" + customer.getAccount().getId(), null,
+//                new Response.Listener<JSONObject>() {
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        try {
+//                            Log.d(TAG, "checkAccountResponse: " + response.toString());
+//                            Customer customerResult = gson.fromJson(String.valueOf(response.getJSONObject("customer")), Customer.class);
+//                            boolean isExists = customerResult != null ? true : false;
+//
+//                            if (!isExists) {
+//                                createCustomer(customer);
+//                            } else {
+//                                mSignupView.showAlertAccountAlready();
+//                            }
+//
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                },
+//                new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//                        Log.e("SignupPresenter", error.toString());
+//                        createCustomer(customer);
+//                    }
+//                });
+//
+//        MySingleton.getInstance(((Fragment) mSignupView).getContext().getApplicationContext()).addToRequestQueue(checkAccountRequest);
     }
 
     @Override
@@ -126,36 +164,57 @@ public class SignupPresenter implements SignupContract.Presenter {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.d("SignupPresenter", "account: " + accountObj.toString());
-        JsonObjectRequest accountRequest = new JsonObjectRequest(Request.Method.POST, URL_ACCOUNT, accountObj,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            Log.d("SignupPresenter", response.toString());
-                            if (response.getJSONObject("createdAccount") != null) {
-                                String accountId = response.getJSONObject("createdAccount").getString("_id");
-                                Log.d("SignupPresenter", "accountId: " + accountId);
-                                if (accountId != null) {
-                                    account.setId(accountId);
-                                    customer.setAccount(account);
-                                    createCustomer(customer);
-                                }
+        Log.d(TAG, "account: " + accountObj.toString());
+        VolleyUtil.POST(context, Constant.URL_ACCOUNT, accountObj,
+                response -> {
+                    try {
+                        Log.d(TAG, response.toString());
+                        if (response.getJSONObject("createdAccount") != null) {
+                            String accountId = response.getJSONObject("createdAccount").getString("_id");
+                            Log.d(TAG, "accountId: " + accountId);
+                            if (accountId != null) {
+                                account.setId(accountId);
+                                customer.setAccount(account);
+                                createCustomer(customer);
                             }
-                        } catch (JSONException e) {
-                            Log.e("SignupPresenter", e.toString());
                         }
+                    } catch (JSONException e) {
+                        Log.e(TAG, e.toString());
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("SignupPresenter", error.toString());
-                        mSignupView.createCustomerResult(false);
-                    }
+                error -> {
+                    Log.e(TAG, error.toString());
+                    mSignupView.createCustomerResult(false);
                 });
-
-        MySingleton.getInstance(((Fragment) mSignupView).getContext().getApplicationContext()).addToRequestQueue(accountRequest);
+//        JsonObjectRequest accountRequest = new JsonObjectRequest(Request.Method.POST, URL_ACCOUNT, accountObj,
+//                new Response.Listener<JSONObject>() {
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        try {
+//                            Log.d("SignupPresenter", response.toString());
+//                            if (response.getJSONObject("createdAccount") != null) {
+//                                String accountId = response.getJSONObject("createdAccount").getString("_id");
+//                                Log.d("SignupPresenter", "accountId: " + accountId);
+//                                if (accountId != null) {
+//                                    account.setId(accountId);
+//                                    customer.setAccount(account);
+//                                    createCustomer(customer);
+//                                }
+//                            }
+//                        } catch (JSONException e) {
+//                            Log.e("SignupPresenter", e.toString());
+//                        }
+//                    }
+//                },
+//                new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//                        Log.e("SignupPresenter", error.toString());
+//                        mSignupView.createCustomerResult(false);
+//                    }
+//                });
+//
+//        MySingleton.getInstance(((Fragment) mSignupView).getContext().getApplicationContext()).addToRequestQueue(accountRequest);
     }
 
     @Override
@@ -183,35 +242,56 @@ public class SignupPresenter implements SignupContract.Presenter {
             e.printStackTrace();
         }
 
-        Log.d("SignupPresenter", "customerObj: " + customerObj.toString());
-        JsonObjectRequest updateRequest = new JsonObjectRequest(Request.Method.POST, URL_CUSTOMER, customerObj,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            Log.e("SignupPresenter", response.toString());
-                            if (response.getJSONObject("createdCustomer") != null) {
-                                customer.setId(response.getJSONObject("createdCustomer").getString("_id"));
-                                mSignupView.createCustomerResult(true);
-                                if (customer.getAccount().getRole() == null) {
-                                    mSignupView.moveToConfirmSignup(customer);
-                                } else {
-                                    mSignupView.moveToSignin();
-                                }
+        Log.d(TAG, "customerObj: " + customerObj.toString());
+        VolleyUtil.POST(context, Constant.URL_CUSTOMER, customerObj,
+                response -> {
+                    try {
+                        Log.e(TAG, response.toString());
+                        if (response.getJSONObject("createdCustomer") != null) {
+                            customer.setId(response.getJSONObject("createdCustomer").getString("_id"));
+                            mSignupView.createCustomerResult(true);
+                            if (customer.getAccount().getRole() == null) {
+                                mSignupView.moveToConfirmSignup(customer);
+                            } else {
+                                mSignupView.moveToSignin();
                             }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
                         }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("SignupPresenter", error.toString());
-                        mSignupView.createCustomerResult(false);
-                    }
+                error -> {
+                    Log.e(TAG, error.toString());
+                    mSignupView.createCustomerResult(false);
                 });
-
-        MySingleton.getInstance(((Fragment) mSignupView).getContext().getApplicationContext()).addToRequestQueue(updateRequest);
+//        JsonObjectRequest updateRequest = new JsonObjectRequest(Request.Method.POST, URL_CUSTOMER, customerObj,
+//                new Response.Listener<JSONObject>() {
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        try {
+//                            Log.e("SignupPresenter", response.toString());
+//                            if (response.getJSONObject("createdCustomer") != null) {
+//                                customer.setId(response.getJSONObject("createdCustomer").getString("_id"));
+//                                mSignupView.createCustomerResult(true);
+//                                if (customer.getAccount().getRole() == null) {
+//                                    mSignupView.moveToConfirmSignup(customer);
+//                                } else {
+//                                    mSignupView.moveToSignin();
+//                                }
+//                            }
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                },
+//                new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//                        Log.e("SignupPresenter", error.toString());
+//                        mSignupView.createCustomerResult(false);
+//                    }
+//                });
+//
+//        MySingleton.getInstance(((Fragment) mSignupView).getContext().getApplicationContext()).addToRequestQueue(updateRequest);
     }
 }

@@ -2,6 +2,7 @@ package com.n8plus.vhiep.cyberzone.ui.manage.registersale.addregistersale;
 
 import android.content.Context;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.widget.Toast;
@@ -18,6 +19,7 @@ import com.n8plus.vhiep.cyberzone.data.model.Ward;
 import com.n8plus.vhiep.cyberzone.ui.manage.registersale.RegisterSaleContract;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.MySingleton;
+import com.n8plus.vhiep.cyberzone.util.VolleyUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,12 +32,14 @@ import java.util.Comparator;
 import java.util.List;
 
 public class AddRegisterSalePresenter implements AddRegisterSaleContract.Presenter {
+    private static final String TAG = "RegisterSalePresenter";
+    private Context context;
     private AddRegisterSaleContract.View mAddRegisterSaleView;
     private List<Province> mProvinceList;
-    private final String URL_REGISTER_SALE = Constant.URL_HOST + "registeredSales";
     private Gson gson;
 
-    public AddRegisterSalePresenter(AddRegisterSaleContract.View mAddRegisterSaleView) {
+    public AddRegisterSalePresenter(@NonNull final Context context, @NonNull final AddRegisterSaleContract.View mAddRegisterSaleView) {
+        this.context = context;
         this.mAddRegisterSaleView = mAddRegisterSaleView;
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setDateFormat("M/d/yy hh:mm a");
@@ -51,28 +55,22 @@ public class AddRegisterSalePresenter implements AddRegisterSaleContract.Present
     @Override
     public void loadProvince() {
         mProvinceList = new ArrayList<>();
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    JSONObject provinces = new JSONObject(loadJSONFromAsset(((Fragment) mAddRegisterSaleView).getContext(), "data_country.json"));
-                    for (int i = 0; i < provinces.names().length(); i++) {
-                        JSONObject province = provinces.getJSONObject((String) provinces.names().get(i));
-                        mProvinceList.add(new Province(province.getString("name_with_type"), province.getInt("code"), new ArrayList<District>()));
-                    }
-                    Collections.sort(mProvinceList, new Comparator<Province>() {
-                        @Override
-                        public int compare(Province o1, Province o2) {
-                            String o1_name = o1.getName().split(o1.getName().contains("Thành phố") ? "Thành phố" : "Tỉnh")[1];
-                            String o2_name = o2.getName().split(o2.getName().contains("Thành phố") ? "Thành phố" : "Tỉnh")[1];
-                            return o1_name.compareTo(o2_name);
-                        }
-                    });
-                    Log.i("RegisterSalePresenter", "provinceList: " + mProvinceList.size());
-                    mAddRegisterSaleView.setProvince(mProvinceList);
-                } catch (JSONException e) {
-                    e.printStackTrace();
+        new Handler().post(() -> {
+            try {
+                JSONObject provinces = new JSONObject(loadJSONFromAsset(((Fragment) mAddRegisterSaleView).getContext(), "data_country.json"));
+                for (int i = 0; i < provinces.names().length(); i++) {
+                    JSONObject province = provinces.getJSONObject((String) provinces.names().get(i));
+                    mProvinceList.add(new Province(province.getString("name_with_type"), province.getInt("code"), new ArrayList<District>()));
                 }
+                Collections.sort(mProvinceList, (o1, o2) -> {
+                    String o1_name = o1.getName().split(o1.getName().contains("Thành phố") ? "Thành phố" : "Tỉnh")[1];
+                    String o2_name = o2.getName().split(o2.getName().contains("Thành phố") ? "Thành phố" : "Tỉnh")[1];
+                    return o1_name.compareTo(o2_name);
+                });
+                Log.i(TAG, "provinceList: " + mProvinceList.size());
+                mAddRegisterSaleView.setProvince(mProvinceList);
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
         });
     }
@@ -92,24 +90,34 @@ public class AddRegisterSalePresenter implements AddRegisterSaleContract.Present
             e.printStackTrace();
         }
 
-        JsonObjectRequest registerSaleRequest = new JsonObjectRequest(Request.Method.POST, URL_REGISTER_SALE, registerSaleObj,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.e("RegisterSalePresenter", response.toString());
-                        mAddRegisterSaleView.sendRegisterSaleResult(true);
-                        mAddRegisterSaleView.backLoadRegisterSale();
-                    }
+        VolleyUtil.POST(context, Constant.URL_REGISTER_SALE, registerSaleObj,
+                response -> {
+                    Log.e(TAG, response.toString());
+                    mAddRegisterSaleView.sendRegisterSaleResult(true);
+                    mAddRegisterSaleView.backLoadRegisterSale();
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("RegisterSalePresenter", error.toString());
-                        mAddRegisterSaleView.sendRegisterSaleResult(false);
-                    }
+                error -> {
+                    Log.e(TAG, error.toString());
+                    mAddRegisterSaleView.sendRegisterSaleResult(false);
                 });
-
-        MySingleton.getInstance(((Fragment) mAddRegisterSaleView).getContext().getApplicationContext()).addToRequestQueue(registerSaleRequest);
+//        JsonObjectRequest registerSaleRequest = new JsonObjectRequest(Request.Method.POST, Constant.URL_REGISTER_SALE, registerSaleObj,
+//                new Response.Listener<JSONObject>() {
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        Log.e("RegisterSalePresenter", response.toString());
+//                        mAddRegisterSaleView.sendRegisterSaleResult(true);
+//                        mAddRegisterSaleView.backLoadRegisterSale();
+//                    }
+//                },
+//                new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//                        Log.e("RegisterSalePresenter", error.toString());
+//                        mAddRegisterSaleView.sendRegisterSaleResult(false);
+//                    }
+//                });
+//
+//        MySingleton.getInstance(((Fragment) mAddRegisterSaleView).getContext().getApplicationContext()).addToRequestQueue(registerSaleRequest);
     }
 
     public String loadJSONFromAsset(Context context, String name_file) {

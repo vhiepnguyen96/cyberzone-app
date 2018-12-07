@@ -43,12 +43,7 @@ public class ListReviewFragment extends BottomSheetDialogFragment implements Lis
             mListReviewPresenter.loadStoreReviews((List<ReviewStore>) bundle.getSerializable("reviewStores"));
         }
 
-        mCloseListReview.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getDialog().dismiss();
-            }
-        });
+        mCloseListReview.setOnClickListener(v -> getDialog().dismiss());
         super.onViewCreated(view, savedInstanceState);
     }
 

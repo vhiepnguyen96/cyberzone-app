@@ -33,7 +33,7 @@ public class UpdatePasswordFragment extends Fragment implements UpdatePasswordCo
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.update_password_frag, container, false);
-        mUpdatePasswordPresenter = new UpdatePasswordPresenter(this);
+        mUpdatePasswordPresenter = new UpdatePasswordPresenter(getContext(), this);
         return view;
     }
 
@@ -55,21 +55,13 @@ public class UpdatePasswordFragment extends Fragment implements UpdatePasswordCo
             mUpdatePasswordPresenter.setCustomerProfile(customer);
         }
 
-        mUpdate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mUpdatePasswordPresenter.updatePassword(mOldPassword.getText().toString(), mNewPassword.getText().toString(), mRetypeNewPassword.getText().toString());
-            }
-        });
+        mUpdate.setOnClickListener(v -> mUpdatePasswordPresenter.updatePassword(mOldPassword.getText().toString(), mNewPassword.getText().toString(), mRetypeNewPassword.getText().toString()));
 
-        mBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FragmentManager fragmentManager = getFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.frm_manage, new MyProfileFragment());
-                fragmentTransaction.commit();
-            }
+        mBack.setOnClickListener(v -> {
+            FragmentManager fragmentManager = getFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.frm_manage, new MyProfileFragment());
+            fragmentTransaction.commit();
         });
 
         super.onViewCreated(view, savedInstanceState);
@@ -102,12 +94,7 @@ public class UpdatePasswordFragment extends Fragment implements UpdatePasswordCo
                 .setTitle("Thông báo")
                 .setMessage(message)
                 .setCancelable(false)
-                .setPositiveButton("Chấp nhận", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
+                .setPositiveButton("Chấp nhận", (dialog, which) -> dialog.dismiss());
         alertDialog.show();
     }
 

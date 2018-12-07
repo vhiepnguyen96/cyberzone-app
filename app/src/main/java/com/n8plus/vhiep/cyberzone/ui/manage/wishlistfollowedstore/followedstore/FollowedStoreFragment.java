@@ -24,13 +24,13 @@ public class FollowedStoreFragment extends Fragment implements FollowedStoreCont
     private ListView mListFollowedStore;
     private FollowStoreAdapter mFollowStoreAdapter;
     private FollowedStorePresenter mFollowedStorePresenter;
-    private LinearLayout mLinearNone;
+    private LinearLayout mLinearNone, mLinearLoading;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.followed_store_frag, container, false);
-        mFollowedStorePresenter = new FollowedStorePresenter(this);
+        mFollowedStorePresenter = new FollowedStorePresenter(getContext(),this);
         return view;
     }
 
@@ -38,6 +38,7 @@ public class FollowedStoreFragment extends Fragment implements FollowedStoreCont
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mListFollowedStore = (ListView) view.findViewById(R.id.lv_followed_store);
         mLinearNone = (LinearLayout) view.findViewById(R.id.lnr_none);
+        mLinearLoading = (LinearLayout) view.findViewById(R.id.lnr_loading);
 
         // Presenter
         mFollowedStorePresenter.loadData();
@@ -48,6 +49,11 @@ public class FollowedStoreFragment extends Fragment implements FollowedStoreCont
     @Override
     public void setLayoutNone(boolean b) {
         mLinearNone.setVisibility(b ? View.VISIBLE : View.GONE);
+    }
+
+    @Override
+    public void setLayoutLoading(boolean b) {
+        mLinearLoading.setVisibility(b ? View.VISIBLE : View.GONE);
     }
 
 

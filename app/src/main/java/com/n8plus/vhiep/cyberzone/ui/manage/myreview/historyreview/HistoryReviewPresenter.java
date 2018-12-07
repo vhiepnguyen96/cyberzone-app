@@ -1,5 +1,7 @@
 package com.n8plus.vhiep.cyberzone.ui.manage.myreview.historyreview;
 
+import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 
@@ -29,6 +31,7 @@ import com.n8plus.vhiep.cyberzone.data.model.Store;
 import com.n8plus.vhiep.cyberzone.ui.manage.myorders.allorder.AllOrderContract;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.MySingleton;
+import com.n8plus.vhiep.cyberzone.util.VolleyUtil;
 
 import org.joda.time.DateTime;
 import org.json.JSONException;
@@ -43,17 +46,17 @@ import java.util.Date;
 import java.util.List;
 
 public class HistoryReviewPresenter implements HistoryReviewContract.Presenter {
+    private static final String TAG = "HistoryReviewPresenter";
+    private Context context;
     private HistoryReviewContract.View mHistoryReviewView;
     private List<ReviewProduct> mReviewProducts;
     private List<ReviewStore> mReviewStores;
     private List<HistoryReview> mHistoryReviews;
     private Gson gson;
-    private final String URL_REVIEW_PRODUCT = Constant.URL_HOST + "reviewProducts";
-    private final String URL_REVIEW_STORE = Constant.URL_HOST + "reviewStores";
-    private final String URL_IMAGE = Constant.URL_HOST + "productImages";
     private int review = 0;
 
-    public HistoryReviewPresenter(HistoryReviewContract.View mHistoryReviewView) {
+    public HistoryReviewPresenter(@NonNull final Context context, @NonNull final HistoryReviewContract.View mHistoryReviewView) {
+        this.context = context;
         this.mHistoryReviewView = mHistoryReviewView;
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setDateFormat("M/d/yy hh:mm a");
@@ -70,83 +73,55 @@ public class HistoryReviewPresenter implements HistoryReviewContract.Presenter {
         mReviewStores = new ArrayList<>();
         mReviewProducts = new ArrayList<>();
 
-        JsonObjectRequest reviewStoreRequest = new JsonObjectRequest(Request.Method.GET, URL_REVIEW_STORE + "/customer/" + customerId, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            mReviewStores = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("reviewStores")), ReviewStore[].class));
-                            Log.i("HistoryReviewPresenter", "GET: " + mReviewStores.size() + " reviewStores");
-                            review++;
-                            if (review == 2) {
-                                setDataHistoryReview(mReviewProducts, mReviewStores);
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+        // Load review store
+        VolleyUtil.GET(context, Constant.URL_REVIEW_STORE + "/customer/" + customerId,
+                response -> {
+                    try {
+                        mReviewStores = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("reviewStores")), ReviewStore[].class));
+                        Log.i(TAG, "GET: " + mReviewStores.size() + " reviewStores");
+                        review++;
+                        if (review == 2) {
+                            setDataHistoryReview(mReviewProducts, mReviewStores);
                         }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("HistoryReviewPresenter", error.toString());
-                    }
-                });
-        MySingleton.getInstance(((Fragment) mHistoryReviewView).getContext().getApplicationContext()).addToRequestQueue(reviewStoreRequest);
+                error ->  Log.e(TAG, error.toString()));
 
-        JsonObjectRequest reviewProductRequest = new JsonObjectRequest(Request.Method.GET, URL_REVIEW_PRODUCT + "/customer/" + customerId, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            mReviewProducts = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("reviewProducts")), ReviewProduct[].class));
-                            Log.i("HistoryReviewPresenter", "GET: " + mReviewProducts.size() + " reviewProducts");
-                            review++;
-                            if (review == 2) {
-                                setDataHistoryReview(mReviewProducts, mReviewStores);
-                            }
-//                            for (int i = 0; i < mReviewProducts.size(); i++) {
-//                                if (mReviewProducts.get(i).getProduct() != null) {
-//                                    loadImageProduct(i);
-//                                }
-//                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+        // Load review product
+        VolleyUtil.GET(context,Constant.URL_REVIEW_PRODUCT + "/customer/" + customerId,
+                response -> {
+                    try {
+                        mReviewProducts = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("reviewProducts")), ReviewProduct[].class));
+                        Log.i(TAG, "GET: " + mReviewProducts.size() + " reviewProducts");
+                        review++;
+                        if (review == 2) {
+                            setDataHistoryReview(mReviewProducts, mReviewStores);
                         }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("HistoryReviewPresenter", error.toString());
-                    }
-                });
-        MySingleton.getInstance(((Fragment) mHistoryReviewView).getContext().getApplicationContext()).addToRequestQueue(reviewProductRequest);
+                error -> Log.e(TAG, error.toString()));
     }
 
     @Override
     public void loadImageProduct(final int position) {
-        JsonObjectRequest requestImage = new JsonObjectRequest(Request.Method.GET, URL_IMAGE + "/product/" + mReviewProducts.get(position).getProduct().getProductId(), null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                try {
-                    List<ProductImage> imageList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("imageList")), ProductImage[].class));
-                    Log.d("ProductPresenter", "Product images: " + imageList.size());
-                    if (imageList.size() > 0) {
-                        mReviewProducts.get(position).getProduct().setImageList(imageList);
-                        mHistoryReviewView.setNotifyDataSetChanged();
+        VolleyUtil.GET(context, Constant.URL_IMAGE + "/product/" + mReviewProducts.get(position).getProduct().getProductId(),
+                response -> {
+                    try {
+                        List<ProductImage> imageList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("imageList")), ProductImage[].class));
+                        Log.d(TAG, "Product images: " + imageList.size());
+                        if (imageList.size() > 0) {
+                            mReviewProducts.get(position).getProduct().setImageList(imageList);
+                            mHistoryReviewView.setNotifyDataSetChanged();
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e("ProductPresenter", error.toString());
-            }
-        });
-        MySingleton.getInstance(((Fragment) mHistoryReviewView).getContext().getApplicationContext()).addToRequestQueue(requestImage);
+                },
+                error -> Log.e(TAG, error.toString()));
     }
 
 
@@ -172,21 +147,7 @@ public class HistoryReviewPresenter implements HistoryReviewContract.Presenter {
             }
         }
         mHistoryReviewView.setLayoutReviewNone(mHistoryReviews.size() > 0 ? false : true);
+        mHistoryReviewView.setLayoutLoading(false);
         mHistoryReviewView.setAdapterHistoryReview(mHistoryReviews);
     }
-
-//    private void prepareData() {
-//        Store store = new Store("5b989eb9a6bce5234c9522ea", "Máy tính Phong Vũ");
-////        List<ProductImage> imageList_1603653 = new ArrayList<>();
-////        imageList_1603653.add(new ProductImage("5b98a6a6fe67871b2068add0", R.drawable.img_1603653_1));
-//        Product product = new Product("5b974fbf6153321ffc61b829", "Bo mạch chính/ Mainboard Asrock H110M-DVS R2.0");
-//
-//        ReviewStore reviewStore = new ReviewStore("5b98a6a6fe67871b2068add0", new Customer("dâf", "Nguyễn Văn Hiệp"), store, new RatingLevel("sfafa", 1, "Tốt"), "Hàng tốt, đóng gói cẩn thận!", Calendar.getInstance().getTime());
-//        ReviewProduct reviewProduct = new ReviewProduct("5b98a6a6fe67871b2068add1", new Customer("dâf", "Nguyễn Văn Hiệp"), product, new RatingStar("sfafsfa", 5, "5 SAO"), "Sản phẩm ổn trong tầm giá", new Date());
-//
-//        mHistoryReviewList = new ArrayList<>();
-//        mHistoryReviewList.add(new HistoryReview(reviewStore, reviewProduct));
-//        mHistoryReviewList.add(new HistoryReview(reviewStore, reviewProduct));
-//        mHistoryReviewList.add(new HistoryReview(reviewStore, reviewProduct));
-//    }
 }

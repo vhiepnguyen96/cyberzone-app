@@ -1,6 +1,8 @@
 package com.n8plus.vhiep.cyberzone.ui.checkorder;
 
 import android.app.Activity;
+import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.widget.Toast;
@@ -26,6 +28,7 @@ import com.n8plus.vhiep.cyberzone.data.model.Specification;
 import com.n8plus.vhiep.cyberzone.data.model.Store;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.MySingleton;
+import com.n8plus.vhiep.cyberzone.util.VolleyUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,16 +41,17 @@ import java.util.Map;
 
 public class CheckOrderPresenter implements CheckOrderContract.Presenter {
     private static final String TAG = "CheckOrderPresenter";
+    private Context context;
     private CheckOrderContract.View mCheckOrderView;
     private List<PurchaseItem> mPurchaseItemList;
     private List<Address> addressList;
     private Address addressDefault;
-    private String URL_ADDRESS = Constant.URL_HOST + "deliveryAddresses";
     private Gson gson;
     private int mTempPrice = 0, mTotalPrice = 0;
     private DeliveryPrice mDeliveryPrice;
 
-    public CheckOrderPresenter(CheckOrderContract.View mCheckOrderView) {
+    public CheckOrderPresenter(@NonNull final Context context, @NonNull final CheckOrderContract.View mCheckOrderView) {
+        this.context = context;
         this.mCheckOrderView = mCheckOrderView;
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setDateFormat("M/d/yy hh:mm a");
@@ -84,37 +88,56 @@ public class CheckOrderPresenter implements CheckOrderContract.Presenter {
 
     @Override
     public void loadDeliveryAddressDefault(String customerId) {
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, URL_ADDRESS + "/customer/" + customerId, null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                try {
-                    addressList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("deliveryAddresses")), Address[].class));
-                    Log.i("CheckOrderPresenter", "GET: " + addressList.size() + " address");
-                    if (addressList.size() > 0) {
-                        mCheckOrderView.showLayoutAddress(true);
-                        addressDefault = addressList.get(0);
-                        mCheckOrderView.setNameCustomer(addressDefault.getPresentation());
-                        mCheckOrderView.setPhoneCustomer(addressDefault.getPhone());
-                        mCheckOrderView.setAddressCustomer(addressDefault.getAddress());
-                    } else {
-                        mCheckOrderView.showLayoutAddress(false);
+        VolleyUtil.GET(context, Constant.URL_ADDRESS + "/customer/" + customerId,
+                response -> {
+                    try {
+                        addressList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("deliveryAddresses")), Address[].class));
+                        Log.i("CheckOrderPresenter", "GET: " + addressList.size() + " address");
+                        if (addressList.size() > 0) {
+                            mCheckOrderView.showLayoutAddress(true);
+                            addressDefault = addressList.get(0);
+                            mCheckOrderView.setNameCustomer(addressDefault.getPresentation());
+                            mCheckOrderView.setPhoneCustomer(addressDefault.getPhone());
+                            mCheckOrderView.setAddressCustomer(addressDefault.getAddress());
+                        } else {
+                            mCheckOrderView.showLayoutAddress(false);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e("CheckOrderPresenter", error.toString());
-            }
-        });
-        MySingleton.getInstance(((Activity) mCheckOrderView).getApplicationContext()).addToRequestQueue(request);
+                },
+                error -> Log.e(TAG, error.toString()));
+//        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, Constant.URL_ADDRESS + "/customer/" + customerId, null, new Response.Listener<JSONObject>() {
+//            @Override
+//            public void onResponse(JSONObject response) {
+//                try {
+//                    addressList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("deliveryAddresses")), Address[].class));
+//                    Log.i("CheckOrderPresenter", "GET: " + addressList.size() + " address");
+//                    if (addressList.size() > 0) {
+//                        mCheckOrderView.showLayoutAddress(true);
+//                        addressDefault = addressList.get(0);
+//                        mCheckOrderView.setNameCustomer(addressDefault.getPresentation());
+//                        mCheckOrderView.setPhoneCustomer(addressDefault.getPhone());
+//                        mCheckOrderView.setAddressCustomer(addressDefault.getAddress());
+//                    } else {
+//                        mCheckOrderView.showLayoutAddress(false);
+//                    }
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }, new Response.ErrorListener() {
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//                Log.e("CheckOrderPresenter", error.toString());
+//            }
+//        });
+//        MySingleton.getInstance(((Activity) mCheckOrderView).getApplicationContext()).addToRequestQueue(request);
     }
 
     @Override
     public void prepareDataPayment() {
-        if (addressDefault != null){
+        if (addressDefault != null) {
             Order order = new Order(Constant.customer, addressDefault, mDeliveryPrice, Constant.countProductInCart(), String.valueOf(mTotalPrice), mPurchaseItemList);
             mCheckOrderView.moveToChoosePaymentMethod(order);
         } else {

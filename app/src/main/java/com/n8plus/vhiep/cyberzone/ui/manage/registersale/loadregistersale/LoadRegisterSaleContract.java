@@ -8,6 +8,7 @@ import java.util.List;
 public interface LoadRegisterSaleContract {
     interface View {
         void setLayoutNone(boolean b);
+        void setLayoutLoading(boolean b);
         void setAdapterRegisterSale(List<RegisterSale> registerSales);
     }
     interface Presenter extends BasePresenter<View> {

@@ -19,21 +19,22 @@ import java.util.List;
 
 public class AllOrderFragment extends Fragment implements AllOrderContract.View {
     private ListView mListAllOrder;
-    private LinearLayout mLinearOrderNone;
+    private LinearLayout mLinearNone, mLinearLoading;
     private MyOrderAdapter mMyOrderAdapter;
     private AllOrderPresenter mAllOrderPresenter;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.all_order_frag, container, false);
-        mAllOrderPresenter = new AllOrderPresenter(this);
+        mAllOrderPresenter = new AllOrderPresenter(getContext(),this);
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mListAllOrder = (ListView) view.findViewById(R.id.lv_all_order);
-        mLinearOrderNone = (LinearLayout) view.findViewById(R.id.lnr_order_none);
+        mLinearNone = (LinearLayout) view.findViewById(R.id.lnr_none);
+        mLinearLoading = (LinearLayout) view.findViewById(R.id.lnr_loading);
 
         mAllOrderPresenter.loadAllOrder(Constant.customer.getId());
 
@@ -41,8 +42,13 @@ public class AllOrderFragment extends Fragment implements AllOrderContract.View 
     }
 
     @Override
-    public void setLayoutOrderNone(boolean b) {
-        mLinearOrderNone.setVisibility(b ? View.VISIBLE : View.GONE);
+    public void setLayoutNone(boolean b) {
+        mLinearNone.setVisibility(b ? View.VISIBLE : View.GONE);
+    }
+
+    @Override
+    public void setLayoutLoading(boolean b) {
+        mLinearLoading.setVisibility(b ? View.VISIBLE : View.GONE);
     }
 
     @Override

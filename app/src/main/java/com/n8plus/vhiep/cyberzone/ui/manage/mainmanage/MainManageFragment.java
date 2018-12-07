@@ -43,62 +43,44 @@ public class MainManageFragment extends Fragment implements MainManageContract.V
         mWishListFollowedStore = (LinearLayout) view.findViewById(R.id.lnr_my_wishlist_followedstore);
         mRegisterSale = (LinearLayout) view.findViewById(R.id.lnr_register_sale);
 
-        mHelloCustomer.setText(Constant.customer.getName());
+        mHelloCustomer.setText(Constant.customer.getName() != null ? Constant.customer.getName() : "");
 
-        mMyProfile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mFragmentManager = getFragmentManager();
-                mFragmentTransaction = mFragmentManager.beginTransaction();
-                mFragmentTransaction.replace(R.id.frm_manage, new MyProfileFragment());
-                mFragmentTransaction.commit();
-            }
+        mMyProfile.setOnClickListener(v -> {
+            mFragmentManager = getFragmentManager();
+            mFragmentTransaction = mFragmentManager.beginTransaction();
+            mFragmentTransaction.replace(R.id.frm_manage, new MyProfileFragment());
+            mFragmentTransaction.commit();
         });
-        mMyDeliveryAddress.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mFragmentManager = getFragmentManager();
-                mFragmentTransaction = mFragmentManager.beginTransaction();
-                mFragmentTransaction.replace(R.id.frm_manage, new MyDeliveryAddressFragment());
-                mFragmentTransaction.commit();
-            }
+        mMyDeliveryAddress.setOnClickListener(v -> {
+            mFragmentManager = getFragmentManager();
+            mFragmentTransaction = mFragmentManager.beginTransaction();
+            mFragmentTransaction.replace(R.id.frm_manage, new MyDeliveryAddressFragment());
+            mFragmentTransaction.commit();
         });
-        mMyOrder.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mFragmentManager = getFragmentManager();
-                mFragmentTransaction = mFragmentManager.beginTransaction();
-                mFragmentTransaction.replace(R.id.frm_manage, new MyOrderFragment());
-                mFragmentTransaction.commit();
-            }
+        mMyOrder.setOnClickListener(v -> {
+            mFragmentManager = getFragmentManager();
+            mFragmentTransaction = mFragmentManager.beginTransaction();
+            mFragmentTransaction.replace(R.id.frm_manage, new MyOrderFragment());
+            mFragmentTransaction.commit();
         });
 
-        mMyReview.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mFragmentManager = getFragmentManager();
-                mFragmentTransaction = mFragmentManager.beginTransaction();
-                mFragmentTransaction.replace(R.id.frm_manage, new MyReviewFragment());
-                mFragmentTransaction.commit();
-            }
+        mMyReview.setOnClickListener(v -> {
+            mFragmentManager = getFragmentManager();
+            mFragmentTransaction = mFragmentManager.beginTransaction();
+            mFragmentTransaction.replace(R.id.frm_manage, new MyReviewFragment());
+            mFragmentTransaction.commit();
         });
-        mWishListFollowedStore.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mFragmentManager = getFragmentManager();
-                mFragmentTransaction = mFragmentManager.beginTransaction();
-                mFragmentTransaction.replace(R.id.frm_manage, new WishlistFollowedstoreFragment());
-                mFragmentTransaction.commit();
-            }
+        mWishListFollowedStore.setOnClickListener(v -> {
+            mFragmentManager = getFragmentManager();
+            mFragmentTransaction = mFragmentManager.beginTransaction();
+            mFragmentTransaction.replace(R.id.frm_manage, new WishlistFollowedstoreFragment());
+            mFragmentTransaction.commit();
         });
-        mRegisterSale.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mFragmentManager = getFragmentManager();
-                mFragmentTransaction = mFragmentManager.beginTransaction();
-                mFragmentTransaction.replace(R.id.frm_manage, new RegisterSaleFragment());
-                mFragmentTransaction.commit();
-            }
+        mRegisterSale.setOnClickListener(v -> {
+            mFragmentManager = getFragmentManager();
+            mFragmentTransaction = mFragmentManager.beginTransaction();
+            mFragmentTransaction.replace(R.id.frm_manage, new RegisterSaleFragment());
+            mFragmentTransaction.commit();
         });
         super.onViewCreated(view, savedInstanceState);
     }

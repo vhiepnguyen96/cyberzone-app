@@ -58,7 +58,7 @@ public class CheckOrderActivity extends AppCompatActivity implements CheckOrderC
         customToolbar();
 
         // Presnter
-        mCheckOrderPresenter = new CheckOrderPresenter(this);
+        mCheckOrderPresenter = new CheckOrderPresenter(getApplicationContext(), this);
 
         Intent intent = getIntent();
         if (intent != null && intent.getSerializableExtra("purchaseItems") != null && intent.getSerializableExtra("deliveryPrice") != null) {
@@ -68,26 +68,11 @@ public class CheckOrderActivity extends AppCompatActivity implements CheckOrderC
         }
 
         // Listenner
-        mLinearPayment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCheckOrderPresenter.prepareDataPayment();
-            }
-        });
+        mLinearPayment.setOnClickListener(v -> mCheckOrderPresenter.prepareDataPayment());
 
-        mEditAddress.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivityForResult(new Intent(CheckOrderActivity.this, ChooseDeliveryAddressActivity.class), REQUEST_CODE);
-            }
-        });
+        mEditAddress.setOnClickListener(v -> startActivityForResult(new Intent(CheckOrderActivity.this, ChooseDeliveryAddressActivity.class), REQUEST_CODE));
 
-        mAddAddress.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivityForResult(new Intent(CheckOrderActivity.this, ChooseDeliveryAddressActivity.class), REQUEST_CODE);
-            }
-        });
+        mAddAddress.setOnClickListener(v -> startActivityForResult(new Intent(CheckOrderActivity.this, ChooseDeliveryAddressActivity.class), REQUEST_CODE));
     }
 
     @Override
@@ -211,12 +196,7 @@ public class CheckOrderActivity extends AppCompatActivity implements CheckOrderC
         builder.setTitle("Thông báo");
         builder.setMessage(message);
         builder.setCancelable(false);
-        builder.setPositiveButton("Chấp nhận", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        });
+        builder.setPositiveButton("Chấp nhận", (dialogInterface, i) -> dialogInterface.dismiss());
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }

@@ -33,7 +33,7 @@ public class CategoryFragment extends Fragment implements CategoryContract.View 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.menu_category_frag, container, false);
-        mCategoryPresenter = new CategoryPresenter(this);
+        mCategoryPresenter = new CategoryPresenter(getContext(), this);
         return view;
     }
 
@@ -43,21 +43,17 @@ public class CategoryFragment extends Fragment implements CategoryContract.View 
 
         mCategoryPresenter.loadData();
 
-        mListViewCategory.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @SuppressLint("ResourceType")
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                fragmentManager = getFragmentManager();
-                fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left );
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("category", categories.get(position));
-                ProductTypeFragment fragment = new ProductTypeFragment();
-                fragment.setArguments(bundle);
-                fragmentTransaction.replace(R.id.frameLayout, fragment);
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.commit();
-            }
+        mListViewCategory.setOnItemClickListener((parent, view1, position, id) -> {
+            fragmentManager = getFragmentManager();
+            fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left );
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("category", categories.get(position));
+            ProductTypeFragment fragment = new ProductTypeFragment();
+            fragment.setArguments(bundle);
+            fragmentTransaction.replace(R.id.frameLayout, fragment);
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
         });
 
         super.onViewCreated(view, savedInstanceState);

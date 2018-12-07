@@ -101,13 +101,10 @@ public class MyOrderAdapter extends BaseAdapter {
             holder.tv_payment_order.setVisibility(View.INVISIBLE);
         }
 
-        holder.tv_payment_order.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, PaymentActivity.class);
-                intent.putExtra("order", order);
-                ((Activity) context).startActivity(intent);
-            }
+        holder.tv_payment_order.setOnClickListener(v -> {
+            Intent intent = new Intent(context, PaymentActivity.class);
+            intent.putExtra("order", order);
+            ((Activity) context).startActivity(intent);
         });
 
         return convertView;

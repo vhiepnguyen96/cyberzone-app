@@ -1,5 +1,7 @@
 package com.n8plus.vhiep.cyberzone.ui.manage.wishlistfollowedstore.followedstore;
 
+import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 
@@ -20,6 +22,7 @@ import com.n8plus.vhiep.cyberzone.data.model.WishList;
 import com.n8plus.vhiep.cyberzone.ui.manage.wishlistfollowedstore.wishlist.WishListContract;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.MySingleton;
+import com.n8plus.vhiep.cyberzone.util.VolleyUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,13 +34,14 @@ import java.util.Date;
 import java.util.List;
 
 public class FollowedStorePresenter implements FollowedStoreContract.Presenter {
+    private static final String TAG = "FollowedStorePresenter";
+    private Context context;
     private FollowedStoreContract.View mFollowedStoreView;
     private List<FollowStore> mFollowStores;
     private Gson gson;
-    private final String URL_FOLLOW_STORE = Constant.URL_HOST + "followStores";
-    private final String URL_CATEGORY = Constant.URL_HOST + "categories";
 
-    public FollowedStorePresenter(FollowedStoreContract.View mFollowedStoreView) {
+    public FollowedStorePresenter(@NonNull final Context context, @NonNull final FollowedStoreContract.View mFollowedStoreView) {
+        this.context = context;
         this.mFollowedStoreView = mFollowedStoreView;
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setDateFormat("M/d/yy hh:mm a");
@@ -51,57 +55,46 @@ public class FollowedStorePresenter implements FollowedStoreContract.Presenter {
 
     @Override
     public void loadFollowStore(String customerId) {
-        mFollowStores = new ArrayList<>();
-        JsonObjectRequest wishListRequest = new JsonObjectRequest(Request.Method.GET, URL_FOLLOW_STORE + "/customer/" + customerId, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            mFollowStores = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("followStores")), FollowStore[].class));
-                            Log.d("FollowedStorePresenter", "GET followStores: " + mFollowStores.size());
-                            if (mFollowStores.size() > 0) {
-                                mFollowedStoreView.setLayoutNone(false);
-                                mFollowedStoreView.setAdapterFollowStore(mFollowStores);
-                                for (int i = 0; i < mFollowStores.size(); i++) {
-                                    JSONArray categories = response.getJSONArray("followStores").getJSONObject(i).getJSONObject("store").getJSONArray("categories");
-                                    final List<Category> categoryList = new ArrayList<>();
-                                    for (int j = 0; j < categories.length(); j++) {
-                                        JsonObjectRequest categoryRequest = new JsonObjectRequest(Request.Method.GET, URL_CATEGORY + "/" + categories.getJSONObject(j).getString("category"), null, new Response.Listener<JSONObject>() {
-                                            @Override
-                                            public void onResponse(JSONObject response) {
+        mFollowedStoreView.setLayoutLoading(true);
+        VolleyUtil.GET(context, Constant.URL_FOLLOW_STORE + "/customer/" + customerId,
+                response -> {
+                    try {
+                        mFollowStores = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("followStores")), FollowStore[].class));
+                        Log.d("FollowedStorePresenter", "GET followStores: " + mFollowStores.size());
+                        mFollowedStoreView.setLayoutLoading(false);
+
+                        if (mFollowStores.size() > 0) {
+                            mFollowedStoreView.setLayoutNone(false);
+                            mFollowedStoreView.setAdapterFollowStore(mFollowStores);
+                            for (int i = 0; i < mFollowStores.size(); i++) {
+                                JSONArray categories = response.getJSONArray("followStores").getJSONObject(i).getJSONObject("store").getJSONArray("categories");
+                                final List<Category> categoryList = new ArrayList<>();
+                                for (int j = 0; j < categories.length(); j++) {
+                                    VolleyUtil.GET(context, Constant.URL_CATEGORY + "/" + categories.getJSONObject(j).getString("category"),
+                                            response1 -> {
                                                 try {
-                                                    Category category = gson.fromJson(String.valueOf(response.getJSONObject("category")), Category.class);
+                                                    Category category = gson.fromJson(String.valueOf(response1.getJSONObject("category")), Category.class);
                                                     categoryList.add(category);
                                                 } catch (JSONException e) {
                                                     e.printStackTrace();
                                                 }
-                                            }
-                                        }, new Response.ErrorListener() {
-                                            @Override
-                                            public void onErrorResponse(VolleyError error) {
-                                                Log.e("FollowedStorePresenter", error.toString());
-                                            }
-                                        });
-                                        MySingleton.getInstance(((Fragment) mFollowedStoreView).getContext().getApplicationContext()).addToRequestQueue(categoryRequest);
-                                    }
-                                    mFollowStores.get(i).getStore().setCategories(categoryList);
-                                    mFollowedStoreView.setNotifyDataSetChanged();
+                                            },
+                                            error -> Log.e(TAG, error.toString()));
                                 }
-                            } else {
-                                mFollowedStoreView.setLayoutNone(true);
+                                mFollowStores.get(i).getStore().setCategories(categoryList);
+                                mFollowedStoreView.setNotifyDataSetChanged();
                             }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                        } else {
+                            mFollowedStoreView.setLayoutNone(true);
                         }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        mFollowedStoreView.setLayoutNone(true);
-                    }
+                error -> {
+                    mFollowedStoreView.setLayoutNone(true);
+                    mFollowedStoreView.setLayoutLoading(false);
                 });
-        MySingleton.getInstance(((Fragment) mFollowedStoreView).getContext().getApplicationContext()).addToRequestQueue(wishListRequest);
     }
 
     @Override
@@ -111,23 +104,16 @@ public class FollowedStorePresenter implements FollowedStoreContract.Presenter {
 
     @Override
     public void unfollowStore(int position) {
-        JsonObjectRequest followRequest = new JsonObjectRequest(Request.Method.DELETE, URL_FOLLOW_STORE + "/" + Constant.customer.getId() + "/" + mFollowStores.get(position).getStore().getStoreId(), null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.i("ProductDetailPresenter", response.toString());
-                        mFollowedStoreView.unfollowStoreAlert(true);
-                        mFollowedStoreView.setNotifyDataSetChanged();
-                        loadData();
-                    }
+        VolleyUtil.DELETE(context, Constant.URL_FOLLOW_STORE + "/" + Constant.customer.getId() + "/" + mFollowStores.get(position).getStore().getStoreId(),
+                response -> {
+                    Log.i(TAG, response.toString());
+                    mFollowedStoreView.unfollowStoreAlert(true);
+                    mFollowedStoreView.setNotifyDataSetChanged();
+                    loadData();
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("ProductDetailPresenter", error.toString());
-                        mFollowedStoreView.unfollowStoreAlert(false);
-                    }
+                error -> {
+                    Log.e(TAG, error.toString());
+                    mFollowedStoreView.unfollowStoreAlert(false);
                 });
-        MySingleton.getInstance(((Fragment) mFollowedStoreView).getContext().getApplicationContext()).addToRequestQueue(followRequest);
     }
 }

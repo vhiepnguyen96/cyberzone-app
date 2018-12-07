@@ -41,7 +41,7 @@ public class InformationFragment extends Fragment implements InformationContract
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.information_frag, container, false);
-        mInformationPresenter = new InformationPresenter(this);
+        mInformationPresenter = new InformationPresenter(getContext(),this);
         return view;
     }
 
@@ -67,20 +67,15 @@ public class InformationFragment extends Fragment implements InformationContract
             mInformationPresenter.loadData((Store) bundle.getSerializable("store"));
         }
 
-        mMoreReview.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mInformationPresenter.prepareDataMoreReview();
-            }
-        });
+        mMoreReview.setOnClickListener(v -> mInformationPresenter.prepareDataMoreReview());
 
         super.onViewCreated(view, savedInstanceState);
     }
 
     private List<ReviewStore> getRandomReview(List<ReviewStore> reviewStoreList) {
         List<ReviewStore> arrayList = new ArrayList<>();
-        if (reviewStoreList.size() > 5) {
-            for (int i = 0; i < 5; i++) {
+        if (reviewStoreList.size() > 10) {
+            for (int i = 0; i < 10; i++) {
                 arrayList.add(reviewStoreList.get(i));
             }
         } else {

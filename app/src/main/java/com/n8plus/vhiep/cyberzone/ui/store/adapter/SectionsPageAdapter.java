@@ -1,5 +1,6 @@
 package com.n8plus.vhiep.cyberzone.ui.store.adapter;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -25,6 +26,11 @@ public class SectionsPageAdapter extends FragmentStatePagerAdapter {
     public void adđFragment(Fragment fragment, String title){
         mFragmentList.add(fragment);
         mFragmentTitleList.add(title);
+    }
+
+    @Override
+    public int getItemPosition(@NonNull Object object) {
+        return POSITION_NONE;
     }
 
     @Nullable

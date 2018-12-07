@@ -1,5 +1,7 @@
 package com.n8plus.vhiep.cyberzone.ui.manage.registersale.loadregistersale;
 
+import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 
@@ -14,6 +16,7 @@ import com.n8plus.vhiep.cyberzone.data.model.WishList;
 import com.n8plus.vhiep.cyberzone.ui.manage.registersale.RegisterSaleContract;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 import com.n8plus.vhiep.cyberzone.util.MySingleton;
+import com.n8plus.vhiep.cyberzone.util.VolleyUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,12 +26,14 @@ import java.util.Arrays;
 import java.util.List;
 
 public class LoadRegisterSalePresenter implements LoadRegisterSaleContract.Presenter {
+    private static final String TAG = "RegisterSalePresenter";
+    private Context context;
     private LoadRegisterSaleContract.View mLoadRegisterSaleView;
     private List<RegisterSale> mRegisterSales;
     private Gson gson;
-    private final String URL_REGISTER_SALE = Constant.URL_HOST + "registeredSales";
 
-    public LoadRegisterSalePresenter(LoadRegisterSaleContract.View mLoadRegisterSaleView) {
+    public LoadRegisterSalePresenter(@NonNull final Context context, @NonNull final LoadRegisterSaleContract.View mLoadRegisterSaleView) {
+        this.context = context;
         this.mLoadRegisterSaleView = mLoadRegisterSaleView;
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setDateFormat("M/d/yy hh:mm a");
@@ -42,32 +47,28 @@ public class LoadRegisterSalePresenter implements LoadRegisterSaleContract.Prese
 
     @Override
     public void loadAllRegisterSale(String customerId) {
-        mRegisterSales = new ArrayList<>();
-        JsonObjectRequest registerSaleRequest = new JsonObjectRequest(Request.Method.GET, URL_REGISTER_SALE + "/customer/" + customerId, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            mRegisterSales = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("registeredSales")), RegisterSale[].class));
-                            Log.d("RegisterSalePresenter", "GET mRegisterSales: " + mRegisterSales.size());
-                            if (mRegisterSales.size() > 0) {
-                                mLoadRegisterSaleView.setLayoutNone(false);
-                                mLoadRegisterSaleView.setAdapterRegisterSale(mRegisterSales);
-                            } else {
-                                mLoadRegisterSaleView.setLayoutNone(true);
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+        mLoadRegisterSaleView.setLayoutLoading(true);
+        VolleyUtil.GET(context, Constant.URL_REGISTER_SALE + "/customer/" + customerId,
+                response -> {
+                    try {
+                        mRegisterSales = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("registeredSales")), RegisterSale[].class));
+                        Log.d(TAG, "GET mRegisterSales: " + mRegisterSales.size());
+                        mLoadRegisterSaleView.setLayoutLoading(false);
+
+                        if (mRegisterSales.size() > 0) {
+                            mLoadRegisterSaleView.setLayoutNone(false);
+                            mLoadRegisterSaleView.setAdapterRegisterSale(mRegisterSales);
+                        } else {
+                            mLoadRegisterSaleView.setLayoutNone(true);
                         }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.d("RegisterSalePresenter", error.toString());
-                        mLoadRegisterSaleView.setLayoutNone(true);
-                    }
+                error -> {
+                    Log.d(TAG, error.toString());
+                    mLoadRegisterSaleView.setLayoutNone(true);
+                    mLoadRegisterSaleView.setLayoutLoading(false);
                 });
-        MySingleton.getInstance(((Fragment) mLoadRegisterSaleView).getContext().getApplicationContext()).addToRequestQueue(registerSaleRequest);
     }
 }

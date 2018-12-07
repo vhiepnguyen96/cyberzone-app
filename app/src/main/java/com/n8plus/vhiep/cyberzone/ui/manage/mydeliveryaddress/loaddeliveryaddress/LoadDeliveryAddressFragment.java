@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -38,6 +39,7 @@ public class LoadDeliveryAddressFragment extends Fragment implements LoadDeliver
     private ListView mListDeliveryAddress;
     private Button mAddAddress;
     private ImageButton mBackCheckOrder;
+    private LinearLayout mLinearNone, mLinearLoading;
     private DeliveryAddressAdapter mDeliveryAddressAdapter;
     private LoadDeliveryAddressPresenter mLoadDeliveryAddressPresenter;
     private FragmentTransaction mFragmentTransaction;
@@ -46,7 +48,7 @@ public class LoadDeliveryAddressFragment extends Fragment implements LoadDeliver
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.all_delivery_address_frag, container, false);
-        mLoadDeliveryAddressPresenter = new LoadDeliveryAddressPresenter(this);
+        mLoadDeliveryAddressPresenter = new LoadDeliveryAddressPresenter(getContext(),this);
         return view;
     }
 
@@ -54,6 +56,8 @@ public class LoadDeliveryAddressFragment extends Fragment implements LoadDeliver
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         mListDeliveryAddress = (ListView) view.findViewById(R.id.lsv_delivery_address);
         mAddAddress = (Button) view.findViewById(R.id.btn_add_address);
+        mLinearNone = (LinearLayout) view.findViewById(R.id.lnr_none);
+        mLinearLoading = (LinearLayout) view.findViewById(R.id.lnr_loading);
 
         // Presenter
         mLoadDeliveryAddressPresenter.loadAllDeliveryAddress(Constant.customer.getId());
@@ -69,20 +73,27 @@ public class LoadDeliveryAddressFragment extends Fragment implements LoadDeliver
         // Listener
         mAddAddress.setOnClickListener(this);
 
-        mListDeliveryAddress.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ActionBar actionbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-                String title = (String) actionbar.getTitle();
-                if (title.equals("Chọn địa chỉ giao hàng")) {
-                    mLoadDeliveryAddressPresenter.prepareDataChooseAddress(position);
-                }
+        mListDeliveryAddress.setOnItemClickListener((parent, view1, position, id) -> {
+            ActionBar actionbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+            String title = (String) actionbar.getTitle();
+            if (title.equals("Chọn địa chỉ giao hàng")) {
+                mLoadDeliveryAddressPresenter.prepareDataChooseAddress(position);
             }
         });
 
         super.onViewCreated(view, savedInstanceState);
     }
 
+
+    @Override
+    public void setLayoutNone(boolean b) {
+        mLinearNone.setVisibility(b ? View.VISIBLE : View.GONE);
+    }
+
+    @Override
+    public void setLayoutLoading(boolean b) {
+        mLinearLoading.setVisibility(b ? View.VISIBLE : View.GONE);
+    }
 
     @Override
     public void setAdapterAddress(List<Address> addressList) {
@@ -156,18 +167,8 @@ public class LoadDeliveryAddressFragment extends Fragment implements LoadDeliver
         builder.setTitle("Xác nhận");
         builder.setMessage("Bạn muốn xóa địa chỉ này?");
         builder.setCancelable(false);
-        builder.setPositiveButton("Chấp nhận", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                mLoadDeliveryAddressPresenter.deleteDeliveryAddress(position);
-            }
-        });
-        builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        });
+        builder.setPositiveButton("Chấp nhận", (dialogInterface, i) -> mLoadDeliveryAddressPresenter.deleteDeliveryAddress(position));
+        builder.setNegativeButton("Hủy", (dialogInterface, i) -> dialogInterface.dismiss());
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }

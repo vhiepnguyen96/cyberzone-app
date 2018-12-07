@@ -132,7 +132,7 @@ public class SigninFragment extends Fragment implements SigninContract.View, Vie
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.signin_frag, container, false);
-        mSigninPresenter = new SigninPresenter(this);
+        mSigninPresenter = new SigninPresenter(getContext(),this);
         mCallbackManager = CallbackManager.Factory.create();
         mSessionManager = new SessionManager(this.getActivity().getApplicationContext());
 
@@ -146,16 +146,13 @@ public class SigninFragment extends Fragment implements SigninContract.View, Vie
             public void onSuccess(LoginResult loginResult) {
                 GraphRequest request = GraphRequest.newMeRequest(
                         loginResult.getAccessToken(),
-                        new GraphRequest.GraphJSONObjectCallback() {
-                            @Override
-                            public void onCompleted(JSONObject object, GraphResponse response) {
-                                Log.d(TAG, response.getJSONObject().toString());
-                                Profile profile = Profile.getCurrentProfile();
-                                if (profile != null) {
-                                    mSigninPresenter.signIn(profile.getId());
-                                } else {
-                                    onSigninFailed();
-                                }
+                        (object, response) -> {
+                            Log.d(TAG, response.getJSONObject().toString());
+                            Profile profile = Profile.getCurrentProfile();
+                            if (profile != null) {
+                                mSigninPresenter.signIn(profile.getId());
+                            } else {
+                                onSigninFailed();
                             }
                         });
                 Bundle parameters = new Bundle();
@@ -335,22 +332,16 @@ public class SigninFragment extends Fragment implements SigninContract.View, Vie
         builder.setTitle("Thông báo");
         builder.setMessage("Tài khoản chưa đăng ký trong hệ thống!");
         builder.setCancelable(false);
-        builder.setPositiveButton("Đăng ký ngay", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                LoginManager.getInstance().logOut();
-                mGoogleSignInClient.signOut();
-                signUp();
-                dialogInterface.dismiss();
-            }
+        builder.setPositiveButton("Đăng ký ngay", (dialogInterface, i) -> {
+            LoginManager.getInstance().logOut();
+            mGoogleSignInClient.signOut();
+            signUp();
+            dialogInterface.dismiss();
         });
-        builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                LoginManager.getInstance().logOut();
-                mGoogleSignInClient.signOut();
-                dialogInterface.dismiss();
-            }
+        builder.setNegativeButton("Hủy", (dialogInterface, i) -> {
+            LoginManager.getInstance().logOut();
+            mGoogleSignInClient.signOut();
+            dialogInterface.dismiss();
         });
         AlertDialog alertDialog = builder.create();
         alertDialog.show();

@@ -101,12 +101,8 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     private HomePresenter mHomePresenter;
     private SessionManager mSessionManager;
     private DividerItemDecoration mOnSaleItemDecoration, mBestSellerItemDecoration;
-    private LinearLayout mLinearProgress;
-    private ProgressBar mProgressLoadMore;
-    private Parcelable mBestSellerState, mOnSaleState, mSuggestionState;
     private Menu mMenuHome;
     int currentItems, totalItems, scrollOutItems;
-    boolean isLoading = false;
 
     FragmentManager fragmentManager;
     FragmentTransaction fragmentTransaction;
@@ -125,13 +121,6 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
         mHomePresenter = new HomePresenter(getApplicationContext(), this);
         mSessionManager = new SessionManager(this);
 
-        // Load fragment
-        fragmentManager = getSupportFragmentManager();
-        fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.frameLayout, new CategoryFragment());
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
-
         // Custom SearchView
         SearchView.SearchAutoComplete serAutoComplete = mSearchHome.findViewById(android.support.v7.appcompat.R.id.search_src_text);
         serAutoComplete.setHintTextColor(Color.parseColor("#c1c1c1"));
@@ -141,10 +130,6 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
 
         // Custom refresh layout
         mRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
-
-        // Set data
-        mHomePresenter.loadData();
-        mHomePresenter.loadDataCustomer(mSessionManager.getAccountLogin());
 
         // Listener
         mCloseDrawer.setOnClickListener(v -> mDrawerLayout.closeDrawers());
@@ -168,9 +153,7 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
             return false;
         });
 
-        mSearchHome.setOnQueryTextListener(new SearchView.OnQueryTextListener()
-
-        {
+        mSearchHome.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 mHomePresenter.prepareDataKeyword(query);
@@ -182,6 +165,12 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
                 return false;
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mHomePresenter.loadIpFromServer();
     }
 
     @Override
@@ -214,8 +203,6 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
         mRecyclerOnSales = (RecyclerView) findViewById(R.id.recycler_on_sales);
         mRecyclerBestSeller = (RecyclerView) findViewById(R.id.recycler_best_seller);
         mRecyclerPopularCategory = (RecyclerView) findViewById(R.id.recycler_popular_category);
-        mLinearProgress = (LinearLayout) findViewById(R.id.lnr_progress);
-        mProgressLoadMore = (ProgressBar) findViewById(R.id.progress_load_more);
     }
 
     private void setFullScreenNavigationView() {
@@ -404,6 +391,15 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     }
 
     @Override
+    public void setNavigationView() {
+        fragmentManager = getSupportFragmentManager();
+        fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.frameLayout, new CategoryFragment());
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    @Override
     public void setNameCustomer(String nameCustomer) {
         mTextName.setText("Chào, " + nameCustomer);
     }
@@ -502,8 +498,27 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     }
 
     @Override
+    public void showLoadIpErrorDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Thông báo");
+        builder.setMessage("Lỗi tải dữ liệu từ máy chủ!");
+        builder.setCancelable(false);
+        builder.setPositiveButton("Thử lại", (dialogInterface, i) -> {
+            mHomePresenter.loadIpFromServer();
+        });
+        builder.setNegativeButton("Hủy", (dialogInterface, i) -> dialogInterface.dismiss());
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    @Override
     public void setRefreshing(boolean b) {
         mRefreshLayout.setRefreshing(b);
+    }
+
+    @Override
+    public String getCurrentAccountLogin() {
+        return mSessionManager.getAccountLogin();
     }
 
     @Override

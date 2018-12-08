@@ -13,6 +13,7 @@ import java.util.List;
 
 public interface HomeContract {
     interface View {
+        void setNavigationView();
         void setNameCustomer(String nameCustomer);
         void setAdapterSuggestion(List<Product> productList);
         void setAdapterOnSale(List<Product> productList);
@@ -32,9 +33,12 @@ public interface HomeContract {
         void moveToProductActivity(TypeLoad type, Bundle data);
         void moveToProductDetail(Product product);
         void showConfirmLogout();
+        void showLoadIpErrorDialog();
         void setRefreshing(boolean b);
+        String getCurrentAccountLogin();
     }
     interface Presenter extends BasePresenter<View> {
+        void loadIpFromServer();
         void loadData();
         void loadAllProductType();
         void loadDataCustomer(String accountId);

@@ -77,6 +77,32 @@ public class HomePresenter implements HomeContract.Presenter {
     }
 
     @Override
+    public void loadIpFromServer() {
+        VolleyUtil.GET(context, Constant.IP_SERVER,
+                response -> {
+                    try {
+                        String ipServer = response.getString("ip");
+                        if (!ipServer.isEmpty()) {
+                            Constant.URL_HOST = ipServer + ":3000/";
+                            Constant.changeIP(Constant.URL_HOST);
+                            mHomeView.setAlert("Connected to: " + ipServer);
+                            mHomeView.setNavigationView();
+                            loadData();
+                            loadDataCustomer(mHomeView.getCurrentAccountLogin());
+                        } else {
+                            mHomeView.showLoadIpErrorDialog();
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                },
+                error -> {
+                    Log.e(TAG, error.toString());
+                    mHomeView.showLoadIpErrorDialog();
+                });
+    }
+
+    @Override
     public void loadData() {
         loadCurrentTime();
         loadAllProductType();

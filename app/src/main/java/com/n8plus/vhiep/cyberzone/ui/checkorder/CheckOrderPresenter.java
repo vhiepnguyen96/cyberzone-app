@@ -107,32 +107,6 @@ public class CheckOrderPresenter implements CheckOrderContract.Presenter {
                     }
                 },
                 error -> Log.e(TAG, error.toString()));
-//        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, Constant.URL_ADDRESS + "/customer/" + customerId, null, new Response.Listener<JSONObject>() {
-//            @Override
-//            public void onResponse(JSONObject response) {
-//                try {
-//                    addressList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("deliveryAddresses")), Address[].class));
-//                    Log.i("CheckOrderPresenter", "GET: " + addressList.size() + " address");
-//                    if (addressList.size() > 0) {
-//                        mCheckOrderView.showLayoutAddress(true);
-//                        addressDefault = addressList.get(0);
-//                        mCheckOrderView.setNameCustomer(addressDefault.getPresentation());
-//                        mCheckOrderView.setPhoneCustomer(addressDefault.getPhone());
-//                        mCheckOrderView.setAddressCustomer(addressDefault.getAddress());
-//                    } else {
-//                        mCheckOrderView.showLayoutAddress(false);
-//                    }
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }, new Response.ErrorListener() {
-//            @Override
-//            public void onErrorResponse(VolleyError error) {
-//                Log.e("CheckOrderPresenter", error.toString());
-//            }
-//        });
-//        MySingleton.getInstance(((Activity) mCheckOrderView).getApplicationContext()).addToRequestQueue(request);
     }
 
     @Override

@@ -147,6 +147,24 @@ public class CartActivity extends AppCompatActivity implements CartContract.View
         }
     }
 
+    @Override
+    public void setNotifyDataSetChanged() {
+        mProductInCart.notifyDataSetChanged();
+    }
+
+    @Override
+    public void showInValidOrderItem() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Thông báo");
+        builder.setMessage("Vui lòng kiểm tra lại giỏ hàng!");
+        builder.setCancelable(false);
+        builder.setPositiveButton("Chấp nhận", (dialogInterface, i) -> {
+            dialogInterface.dismiss();
+        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
     public void updateCart() {
         mCartPresenter.loadData();
     }

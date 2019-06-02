@@ -42,7 +42,8 @@ public class ChoosePaymentMethodPresenter implements ChoosePaymentMethodContract
     private OrderState stateWaitForPayment;
     private Order mOrder;
     private Gson gson;
-    private int countSuccess = 0;
+    private int countSuccess = 0, countValid = 0;
+    private boolean isValid;
 
     public ChoosePaymentMethodPresenter(@NonNull final Context context, @NonNull final ChoosePaymentMethodContract.View choosePayemntMethodView) {
         this.context = context;
@@ -68,28 +69,6 @@ public class ChoosePaymentMethodPresenter implements ChoosePaymentMethodContract
                     }
                 },
                 error -> Log.e(TAG, error.toString()));
-//        JsonObjectRequest paymentMethodRequest = new JsonObjectRequest(Request.Method.GET, Constant.URL_PAYMENT_METHOD, null,
-//                new Response.Listener<JSONObject>() {
-//                    @Override
-//                    public void onResponse(JSONObject response) {
-//                        try {
-//                            paymentMethods = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("paymentMethods")), PaymentMethod[].class));
-//                            Log.i("PaymentMethodPresenter", "GET: " + paymentMethods.size() + " paymentMethods");
-//                            if (paymentMethods.size() > 0) {
-//                                mChoosePayemntMethodView.setAdapterPaymentMethod(paymentMethods);
-//                            }
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                },
-//                new Response.ErrorListener() {
-//                    @Override
-//                    public void onErrorResponse(VolleyError error) {
-//                        Log.e("PaymentMethodPresenter", error.toString());
-//                    }
-//                });
-//        MySingleton.getInstance(((Activity) mChoosePayemntMethodView).getApplicationContext()).addToRequestQueue(paymentMethodRequest);
     }
 
     @Override
@@ -112,32 +91,6 @@ public class ChoosePaymentMethodPresenter implements ChoosePaymentMethodContract
                     }
                 },
                 error -> Log.e(TAG, error.toString()));
-//        JsonObjectRequest orderStateRequest = new JsonObjectRequest(Request.Method.GET, URL_ORDER_STATE, null,
-//                new Response.Listener<JSONObject>() {
-//                    @Override
-//                    public void onResponse(JSONObject response) {
-//                        try {
-//                            orderStates = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("orderStates")), OrderState[].class));
-//                            Log.i("PaymentMethodPresenter", "GET: " + orderStates.size() + " orderStates");
-//                            for (OrderState state : orderStates) {
-//                                if (state.getStateName().equals("Đang xử lý")) {
-//                                    stateProcessing = state;
-//                                } else if (state.getStateName().equals("Đang chờ thanh toán")) {
-//                                    stateWaitForPayment = state;
-//                                }
-//                            }
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                },
-//                new Response.ErrorListener() {
-//                    @Override
-//                    public void onErrorResponse(VolleyError error) {
-//                        Log.e("PaymentMethodPresenter", error.toString());
-//                    }
-//                });
-//        MySingleton.getInstance(((Activity) mChoosePayemntMethodView).getApplicationContext()).addToRequestQueue(orderStateRequest);
     }
 
     @Override
@@ -153,7 +106,42 @@ public class ChoosePaymentMethodPresenter implements ChoosePaymentMethodContract
         } else {
             mOrder.setOrderState(stateWaitForPayment);
         }
-        saveOrder();
+        checkCurrentQuantity();
+    }
+
+    @Override
+    public void checkCurrentQuantity() {
+        for (int i = 0; i < mOrder.getPurchaseList().size(); i++) {
+            int finalI = i;
+            VolleyUtil.GET(context, Constant.URL_PRODUCT + "/" + mOrder.getPurchaseList().get(i).getProduct().getProductId(),
+                    response -> {
+                        try {
+                            Product product = gson.fromJson(String.valueOf(response.getJSONObject("product")), Product.class);
+                            if (product != null) {
+                                Log.d(TAG, "quantityBuy: " + mOrder.getPurchaseList().get(finalI).getQuantity() + " | quantityProduct: " + product.getQuantity());
+                                if (mOrder.getPurchaseList().get(finalI).getQuantity() <= product.getQuantity()) {
+                                    countValid++;
+                                    Log.d(TAG, "countValid: " + countValid + " | PurchaseList: " + mOrder.getPurchaseList().size());
+                                }
+                                // Last i
+                                if (finalI == mOrder.getPurchaseList().size() - 1) {
+                                    // Check is valid quantity
+                                    isValid = (countValid == mOrder.getPurchaseList().size()) ? true : false;
+                                    Log.d(TAG, " isValid: " + isValid);
+
+                                    if (isValid) {
+                                        saveOrder();
+                                    } else {
+                                        mChoosePayemntMethodView.showQuantityNonValid();
+                                    }
+                                }
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    },
+                    error -> Log.e(TAG, error.toString()));
+        }
     }
 
     @Override
@@ -188,27 +176,6 @@ public class ChoosePaymentMethodPresenter implements ChoosePaymentMethodContract
                     }
                 },
                 error -> Log.e(TAG, error.toString()));
-//        JsonObjectRequest orderRequest = new JsonObjectRequest(Request.Method.POST, URL_ORDER, order,
-//                new Response.Listener<JSONObject>() {
-//                    @Override
-//                    public void onResponse(JSONObject response) {
-//                        try {
-//                            if (response.getJSONObject("createdOrder") != null) {
-//                                mOrder.setOrderId(response.getJSONObject("createdOrder").getString("_id"));
-//                                saveOrderItems(mOrder.getOrderId());
-//                            }
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                },
-//                new Response.ErrorListener() {
-//                    @Override
-//                    public void onErrorResponse(VolleyError error) {
-//                        Log.e("PaymentMethodPresenter", error.toString());
-//                    }
-//                });
-//        MySingleton.getInstance(((Activity) mChoosePayemntMethodView).getApplicationContext()).addToRequestQueue(orderRequest);
     }
 
     @Override

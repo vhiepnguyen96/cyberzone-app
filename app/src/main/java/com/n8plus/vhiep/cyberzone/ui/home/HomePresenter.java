@@ -83,14 +83,15 @@ public class HomePresenter implements HomeContract.Presenter {
                     try {
                         String ipServer = response.getString("ip");
                         if (!ipServer.isEmpty()) {
-                            Constant.URL_HOST = ipServer + ":3000/";
+                            Constant.URL_HOST = ipServer + "/";
                             Constant.changeIP(Constant.URL_HOST);
-                            mHomeView.setAlert("Connected to: " + ipServer);
+                            mHomeView.setAlert("Xin chào!");
                             mHomeView.setNavigationView();
                             loadData();
                             loadDataCustomer(mHomeView.getCurrentAccountLogin());
                         } else {
-                            mHomeView.showLoadIpErrorDialog();
+//                            mHomeView.showLoadIpErrorDialog();
+                            Constant.URL_HOST = "https://cyber-zone.herokuapp.com/";
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -98,7 +99,8 @@ public class HomePresenter implements HomeContract.Presenter {
                 },
                 error -> {
                     Log.e(TAG, error.toString());
-                    mHomeView.showLoadIpErrorDialog();
+//                    mHomeView.showLoadIpErrorDialog();
+                    Constant.URL_HOST = "https://cyber-zone.herokuapp.com/";
                 });
     }
 

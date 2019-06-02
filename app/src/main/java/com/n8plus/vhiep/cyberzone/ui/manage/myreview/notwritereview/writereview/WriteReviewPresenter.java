@@ -87,25 +87,6 @@ public class WriteReviewPresenter implements WriteReviewContract.Presenter {
                     }
                 },
                 error -> Log.e(TAG, error.toString()));
-//        JsonObjectRequest ratingStarRequest = new JsonObjectRequest(Request.Method.GET, Constant.URL_RATING_STAR, null,
-//                new Response.Listener<JSONObject>() {
-//                    @Override
-//                    public void onResponse(JSONObject response) {
-//                        try {
-//                            mRatingStars = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("ratingStars")), RatingStar[].class));
-//                            Log.d("WriteReviewPresenter", "GET: " + mRatingStars.size() + " ratingStars");
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                },
-//                new Response.ErrorListener() {
-//                    @Override
-//                    public void onErrorResponse(VolleyError error) {
-//                        Log.e("WriteReviewPresenter", error.toString());
-//                    }
-//                });
-//        MySingleton.getInstance(((Fragment) mWriteReviewView).getContext().getApplicationContext()).addToRequestQueue(ratingStarRequest);
     }
 
     @Override
@@ -121,25 +102,6 @@ public class WriteReviewPresenter implements WriteReviewContract.Presenter {
                     }
                 },
                 error -> Log.e(TAG, error.toString()));
-//        JsonObjectRequest ratingLevelRequest = new JsonObjectRequest(Request.Method.GET, Constant.URL_RATING_LEVEL, null,
-//                new Response.Listener<JSONObject>() {
-//                    @Override
-//                    public void onResponse(JSONObject response) {
-//                        try {
-//                            mRatingLevels = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("ratingLevels")), RatingLevel[].class));
-//                            Log.d("WriteReviewPresenter", "GET: " + mRatingLevels.size() + " ratingLevels");
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                },
-//                new Response.ErrorListener() {
-//                    @Override
-//                    public void onErrorResponse(VolleyError error) {
-//                        Log.e("WriteReviewPresenter", error.toString());
-//                    }
-//                });
-//        MySingleton.getInstance(((Fragment) mWriteReviewView).getContext().getApplicationContext()).addToRequestQueue(ratingLevelRequest);
     }
 
     @Override

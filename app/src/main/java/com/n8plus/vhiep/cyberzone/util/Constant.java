@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Constant {
-    public static String IP_SERVER = "https://api.jsonbin.io/b/5c0b6a8dc10055104ca9e0fe";
+    public static String IP_SERVER = "https://api.myjson.com/bins/19ibw6";
     public static String URL_HOST;
     public static String URL_PRODUCT, URL_ORDER_ITEM, URL_PRODUCT_TYPE, URL_IMAGE, URL_FILTER
             , URL_REVIEW, URL_CUSTOMER, URL_DELIVERY_PRICE, URL_ADDRESS, URL_CATEGORY, URL_PAYMENT_METHOD
@@ -19,7 +19,7 @@ public class Constant {
             , URL_REVIEW_PRODUCT, URL_REVIEW_STORE, URL_REGISTER_SALE, URL_FOLLOW_STORE, URL_WISHLIST
             , URL_CHARGE, URL_STORE;
 
-    public static final String URL_TIME = "http://api.geonames.org/timezoneJSON?formatted=true&lat=10.041791&lng=105.747099&username=cyberzone&style=full";
+    public static final String URL_TIME = "http://api.geonames.org/timezoneJSON?formatted=true&lat=10.041791&lng=105.747099&username=cyberzone";
     public static final String URL_CURRENCY_RATE = "https://free.currencyconverterapi.com/api/v5/convert?q=USD_VND&compact=ultra";
     public static final String PUBLISHABLE_KEY = "pk_test_CeyyXLIDl0bfY9IiYwTIYZAU";
     public static final String SECRET_KEY = "sk_test_VWec3gEiwOvZ7wQ6BCWYCHk2";

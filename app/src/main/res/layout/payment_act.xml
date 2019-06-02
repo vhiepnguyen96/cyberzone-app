@@ -313,6 +313,17 @@
                                     android:textStyle="bold" />
                             </LinearLayout>
                         </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tv_payment_later"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginTop="8dp"
+                            android:background="@drawable/border_bottom_no_padding"
+                            android:text="Thanh toán sau"
+                            android:textAlignment="center"
+                            android:textColor="@android:color/black" />
                     </LinearLayout>
                 </LinearLayout>
 

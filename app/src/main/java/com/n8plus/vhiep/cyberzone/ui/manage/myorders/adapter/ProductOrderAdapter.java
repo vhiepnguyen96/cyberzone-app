@@ -41,7 +41,7 @@ public class ProductOrderAdapter extends BaseAdapter {
         public ImageView img_order_product, img_cart_product;
         public TextView txt_order_productName, txt_order_productPrice, txt_order_productBasicPrice, txt_order_discount, txt_order_quantity;
         public TextView txt_cart_productName, txt_cart_productPrice, txt_cart_productBasicPrice, txt_cart_discount;
-        public LinearLayout lnr_removeFromCart;
+        public LinearLayout lnr_removeFromCart, lnr_scrollable_number;
         public ScrollableNumberPicker snp_quantity_product;
     }
 
@@ -81,6 +81,7 @@ public class ProductOrderAdapter extends BaseAdapter {
                 holder.txt_cart_productBasicPrice = (TextView) convertView.findViewById(R.id.txt_cart_productBasicPrice);
                 holder.txt_cart_discount = (TextView) convertView.findViewById(R.id.txt_cart_discount);
                 holder.lnr_removeFromCart = (LinearLayout) convertView.findViewById(R.id.lnr_removeFromCart);
+                holder.lnr_scrollable_number = (LinearLayout) convertView.findViewById(R.id.lnr_scrollable_number);
                 holder.snp_quantity_product = (ScrollableNumberPicker) convertView.findViewById(R.id.snp_product_quantity);
             }
 
@@ -134,47 +135,41 @@ public class ProductOrderAdapter extends BaseAdapter {
                 holder.txt_cart_productPrice.setText(Integer.valueOf(product.getPrice()) > 1000 ? df.format(Product.convertToPrice(product.getPrice())).replace(",", ".") : product.getPrice());
                 convertView.findViewById(R.id.layout_cart_discount).setVisibility(View.INVISIBLE);
             }
-            holder.snp_quantity_product.setValue(purchaseItemList.get(position).getQuantity());
-            holder.snp_quantity_product.setMaxValue(purchaseItemList.get(position).getProduct().getQuantity());
 
-            holder.snp_quantity_product.setListener(new ScrollableNumberPickerListener() {
-                @Override
-                public void onNumberPicked(int value) {
+            if (purchaseItemList.get(position).getProduct().getQuantity() > 0){
+                holder.lnr_scrollable_number.setVisibility(View.VISIBLE);
+                holder.snp_quantity_product.setValue(purchaseItemList.get(position).getQuantity());
+                holder.snp_quantity_product.setMaxValue(purchaseItemList.get(position).getProduct().getQuantity());
+
+                holder.snp_quantity_product.setListener(value -> {
                     purchaseItemList.get(position).setQuantity(value);
                     notifyDataSetChanged();
                     if (context instanceof CartActivity) {
                         ((CartActivity) context).updateCart();
                     }
-                }
-            });
+                });
+            } else {
+                holder.lnr_scrollable_number.setVisibility(View.GONE);
+                holder.snp_quantity_product.setValue(purchaseItemList.get(position).getQuantity());
+                holder.snp_quantity_product.setMaxValue(purchaseItemList.get(position).getProduct().getQuantity());
+            }
 
-            holder.lnr_removeFromCart.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                    builder.setTitle("Xác nhận");
-                    builder.setMessage("Bạn muốn xóa sản phẩm khỏi giỏ?");
-                    builder.setCancelable(false);
-                    builder.setPositiveButton("Chấp nhận", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            purchaseItemList.remove(position);
-                            notifyDataSetChanged();
-                            if (context instanceof CartActivity) {
-                                ((CartActivity) context).updateCart();
-                            }
-                            dialogInterface.dismiss();
-                        }
-                    });
-                    builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-                        }
-                    });
-                    AlertDialog alertDialog = builder.create();
-                    alertDialog.show();
-                }
+            holder.lnr_removeFromCart.setOnClickListener(v -> {
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setTitle("Xác nhận");
+                builder.setMessage("Bạn muốn xóa sản phẩm khỏi giỏ?");
+                builder.setCancelable(false);
+                builder.setPositiveButton("Chấp nhận", (dialogInterface, i) -> {
+                    purchaseItemList.remove(position);
+                    notifyDataSetChanged();
+                    if (context instanceof CartActivity) {
+                        ((CartActivity) context).updateCart();
+                    }
+                    dialogInterface.dismiss();
+                });
+                builder.setNegativeButton("Hủy", (dialogInterface, i) -> dialogInterface.dismiss());
+                AlertDialog alertDialog = builder.create();
+                alertDialog.show();
             });
         }
         return convertView;

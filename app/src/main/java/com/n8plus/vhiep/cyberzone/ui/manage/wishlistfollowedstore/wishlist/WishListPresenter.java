@@ -83,6 +83,7 @@ public class WishListPresenter implements WishListContract.Presenter {
                             }
                         } else {
                             mWishListView.setLayoutNone(true);
+                            mWishListView.setAdapterWishList(mWishList);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();

@@ -16,6 +16,8 @@ public interface CartContract {
         void setTotalPrice(String totalPrice);
         void setCartNone(boolean b);
         void moveToCheckOrder(List<PurchaseItem> purchaseItems, int tempPrice, DeliveryPrice deliveryPrice);
+        void setNotifyDataSetChanged();
+        void showInValidOrderItem();
     }
     interface Presenter extends BasePresenter<View> {
         void loadData();

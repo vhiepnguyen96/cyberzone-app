@@ -5,20 +5,15 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.n8plus.vhiep.cyberzone.data.model.Account;
 import com.n8plus.vhiep.cyberzone.data.model.District;
 import com.n8plus.vhiep.cyberzone.data.model.Province;
-import com.n8plus.vhiep.cyberzone.data.model.Ward;
-import com.n8plus.vhiep.cyberzone.ui.manage.registersale.RegisterSaleContract;
+import com.n8plus.vhiep.cyberzone.data.model.RegisterSale;
+import com.n8plus.vhiep.cyberzone.data.model.Store;
 import com.n8plus.vhiep.cyberzone.util.Constant;
-import com.n8plus.vhiep.cyberzone.util.MySingleton;
 import com.n8plus.vhiep.cyberzone.util.VolleyUtil;
 
 import org.json.JSONException;
@@ -28,8 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AddRegisterSalePresenter implements AddRegisterSaleContract.Presenter {
     private static final String TAG = "RegisterSalePresenter";
@@ -37,6 +32,7 @@ public class AddRegisterSalePresenter implements AddRegisterSaleContract.Present
     private AddRegisterSaleContract.View mAddRegisterSaleView;
     private List<Province> mProvinceList;
     private Gson gson;
+    private RegisterSale mRegisterSale;
 
     public AddRegisterSalePresenter(@NonNull final Context context, @NonNull final AddRegisterSaleContract.View mAddRegisterSaleView) {
         this.context = context;
@@ -76,23 +72,80 @@ public class AddRegisterSalePresenter implements AddRegisterSaleContract.Present
     }
 
     @Override
-    public void sendRegisterSale(String nameStore, String locationStore, String nameCustomer, String phone, String email, String storeAccount, String password) {
+    public void saveRegisterSale(String nameStore, String locationStore, String nameCustomer, String phone, String email, String storeAccount, String password) {
+        mRegisterSale = new RegisterSale(Constant.customer, nameStore, locationStore, nameCustomer, email, storeAccount, password);
+        checkStoreName(mRegisterSale.getStoreName());
+    }
+
+
+    @Override
+    public void checkStoreName(String nameStore) {
+        JSONObject storeName = new JSONObject();
+        try {
+            storeName.put("name", nameStore);
+            VolleyUtil.POST(context, Constant.URL_STORE + "/findByName", storeName,
+                    response -> {
+                        Log.i(TAG, response.toString());
+                        try {
+                            Store store = gson.fromJson(String.valueOf(response.getJSONObject("store")), Store.class);
+                            if (store != null) {
+                                mAddRegisterSaleView.showAlert("Tên gian hàng đã tồn tại !");
+                            } else {
+                                checkStoreAccount(mRegisterSale.getUsername());
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    },
+                    error -> {
+                        Log.e(TAG, error.toString());
+                        checkStoreAccount(mRegisterSale.getUsername());
+                    });
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void checkStoreAccount(String storeAccount) {
+        VolleyUtil.GET(context, Constant.URL_ACCOUNT + "/username/" + storeAccount,
+                response -> {
+                    Log.i(TAG, response.toString());
+                    try {
+                        Account account = gson.fromJson(String.valueOf(response.getJSONObject("account")), Account.class);
+                        if (account != null) {
+                            mAddRegisterSaleView.showAlert("Tên đăng nhập không khả dụng!");
+                        } else {
+                            sendRegisterSale(mRegisterSale);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                },
+                error -> {
+                    Log.e(TAG, error.toString());
+                    sendRegisterSale(mRegisterSale);
+                });
+    }
+
+    @Override
+    public void sendRegisterSale(RegisterSale registerSale) {
         JSONObject registerSaleObj = new JSONObject();
         try {
             registerSaleObj.put("customerId", Constant.customer.getId());
-            registerSaleObj.put("storeName", nameStore);
-            registerSaleObj.put("address", locationStore);
-            registerSaleObj.put("phoneNumber", phone);
-            registerSaleObj.put("email", email);
-            registerSaleObj.put("username", storeAccount);
-            registerSaleObj.put("password", password);
+            registerSaleObj.put("storeName", registerSale.getStoreName());
+            registerSaleObj.put("address", registerSale.getAddress());
+            registerSaleObj.put("phoneNumber", registerSale.getPhoneNumber());
+            registerSaleObj.put("email", registerSale.getEmail());
+            registerSaleObj.put("username", registerSale.getUsername());
+            registerSaleObj.put("password", registerSale.getPassword());
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
         VolleyUtil.POST(context, Constant.URL_REGISTER_SALE, registerSaleObj,
                 response -> {
-                    Log.e(TAG, response.toString());
+                    Log.d(TAG, response.toString());
                     mAddRegisterSaleView.sendRegisterSaleResult(true);
                     mAddRegisterSaleView.backLoadRegisterSale();
                 },
@@ -100,24 +153,6 @@ public class AddRegisterSalePresenter implements AddRegisterSaleContract.Present
                     Log.e(TAG, error.toString());
                     mAddRegisterSaleView.sendRegisterSaleResult(false);
                 });
-//        JsonObjectRequest registerSaleRequest = new JsonObjectRequest(Request.Method.POST, Constant.URL_REGISTER_SALE, registerSaleObj,
-//                new Response.Listener<JSONObject>() {
-//                    @Override
-//                    public void onResponse(JSONObject response) {
-//                        Log.e("RegisterSalePresenter", response.toString());
-//                        mAddRegisterSaleView.sendRegisterSaleResult(true);
-//                        mAddRegisterSaleView.backLoadRegisterSale();
-//                    }
-//                },
-//                new Response.ErrorListener() {
-//                    @Override
-//                    public void onErrorResponse(VolleyError error) {
-//                        Log.e("RegisterSalePresenter", error.toString());
-//                        mAddRegisterSaleView.sendRegisterSaleResult(false);
-//                    }
-//                });
-//
-//        MySingleton.getInstance(((Fragment) mAddRegisterSaleView).getContext().getApplicationContext()).addToRequestQueue(registerSaleRequest);
     }
 
     public String loadJSONFromAsset(Context context, String name_file) {

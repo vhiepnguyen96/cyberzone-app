@@ -56,7 +56,7 @@ import java.util.concurrent.Callable;
 
 
 public class PaymentActivity extends AppCompatActivity implements PaymentContract.View {
-    private TextView mOrderId, mTotalProduct, mSubTotalPrice, mShippingFee, mTotalPrice, mTotalPriceUSD, mCustomerName, mCustomerPhone, mCustomerAddress;
+    private TextView mOrderId, mTotalProduct, mSubTotalPrice, mShippingFee, mTotalPrice, mTotalPriceUSD, mCustomerName, mCustomerPhone, mCustomerAddress, mPaymentLater;
     private CardMultilineWidget mCardInputWidget;
     private Button mConfirmOrder;
     private LinearLayout mPayment;
@@ -76,7 +76,7 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
         mErrorDialogHandler = new ErrorDialogHandler(getSupportFragmentManager());
 
         // Presenter
-        mPaymentPresenter = new PaymentPresenter(getApplicationContext(),this);
+        mPaymentPresenter = new PaymentPresenter(getApplicationContext(), this);
 
         Intent intent = getIntent();
         if (intent != null && intent.getSerializableExtra("order") != null) {
@@ -91,6 +91,10 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
 
         // Listener
         mPayment.setOnClickListener(v -> submitCard());
+
+        mPaymentLater.setOnClickListener(v -> {
+            moveToHome();
+        });
 
         mConfirmOrder.setOnClickListener(v -> mPaymentPresenter.confirmOrder());
     }
@@ -134,6 +138,7 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
         mCustomerName = (TextView) findViewById(R.id.tv_customer_name);
         mCustomerPhone = (TextView) findViewById(R.id.tv_customer_phone);
         mCustomerAddress = (TextView) findViewById(R.id.tv_customer_address);
+        mPaymentLater = (TextView) findViewById(R.id.tv_payment_later);
         mCardInputWidget = (CardMultilineWidget) findViewById(R.id.card_stripe);
         mPayment = (LinearLayout) findViewById(R.id.lnr_payment);
         mConfirmOrder = (Button) findViewById(R.id.btn_confirm_order);
@@ -217,8 +222,9 @@ public class PaymentActivity extends AppCompatActivity implements PaymentContrac
         if (Constant.purchaseList.size() > 0) {
             Constant.purchaseList.clear();
         }
-        startActivity(new Intent(PaymentActivity.this, HomeActivity.class));
-        finish();
+        Intent intent = new Intent(PaymentActivity.this, HomeActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
     }
 
     @Override

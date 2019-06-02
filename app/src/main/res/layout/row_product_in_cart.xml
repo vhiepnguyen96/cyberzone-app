@@ -20,19 +20,21 @@
             android:layout_gravity="center"
             android:padding="16dp"
             android:src="@drawable/img_1603653_1" />
+
         <LinearLayout
             android:id="@+id/lnr_removeFromCart"
-            android:background="@drawable/triangle_custom"
-            android:gravity="start"
             android:layout_width="36dp"
-            android:layout_height="36dp">
+            android:layout_height="36dp"
+            android:background="@drawable/triangle_custom"
+            android:gravity="start">
+
             <ImageView
                 android:id="@+id/img_removeFromCart"
-                android:layout_gravity="start"
-                android:src="@drawable/ic_close_gray_24dp"
-                android:padding="4dp"
                 android:layout_width="24dp"
-                android:layout_height="24dp" />
+                android:layout_height="24dp"
+                android:layout_gravity="start"
+                android:padding="4dp"
+                android:src="@drawable/ic_close_gray_24dp" />
         </LinearLayout>
     </RelativeLayout>
 
@@ -47,20 +49,20 @@
             android:id="@+id/txt_cart_productName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:lineSpacingExtra="2dp"
+            android:maxLines="2"
             android:paddingLeft="8dp"
             android:paddingRight="8dp"
             android:paddingTop="4dp"
-            android:maxLines="2"
             android:text="Bo mạch chính/ Mainboard Asrock H110M-DVS R2.0"
-            android:lineSpacingExtra="2dp"
             android:textColor="#333"
             android:textSize="14sp" />
 
         <LinearLayout
-            android:weightSum="10"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:weightSum="10">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -149,34 +151,64 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <LinearLayout
-                android:orientation="vertical"
+            <RelativeLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="4.5"
-                android:gravity="center"
-                android:paddingTop="10dp">
-                <com.michaelmuenzer.android.scrollablennumberpicker.ScrollableNumberPicker
-                    android:id="@+id/snp_product_quantity"
-                    app:snp_maxValue="50"
-                    app:snp_minValue="1"
-                    app:snp_stepSize="1"
-                    app:snp_value="1"
-                    android:focusable="true"
-                    app:snp_scrollEnabled="false"
-                    app:snp_updateInterval="100"
-                    app:snp_buttonIconLeft="@drawable/minus"
-                    app:snp_buttonIconRight="@drawable/plus"
-                    app:snp_buttonTouchScaleFactor="0.8"
-                    app:snp_buttonBackgroundTintSelector="@color/colorPrimary"
-                    app:snp_orientation="horizontal"
-                    app:snp_value_text_color="@color/colorPrimary"
-                    app:snp_value_text_size="16sp"
-                    app:snp_valueMarginStart="16dp"
-                    app:snp_valueMarginEnd="16dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-            </LinearLayout>
+                android:layout_weight="4.5">
+
+                <LinearLayout
+                    android:id="@+id/lnr_quantity_none"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/white"
+                    android:paddingTop="10dp"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/tv_product_quantity_none"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBottom="@+id/lnr_image"
+                        android:background="@drawable/background_gradient"
+                        android:padding="2dp"
+                        android:text="Tạm hết hàng"
+                        android:textColor="@android:color/white"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/lnr_scrollable_number"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/white"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:paddingTop="10dp"
+                    android:visibility="gone">
+
+                    <com.michaelmuenzer.android.scrollablennumberpicker.ScrollableNumberPicker
+                        android:id="@+id/snp_product_quantity"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:focusable="true"
+                        app:snp_buttonBackgroundTintSelector="@color/colorPrimary"
+                        app:snp_buttonIconLeft="@drawable/minus"
+                        app:snp_buttonIconRight="@drawable/plus"
+                        app:snp_buttonTouchScaleFactor="0.8"
+                        app:snp_maxValue="50"
+                        app:snp_minValue="1"
+                        app:snp_orientation="horizontal"
+                        app:snp_scrollEnabled="false"
+                        app:snp_stepSize="1"
+                        app:snp_updateInterval="100"
+                        app:snp_value="1"
+                        app:snp_valueMarginEnd="16dp"
+                        app:snp_valueMarginStart="16dp"
+                        app:snp_value_text_color="@color/colorPrimary"
+                        app:snp_value_text_size="16sp" />
+                </LinearLayout>
+
+            </RelativeLayout>
         </LinearLayout>
     </LinearLayout>
 

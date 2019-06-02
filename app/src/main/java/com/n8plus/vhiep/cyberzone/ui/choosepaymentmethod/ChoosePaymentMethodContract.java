@@ -12,12 +12,14 @@ public interface ChoosePaymentMethodContract {
         void setAdapterPaymentMethod(List<PaymentMethod> paymentMethods);
         void moveToPayment(Order order, List<OrderState> orderStates);
         void saveOrderResult(boolean b);
+        void showQuantityNonValid();
     }
     interface Presenter extends BasePresenter<View> {
         void loadPaymentMethod();
         void loadOrderState();
         void loadOrder(Order order);
         void choosePaymentMethod(int position);
+        void checkCurrentQuantity();
         void saveOrder();
         void saveOrderItems(String orderId);
         void updateQuantityProduct(String productId, int quantity);

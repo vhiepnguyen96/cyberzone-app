@@ -138,32 +138,6 @@ public class AllPurchasePresenter implements AllPurchaseContract.Presenter {
                     }
                 },
                 error -> Log.e(TAG, error.toString()));
-//        JsonObjectRequest orderPurchasedRequest = new JsonObjectRequest(Request.Method.POST, URL_ORDER + "/getByState", object,
-//                new Response.Listener<JSONObject>() {
-//                    @Override
-//                    public void onResponse(JSONObject response) {
-//                        try {
-//                            mOrderList = Arrays.asList(gson.fromJson(String.valueOf(response.getJSONArray("orders")), Order[].class));
-//                            Log.i("AllPurchasePresenter", "GET: " + mOrderList.size() + " mOrderList");
-//                            if (mOrderList.size() > 0) {
-//                                for (int i = 0; i < mOrderList.size(); i++) {
-//                                    loadOrderItems(i);
-//                                }
-//                            } else {
-//                                mAllPurchaseView.setLayoutReviewNone(true);
-//                            }
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                },
-//                new Response.ErrorListener() {
-//                    @Override
-//                    public void onErrorResponse(VolleyError error) {
-//                        Log.e("AllPurchasePresenter", error.toString());
-//                    }
-//                });
-//        MySingleton.getInstance(((Fragment) mAllPurchaseView).getContext().getApplicationContext()).addToRequestQueue(orderPurchasedRequest);
     }
 
     @Override
@@ -179,6 +153,7 @@ public class AllPurchasePresenter implements AllPurchaseContract.Presenter {
                             // Get order item not review
                             final List<PurchaseItem> notReviewTemp = new ArrayList<>();
 
+                            int countReview = 0;
                             for (int i = 0; i < purchaseItems.size(); i++) {
 
                                 if (!purchaseItems.get(i).isReview()) {
@@ -229,6 +204,12 @@ public class AllPurchasePresenter implements AllPurchaseContract.Presenter {
                                                 mAllPurchaseView.setLayoutNone(true);
                                                 mAllPurchaseView.setLayoutLoading(false);
                                             });
+                                } else {
+                                    countReview++;
+                                    if (i == purchaseItems.size() - 1){
+                                        mAllPurchaseView.setLayoutNone(countReview == purchaseItems.size() ? true : false);
+                                        mAllPurchaseView.setLayoutLoading(false);
+                                    }
                                 }
                             }
                         } else {

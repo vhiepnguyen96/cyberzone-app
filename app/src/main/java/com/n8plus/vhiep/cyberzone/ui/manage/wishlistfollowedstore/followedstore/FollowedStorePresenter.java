@@ -86,6 +86,7 @@ public class FollowedStorePresenter implements FollowedStoreContract.Presenter {
                             }
                         } else {
                             mFollowedStoreView.setLayoutNone(true);
+                            mFollowedStoreView.setAdapterFollowStore(mFollowStores);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();

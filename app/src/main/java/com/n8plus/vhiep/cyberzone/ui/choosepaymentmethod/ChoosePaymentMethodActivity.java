@@ -3,6 +3,7 @@ package com.n8plus.vhiep.cyberzone.ui.choosepaymentmethod;
 import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -22,6 +23,7 @@ import com.n8plus.vhiep.cyberzone.ui.cart.CartActivity;
 import com.n8plus.vhiep.cyberzone.ui.checkorder.CheckOrderActivity;
 import com.n8plus.vhiep.cyberzone.ui.choosedeliveryaddress.ChooseDeliveryAddressActivity;
 import com.n8plus.vhiep.cyberzone.ui.choosepaymentmethod.adapter.PaymentMethodAdapter;
+import com.n8plus.vhiep.cyberzone.ui.login.LoginActivity;
 import com.n8plus.vhiep.cyberzone.ui.payment.PaymentActivity;
 import com.n8plus.vhiep.cyberzone.util.Constant;
 
@@ -104,5 +106,21 @@ public class ChoosePaymentMethodActivity extends AppCompatActivity implements Ch
     @Override
     public void saveOrderResult(boolean b) {
         Toast.makeText(this, b ? "Lưu đơn hàng!" : "Lỗi khi lưu đơn hàng!", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void showQuantityNonValid() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Xin lỗi!");
+        builder.setMessage("Số lượng sản phẩm mua không khả dụng!");
+        builder.setCancelable(false);
+        builder.setPositiveButton("Kiểm tra lại", (dialogInterface, i) -> {
+            startActivity(new Intent(ChoosePaymentMethodActivity.this, CartActivity.class));
+            dialogInterface.dismiss();
+            finish();
+        });
+        builder.setNegativeButton("Hủy", (dialogInterface, i) -> dialogInterface.dismiss());
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 }

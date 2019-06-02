@@ -33,7 +33,7 @@ public class AddRegisterSaleFragment extends Fragment implements AddRegisterSale
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        mAddRegisterSalePresenter = new AddRegisterSalePresenter(getContext(),this);
+        mAddRegisterSalePresenter = new AddRegisterSalePresenter(getContext(), this);
         return inflater.inflate(R.layout.add_register_sale_frag, container, false);
     }
 
@@ -65,7 +65,7 @@ public class AddRegisterSaleFragment extends Fragment implements AddRegisterSale
                 String email = mEditEmail.getText().toString();
                 String username = mEditStoreAccount.getText().toString();
                 String password = mEditPassword.getText().toString();
-                mAddRegisterSalePresenter.sendRegisterSale(nameStore, locationStore, nameCustomer, phone, email, username, password);
+                mAddRegisterSalePresenter.saveRegisterSale(nameStore, locationStore, nameCustomer, phone, email, username, password);
             }
         });
 
@@ -89,7 +89,7 @@ public class AddRegisterSaleFragment extends Fragment implements AddRegisterSale
         if (mEditNameStore.getText().toString().isEmpty()) {
             showAlert("Vui lòng nhập tên gian hàng!");
             isValid = false;
-        } else if (((Province) mChooseProvince.getSelectedItem()).getName().isEmpty()) {
+        }  else if (((Province) mChooseProvince.getSelectedItem()).getName().isEmpty()) {
             showAlert("Vui lòng chọn địa chỉ kho!");
             isValid = false;
         } else if (mEditNameCustomer.getText().toString().isEmpty()) {
@@ -104,7 +104,7 @@ public class AddRegisterSaleFragment extends Fragment implements AddRegisterSale
         } else if (mEditStoreAccount.getText().toString().isEmpty()) {
             showAlert("Vui lòng nhập tên đăng nhập!");
             isValid = false;
-        } else if (mEditPassword.getText().toString().isEmpty() || mEditConfirmPassword.getText().toString().isEmpty()) {
+        }  else if (mEditPassword.getText().toString().isEmpty() || mEditConfirmPassword.getText().toString().isEmpty()) {
             showAlert("Vui lòng nhập mật khẩu!");
             isValid = false;
         } else if (!mEditPassword.getText().toString().equals(mEditConfirmPassword.getText().toString())) {

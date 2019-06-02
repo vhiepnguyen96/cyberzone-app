@@ -39,6 +39,17 @@ public class RegisterSale implements Serializable {
         this.password = password;
     }
 
+    public RegisterSale(Customer customer, String storeName, String address, String phoneNumber, String email, String username, String password) {
+        this.customer = customer;
+        this.storeName = storeName;
+        this.address = address;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
+        this.registeredDate = registeredDate;
+        this.username = username;
+        this.password = password;
+    }
+
     public RegisterSale(String id, Customer customer, String storeName, String address, String phoneNumber, String email, Date registeredDate, String username, String password, Boolean isApprove) {
         this.id = id;
         this.customer = customer;

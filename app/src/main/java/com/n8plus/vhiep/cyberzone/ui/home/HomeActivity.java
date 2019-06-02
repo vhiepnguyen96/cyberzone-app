@@ -3,6 +3,7 @@ package com.n8plus.vhiep.cyberzone.ui.home;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentController;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.content.Context;
@@ -118,17 +119,19 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
         initViews();
         setFullScreenNavigationView();
         customDivider();
-        mHomePresenter = new HomePresenter(getApplicationContext(), this);
         mSessionManager = new SessionManager(this);
 
-        // Custom SearchView
+        // Presenter
+        mHomePresenter = new HomePresenter(getApplicationContext(), this);
+        mHomePresenter.loadIpFromServer();
+
+        // Custom
         SearchView.SearchAutoComplete serAutoComplete = mSearchHome.findViewById(android.support.v7.appcompat.R.id.search_src_text);
         serAutoComplete.setHintTextColor(Color.parseColor("#c1c1c1"));
         serAutoComplete.setTextColor(Color.parseColor("#000000"));
         mSearchHome.setFocusable(false);
         mSearchHome.clearFocus();
 
-        // Custom refresh layout
         mRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
 
         // Listener
@@ -170,7 +173,6 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
     @Override
     protected void onStart() {
         super.onStart();
-        mHomePresenter.loadIpFromServer();
     }
 
     @Override
@@ -392,16 +394,14 @@ public class HomeActivity extends AppCompatActivity implements HomeContract.View
 
     @Override
     public void setNavigationView() {
-        fragmentManager = getSupportFragmentManager();
-        fragmentTransaction = fragmentManager.beginTransaction();
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.frameLayout, new CategoryFragment());
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+        fragmentTransaction.commitAllowingStateLoss();
     }
 
     @Override
     public void setNameCustomer(String nameCustomer) {
-        mTextName.setText("Chào, " + nameCustomer);
+        mTextName.setText(nameCustomer.isEmpty() ? "" : "Chào, " + nameCustomer);
     }
 
     @Override
